@@ -40,7 +40,7 @@ Comparamos con la misma desviación pico. El prénfasis no reduce el ruido total
 | Mejora teórica (`P.enf.mejora_dB`) | −5.8 dB | −1.3 dB | +2.0 dB |
 | Simulación rápida en Python, (SNR)_C de 20 a 40 dB | −5.7 dB | −1.2 dB | +1.8 dB |
 
-Los resultados de Python salen de `04_verificacion_python/verificar_enfasis_bb.py`, una FM en banda base equivalente con los mismos filtros. **Falta medirlo en Simulink** con `verificar_enfasis.m`.
+Los resultados de Python salen de `04_verificacion_python/verificar_enfasis_bb.py`, una FM en banda base equivalente con los mismos filtros. **Falta medirlo en Simulink** con `analisis_awgn.m`.
 
 Con f₀ más bajo el canal 3 mejora un poco más, pero el canal 1 pierde mucho más. La mejora del canal 3 casi no pasa de +2.4 dB. Por eso escogimos 30 kHz como compromiso.
 
@@ -50,4 +50,4 @@ El umbral FM no se mueve, porque la desviación y el ancho de banda son los mism
 
 - GUI: casilla «Prénfasis / deénfasis».
 - Código: `params_sistema(10e6, struct('enfasis', true))`. Opcional: `'f0_enfasis', 30e3`.
-- Verificación: `verificar_enfasis` (unos 6–8 min). Guarda `resultados_enfasis.csv`, `.mat` y `fig_enfasis.png`.
+- Verificación: `analisis_awgn` (unos 8–10 min). Guarda `resultados_awgn.csv`, `.mat` y `fig_awgn.png`.

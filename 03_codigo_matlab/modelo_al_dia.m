@@ -1,13 +1,16 @@
 function modelo_al_dia(mdl)
-%MODELO_AL_DIA  Regenera el modelo Simulink si no existe o si es de una versión anterior.
+%MODELO_AL_DIA  Genera el modelo Simulink si no existe o si construir_modelo.m es más nuevo.
+%   Así, si alguien cambia construir_modelo.m, el .slx se vuelve a generar solo.
     if nargin < 1, mdl = 'sistema_fdm_fm'; end
-    regenerar = ~exist([mdl '.slx'], 'file');
+    archivo = [mdl '.slx'];
+    regenerar = ~exist(archivo, 'file');
     if ~regenerar
-        load_system(mdl);
-        regenerar = ~strcmp(get_param(mdl, 'Description'), sprintf('version_modelo=%d', version_modelo()));
+        a = dir(archivo);  b = dir(which('construir_modelo'));
+        regenerar = b.datenum > a.datenum;
     end
     if regenerar
-        fprintf('Generando %s.slx (versión %d)...\n', mdl, version_modelo());
+        if bdIsLoaded(mdl), close_system(mdl, 0); end
+        fprintf('Generando %s...\n', archivo);
         construir_modelo(mdl);
     end
 end

@@ -132,7 +132,7 @@ El enunciado dice «si la calidad es baja, considerar prénfasis/deénfasis». *
 
 Por eso se implementa con AWGN. Se coloca donde indica el curso [diap. 384]: el prénfasis antes del modulador FM y el deénfasis después del demodulador. Como aquí el mensaje es el multiplex completo, se filtra el multiplex. Son dos filtros de primer orden; el detalle está en `02_diseno/prenfasis_deenfasis.md`.
 
-**Resultado esperado** (misma desviación pico): el prénfasis no reduce el ruido total, lo reparte. Con f₀ = 30 kHz, el canal 3 mejora unos +2 dB, el canal 2 baja unos −1 dB y el canal 1 baja unos −6 dB, que tenía SNR de sobra. La teoría y la simulación en Python coinciden. **Pendiente medirlo en Simulink** con `verificar_enfasis.m`.
+**Resultado esperado** (misma desviación pico): el prénfasis no reduce el ruido total, lo reparte. Con f₀ = 30 kHz, el canal 3 mejora unos +2 dB, el canal 2 baja unos −1 dB y el canal 1 baja unos −6 dB, que tenía SNR de sobra. La teoría y la simulación en Python coinciden. **Pendiente medirlo en Simulink** con `analisis_awgn.m`.
 
 **Por qué no se aplica a cada audio por separado** (como el prénfasis de 75 µs de la FM estéreo [diap. 244–246]): en la FM estéreo el canal L+R está en banda base, donde el ruido sí crece dentro del audio. En nuestro canal 3, lo que domina es el término f_k², así que el ruido es casi plano dentro del audio y un prénfasis por audio casi no ayuda.
 
@@ -477,7 +477,7 @@ SELECTOR DE AUDIO (GUI) → altavoz y gráficas
 | 6. Demultiplexor | Audios: 9e-12 a 4e-11 | **SDR 60.3 / 59.4 / 57.1 dB**, ganancia ≈ 1.00 |
 
 **Decisiones tomadas durante la implementación [DECISIÓN]:**
-- **Retardo del Rate Transition.** Al pasar de una tasa lenta a una rápida, el bloque retrasa **1 muestra lenta**, aun en modo de una sola tarea. Se midió en `verificar_etapa2`. Es determinista, así que se modela (`P.rt_retardo = 1`) en la referencia y en τ_k. La decimación (de rápida a lenta) no añade retardo (`P.rt_dec = 0`, verificado).
+- **Retardo del Rate Transition.** Al pasar de una tasa lenta a una rápida, el bloque retrasa **1 muestra lenta**, aun en modo de una sola tarea. Se midió en `verificar_etapa2`. Es determinista, así que se modela (`P.rt_retardo = 1`) en la referencia y en τ_k. La decimación (de rápida a lenta) no añade retardo (verificado).
 - **Interpolación ×100 en dos etapas de ×10** y **sección de FI en dos etapas** (pasabajos antialiasing a 48 MHz, ↓10, pasabanda selectivo a 4.8 MHz). Hacen lo mismo con mucho menos cálculo que un solo FIR a 48 MHz. El retardo total cambió, y las ganancias sin compensar (+0.09 / −0.87 / −0.65) coinciden con la predicción.
 - **Modo acelerado de Simulink:** 4.3 veces más rápido, con resultados idénticos (diferencia 0). Tiempo del sistema completo: ≈ 13 s por cada 0.05 s de audio real, es decir ≈ 4.5 min por segundo de audio.
 - **f_s,RF = 48 MHz** se mantiene (no 24 MHz), para que el producto suma aparezca en su frecuencia real en el video.

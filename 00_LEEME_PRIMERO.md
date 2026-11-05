@@ -72,7 +72,7 @@ Tres audios de 15 kHz → **FDM** (DSB-SC) en ≤ 120 kHz → **FM** con portado
 1. **Tabla de escalamiento (§5):** escala portadora y FI ÷100 pero deja audio y FDM → B_FDM/f_c pasa de 0.012 a 1.2, la FM cruza 0 Hz, FI (17 kHz) < f_m,máx (115 kHz). **Corrección:** escalar todo por K = 100.
 2. **«Se escala por limitaciones computacionales»:** escalar no ahorra muestras (N = T_real·f_s,nominal). El ahorro se obtiene con multirritmo.
 3. **Muestrear a 5–10 × ancho de banda (§8):** el criterio es f_s > 2·f_máx incluyendo el producto suma del mezclador (hasta 20.65 MHz) → 48 MHz.
-4. **Prénfasis/deénfasis (§4.5) no es un error:** es una condición. Con canal ideal no hace falta (SDR ≈ 60 dB). Con AWGN el canal 3 sale unos 14 dB peor por el ruido ∝ f², así que se implementa sobre el multiplex y se mide (`verificar_enfasis.m`).
+4. **Prénfasis/deénfasis (§4.5) no es un error:** es una condición. Con canal ideal no hace falta (SDR ≈ 60 dB). Con AWGN el canal 3 sale unos 14 dB peor por el ruido ∝ f², así que se implementa sobre el multiplex y se mide (`analisis_awgn.m`).
 5. **Matices de redacción:** «índice de modulación» con mensaje compuesto → DR; falta sección de RF (preselector) en el receptor descrito.
 
 ---
@@ -81,35 +81,45 @@ Tres audios de 15 kHz → **FDM** (DSB-SC) en ≤ 120 kHz → **FM** con portado
 
 ```matlab
 cd 03_codigo_matlab
-main                 % tabla de diseño + genera/actualiza el .slx + abre la radio
+main                 % tabla de diseño + genera el .slx si hace falta + abre la radio
+graficas_sistema     % gráficas de cada etapa con canal ideal (~1 min)
+analisis_awgn        % AWGN sin y con prénfasis/deénfasis (~8-10 min)
+```
+
+Pruebas internas del equipo (no van en la entrega), en `03_codigo_matlab/verificacion/`:
+
+```matlab
+addpath verificacion
 prueba_etapa0        % referencia en MATLAB (sin Simulink)
 verificar_etapa2     % transmisor FDM: Simulink vs referencia
 verificar_etapa3     % modulador FM
 verificar_etapa5     % cadena completa, canal ideal
-verificar_etapa8     % barrido AWGN y prueba sin preselector (varios minutos)
-verificar_enfasis    % AWGN con y sin prénfasis/deénfasis (unos 6-8 min)
+verificar_etapa8     % barrido AWGN y prueba sin preselector
 ```
 
-### Mapa de archivos
+### Archivos de la entrega (`03_codigo_matlab/`)
 
 | Archivo | Función |
 |---|---|
-| `params_sistema.m` | Todos los parámetros, filtros, retardos τ_k, σ del ruido; 18 `assert` de consistencia. Opciones: `imprimir`, `snr_c_dB`, `T_real`, `tau_extra`, `rt_retardo` (1), `rt_dec` (0), `semilla`, `desintonia`, `log_rf_max`, `enfasis` (false), `f0_enfasis` (30 kHz) |
-| `disenar_fir_kaiser.m` | Diseño FIR LP/BP por ventana de Kaiser, sube el orden hasta cumplir el rechazo |
-| `construir_modelo.m` | Genera `sistema_fdm_fm.slx` por código (subsistemas Transmisor_FDM, Modulador_FM, Canal, Receptor_Superheterodino/Demodulador_FM, Demultiplexor_FDM) |
-| `version_modelo.m`, `modelo_al_dia.m` | Control de versión del `.slx` (v = 7); lo regenera si está viejo |
-| `radio_fdm_fm.m` | GUI (uifigure): perilla de portadora, LO automático, selector de audio, AWGN, desintonía, fuentes |
-| `generar_fuentes.m` | Fuentes: `tonos`, `demo`, `ruido`, `audio` (WAV en carpeta `audios/`) |
-| `modelo_referencia.m` | Misma cadena en MATLAB puro, para verificar Simulink |
+| `main.m` | Punto de entrada: imprime el diseño y abre la radio |
+| `params_sistema.m` | Todos los parámetros, filtros, retardos τ_k y σ del ruido; 9 comprobaciones del diseño. Opciones: `imprimir`, `snr_c_dB`, `T_real`, `desintonia`, `enfasis` (false), `f0_enfasis` (30 kHz), `log_rf_max` |
+| `disenar_fir_kaiser.m` | Diseño FIR LP/BP por ventana de Kaiser; sube el orden hasta cumplir el rechazo |
+| `construir_modelo.m` | Genera `sistema_fdm_fm.slx` por código (Transmisor_FDM, Modulador_FM, Canal, Receptor_Superheterodino, Demultiplexor_FDM) |
+| `modelo_al_dia.m` | Regenera el `.slx` si no existe o si `construir_modelo.m` es más nuevo |
+| `generar_fuentes.m` | Fuentes: `demo`, `tonos`, `ruido`, `audio` (WAV en la carpeta `audios/`, que hay que crear) |
+| `radio_fdm_fm.m` | GUI: perilla de portadora, LO automático, selector de audio, AWGN, prénfasis, desintonía |
+| `graficas_sistema.m` | Figuras de cada etapa: audios, multiplex, FM con Carson, receptor, audios recuperados |
+| `analisis_awgn.m` | Barrido AWGN frente a la teoría, sin y con prénfasis. Guarda CSV, MAT y PNG |
+| `graficar_espectro.m` | Espectro sin toolbox (Welch propio) |
 | `comparar_senales.m` | SDR alineando retardo (fraccionario) y ganancia |
-| `graficar_espectro.m`, `graficar_filtro.m` | Gráficas sin toolbox (Welch propio) |
-| `prueba_etapa0.m`, `verificar_etapa*.m` | Verificación por etapas |
+
+En `verificacion/` quedan `modelo_referencia.m` (la misma cadena en MATLAB puro), `graficar_filtro.m`, `prueba_etapa0.m` y `verificar_etapa2/3/5/8.m`.
 
 ---
 
 ## 5. Detalles de implementación que conviene saber
 
-- **Rate Transition** (lenta → rápida) añade 1 muestra lenta de retardo incluso en una sola tarea (medido) → `rt_retardo = 1`. La decimación no añade retardo (`rt_dec = 0`).
+- **Rate Transition** (lenta → rápida) añade 1 muestra lenta de retardo incluso en una sola tarea (medido) → `P.rt_retardo = 1`. La decimación no añade retardo.
 - **From Workspace**: los tiempos se adelantan 0.25 muestra para evitar que tome la muestra anterior por redondeo.
 - Interpolación ×100 en dos etapas ×10 (inserción de ceros con Pulse Generator × Rate Transition + FIR).
 - El filtro del canal 1 en el demux es **pasabanda** (5–35 kHz), igual que los otros dos: elimina cualquier nivel de DC a la salida del demodulador (por ejemplo, con desintonía).
@@ -155,7 +165,7 @@ Barrido AWGN (`verificar_etapa8`, SDR en dB, canales 1/2/3):
 
 - Etapas 0–8 **completas y verificadas** (ver documento de diseño).
 - Existe un **guion del video** (7 escenas repartidas entre Jordi y Abner) en un documento aparte; no está en este paquete.
-- Pendientes opcionales mencionados: limpiar el paquete de entrega; medir en Simulink el prénfasis/deénfasis (`verificar_enfasis.m`); revisar que todo corra en una instalación limpia de R2026a sin toolboxes.
+- Pendientes opcionales mencionados: medir en Simulink el prénfasis/deénfasis (`analisis_awgn.m`); revisar que todo corra en una instalación limpia de R2026a sin toolboxes.
 
 ### Sugerencia de orden para la revisión
 

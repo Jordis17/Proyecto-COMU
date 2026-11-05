@@ -1,5 +1,8 @@
 %VERIFICAR_ETAPA2  Simula el transmisor FDM en Simulink y lo compara con el modelo de referencia.
 %   Ejecutar desde la carpeta del proyecto:  >> verificar_etapa2
+%   UBICACIÓN: carpeta verificacion/. Se ejecuta desde 03_codigo_matlab con:
+%       >> addpath verificacion
+%   Son pruebas internas del equipo: no forman parte del entregable.
 %   1) Calcula parámetros y fuentes, (re)construye sistema_fdm_fm.slx y lo simula.
 %   2) Compara el multiplex m_n de Simulink con el de modelo_referencia.m (mismas fuentes).
 %   3) Grafica: audios en el tiempo, espectros de los audios y espectro del multiplex FDM
@@ -31,29 +34,7 @@ if err <= 1e-6
     fprintf('  => Simulink y la referencia coinciden: transmisor FDM VERIFICADO.\n');
 end
 if err > 1e-6
-    % Diagnóstico bloque por bloque (canal 1):
-    %  (a) audio tras el LPF de 15 kHz: prueba From Workspace + LPF
-    xa_ref = filter(P.h.audio_tx, 1, fuente.X(1,:));
-    xa_sim = out.sim_xa1(:).';
-    [ea, da] = mejor_desfase(xa_sim, xa_ref, 5);
-    fprintf('  (a) audio filtrado (fs_a): error %.3g con desfase %d muestras de audio\n', ea, da);
-    %  (b) banda base interpolada: prueba Rate Transition + tren de pulsos + filtro
-    xb_sim = out.sim_xb1(:).';
-    [eb, db] = mejor_desfase(xb_sim, R.xb(1,:), 30);
-    fprintf('  (b) banda base interpolada (fs_m): error %.3g con desfase %d muestras de fs_m\n', eb, db);
-    %  (c) si la banda base solo está desplazada, se reconstruye m_n con ese desfase
-    if eb < 1e-6 && db ~= 0
-        t_m = (0:N-1) / P.fs_m;  m_d = zeros(1, N);
-        for k = 1:3
-            xk = [zeros(1, db) R.xb(k, 1:N-db)];
-            m_d = m_d + xk .* cos(2*pi*P.f_sc(k)*t_m);
-        end
-        fprintf('  (c) m_n reconstruido con la banda base retrasada %d muestras: error %.3g\n', ...
-            db, max(abs(m_n_sim(1:N) - m_d/P.normalizacion)));
-        fprintf('  => La diferencia es solo un retardo de %d muestras (%.3g ms reales) ANTES de la\n', db, db/P.fs_m/P.K*1e3);
-        fprintf('     modulación DSB, causado por el Rate Transition. Revisar P.rt_retardo (actual: %d,\n', P.rt_retardo);
-        fprintf('     medido aquí: %g).\n', P.rt_retardo + db/P.L1);
-    end
+    fprintf('  => NO coinciden: revisar el transmisor (filtros, Rate Transition y P.rt_retardo).\n');
 end
 fprintf('Pico |m_n| = %.3f (debe ser <= 1)\n', max(abs(m_n_sim)));
 fprintf('Porcentaje de modulación (pico) = %.1f %%\n', 100*max(abs(m_n_sim)));

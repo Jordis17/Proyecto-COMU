@@ -2,7 +2,7 @@ function radio_fdm_fm()
 %RADIO_FDM_FM  Interfaz tipo radio del sistema FDM + FM + receptor superheterodino.
 %   >> radio_fdm_fm      (o ejecutar main.m)
 %
-%   DOS SELECCIONES INDEPENDIENTES [doc §7]:
+%   DOS SELECCIONES INDEPENDIENTES:
 %     1) SINTONÍA RF (perilla): fija la portadora de 9 a 11 MHz. Al moverla se recalculan
 %        al instante el LO (f_c - 1.7 MHz), la imagen y el preselector; "Sintonizar y
 %        simular" ejecuta el modelo Simulink con esos parámetros.
@@ -48,7 +48,7 @@ function radio_fdm_fm()
     lbl_sdr.Layout.Row = 10; lbl_sdr.Layout.Column = [1 2];
 
     etiqueta(gl, 12, 'Fuente de audio:');
-    dd_fuente = uidropdown(gl, 'Items', {'demo', 'tonos', 'ruido', 'audio'}, 'Value', 'demo');
+    dd_fuente = uidropdown(gl, 'Items', {'demo', 'tonos', 'audio'}, 'Value', 'demo');
     dd_fuente.Layout.Row = 12; dd_fuente.Layout.Column = 2;
     etiqueta(gl, 13, 'Duración [s reales]:');
     ed_T = uieditfield(gl, 'numeric', 'Value', 0.3, 'Limits', [0.02 3]);

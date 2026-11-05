@@ -1,15 +1,15 @@
 function construir_modelo(nombre)
-%CONSTRUIR_MODELO  Genera el modelo Simulink del sistema a partir de bloques básicos.
-%   construir_modelo()            crea/reemplaza 'sistema_fdm_fm.slx' en la carpeta actual
+%CONSTRUIR_MODELO  Genera el modelo Simulink del sistema con bloques básicos.
+%   construir_modelo()            crea o reemplaza 'sistema_fdm_fm.slx' en la carpeta actual
 %
 %   Contiene: fuentes, transmisor FDM (DSB-SC + prénfasis opcional), modulador FM, canal
 %   (ideal/AWGN), receptor superheterodino (con deénfasis opcional) y demultiplexor FDM.
 %   La GUI (radio_fdm_fm.m) solo cambia parámetros y llama a sim().
-%   El .slx siempre se puede regenerar ejecutando este script.
+%   El .slx siempre se puede volver a generar con este script.
 %
-%   Los bloques NO contienen números escritos a mano: todo se lee de las variables del
-%   workspace base 'P' (params_sistema) y 'fuente' (generar_fuentes).
-%   Solo usa la biblioteca básica de Simulink (sin DSP System Toolbox).
+%   Los bloques no tienen números escritos a mano: todo se lee de las variables 'P'
+%   (params_sistema) y 'fuente' (generar_fuentes) del workspace base.
+%   Solo usa la biblioteca básica de Simulink.
 
     if nargin < 1, nombre = 'sistema_fdm_fm'; end
     mdl = nombre;
@@ -18,7 +18,7 @@ function construir_modelo(nombre)
     new_system(mdl);
     open_system(mdl);
 
-    %% Configuración del solver: discreto, paso fijo, una sola tarea [§8 del enunciado]
+    %% Solver discreto de paso fijo, una sola tarea
     set_param(mdl, 'SolverType', 'Fixed-step', 'Solver', 'FixedStepDiscrete', ...
         'FixedStep', 'auto', 'StopTime', 'fuente.T_stop');
     % Una sola tarea para todas las tasas. Aun así, cada Rate Transition de tasa lenta a
@@ -49,7 +49,7 @@ function construir_modelo(nombre)
         add_line(mdl, sprintf('Audio%d/1', k), sprintf('Transmisor_FDM/%d', k), 'autorouting', 'on');
     end
 
-    %% ---------------- Modulador FM (etapa 3) ----------------
+    %% ---------------- Modulador FM ----------------
     fm = [mdl '/Modulador_FM'];
     add_block('built-in/Subsystem', fm, 'Position', caja(480, 70, 160, 120));
     construir_modulador_fm(fm);
@@ -57,14 +57,14 @@ function construir_modelo(nombre)
         'Interpolación x100 en dos etapas x10 (fs_m -> fs_fi -> fs_rf) y FM: s = Ac cos(2 pi fc t + 2 pi kf * suma(m_n)/fs_rf)');
     add_line(mdl, 'Transmisor_FDM/1', 'Modulador_FM/1', 'autorouting', 'on');
 
-    %% ---------------- Canal (etapa 4): ideal o AWGN ----------------
+    %% ---------------- Canal: ideal o AWGN ----------------
     ch = [mdl '/Canal'];
     add_block('built-in/Subsystem', ch, 'Position', caja(720, 85, 120, 60));
     construir_canal(ch);
-    set_param(ch, 'Description', 'r = s + n, n gaussiano de varianza P.sigma_ruido^2 (0 = canal ideal). (SNR)_C de Haykin, doc 6.9');
+    set_param(ch, 'Description', 'r = s + n, n gaussiano de varianza P.sigma_ruido^2 (0 = canal ideal)');
     add_line(mdl, 'Modulador_FM/1', 'Canal/1', 'autorouting', 'on');
 
-    %% ---------------- Receptor superheterodino (etapa 5) ----------------
+    %% ---------------- Receptor superheterodino ----------------
     rx = [mdl '/Receptor_Superheterodino'];
     add_block('built-in/Subsystem', rx, 'Position', caja(900, 70, 170, 120));
     construir_receptor(rx);
@@ -72,7 +72,7 @@ function construir_modelo(nombre)
         'pasabajos + decimación -> pasabanda FI 1.7 MHz -> demodulador FM en cuadratura -> filtro posdetección -> deénfasis (opcional)']);
     add_line(mdl, 'Canal/1', 'Receptor_Superheterodino/1', 'autorouting', 'on');
 
-    %% ---------------- Demultiplexor FDM (etapa 6) ----------------
+    %% ---------------- Demultiplexor FDM ----------------
     dm = [mdl '/Demultiplexor_FDM'];
     add_block('built-in/Subsystem', dm, 'Position', caja(1140, 70, 160, 200));
     construir_demux(dm);
@@ -101,8 +101,7 @@ function construir_modelo(nombre)
         add_line(mdl, sprintf('Demultiplexor_FDM/%d', k), sprintf('Log_audio%d/1', k), 'autorouting', 'on');
     end
 
-    % marca de versión: la GUI y main.m regeneran el modelo si no coincide
-    set_param(mdl, 'Description', sprintf('version_modelo=%d', version_modelo()));
+    set_param(mdl, 'Description', 'Sistema FDM + FM + receptor superheterodino. Generado por construir_modelo.m');
     save_system(mdl, fullfile(pwd, [mdl '.slx']));
     try
         fprintf('Multitarea: %s\n', get_param(mdl, 'EnableMultiTasking'));
@@ -187,12 +186,6 @@ function construir_rama_dsb(rama, k)
     add_line(rama, 'Filtro_interpolador/1', 'Modulador_DSB/1', 'autorouting', 'on');
     add_line(rama, 'Subportadora/1', 'Modulador_DSB/2', 'autorouting', 'on');
     add_line(rama, 'Modulador_DSB/1', 'y/1', 'autorouting', 'on');
-
-    % puntos de registro para depuración (audio filtrado y banda base interpolada)
-    a_workspace(rama, 'Log_xa', sprintf('sim_xa%d', k), caja(210, 190, 70, 26));
-    a_workspace(rama, 'Log_xb', sprintf('sim_xb%d', k), caja(490, 190, 70, 26));
-    add_line(rama, 'LPF_audio_15kHz/1', 'Log_xa/1', 'autorouting', 'on');
-    add_line(rama, 'Filtro_interpolador/1', 'Log_xb/1', 'autorouting', 'on');
 
     set_param(rama, 'Description', sprintf( ...
         'Canal %d: DSB-SC con subportadora P.f_sc(%d). Interpolación x P.L1 = Rate Transition (retención) x tren de pulsos -> inserción de ceros; luego FIR con ganancia L1.', k, k));

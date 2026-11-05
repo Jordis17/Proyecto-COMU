@@ -9,7 +9,7 @@ function fuente = generar_fuentes(P, modo, carpeta_audios)
 %     'audio'  : archivos audio1.wav, audio2.wav y audio3.wav de la carpeta 'audios'
 %                (o de carpeta_audios). Se pasan a mono, se llevan a 48 kHz y se normalizan.
 %
-%   ESCALAMIENTO DEL AUDIO REAL [E3]: las muestras del archivo NO se modifican. Solo se
+%   ESCALAMIENTO DEL AUDIO REAL: las muestras del archivo NO se modifican. Solo se
 %   declara su tiempo de muestreo como 1/P.fs_a (= K/48 kHz). Para escuchar el resultado se
 %   reproduce a 48 kHz con sound(y, P.fs_audio_real), lo que deshace el escalamiento.
 %
@@ -69,7 +69,7 @@ function fuente = generar_fuentes(P, modo, carpeta_audios)
             error('modo debe ser ''tonos'', ''demo'', ''ruido'' o ''audio''');
     end
 
-    % normalización a pico 1 (cada audio por separado) [6.3]
+    % normalización a pico 1 (cada audio por separado)
     for k = 1:3
         pk = max(abs(X(k,:)));
         if pk > 0, X(k,:) = X(k,:) / pk; end
