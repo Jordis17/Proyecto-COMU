@@ -1,6 +1,6 @@
 # Guion del video (~10 min)
 
-Basado en `diseno_final.md`. Unas 1400 palabras habladas, a ritmo tranquilo (unas 140 palabras por minuto).
+Basado en `diseno_final.md`. Unas 1500 palabras habladas: a ritmo tranquilo (unas 140 por minuto) son poco menos de 11 min, así que conviene ir un poco más rápido o recortar lo indicado al final.
 
 - **Pantalla:** lo que se ve mientras se habla.
 - **Texto:** lo que se dice. Es una base: díganlo con sus palabras, no hace falta leerlo.
