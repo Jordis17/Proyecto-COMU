@@ -31,7 +31,7 @@ El profesor avisó que el enunciado tiene errores a propósito. Primero los busc
 
 **Detalles menores:**
 - Con un mensaje formado por muchas frecuencias no se habla de índice de modulación sino de relación de desviación, DR = Δf/f_m,máx (diap. 328).
-- El receptor descrito no tiene sección de RF antes del mezclador. Le agregamos un preselector, como en el esquema del curso (diap. 358).
+- El receptor descrito no tiene sección de RF antes del mezclador. Le agregamos una sección de RF (preselector), como en el esquema del curso (diap. 358).
 - Escalar no ahorra cálculo por sí mismo: 1 s de audio real se convierte en 100 s simulados con 100 veces menos muestras por segundo, y el total queda igual. Lo que sí ahorra es usar una frecuencia de muestreo distinta en cada etapa (sección 3.6).
 
 ## 3. Diseño
@@ -64,11 +64,11 @@ Cada audio modula en DSB-SC a su subportadora: m(t) = Σ x_k(t)·cos(2π f_k t).
 
 *¿Por qué DSB-SC y no SSB?* El ejemplo del curso usa SSB con voz telefónica, que empieza en 300 Hz. Un audio real tiene contenido casi desde 0 Hz, así que separar una banda lateral necesitaría filtros casi ideales. En DSB-SC basta un multiplicador y el ancho de banda alcanza. Además, es el mismo esquema de la FM estéreo, donde L−R va en DSB-SC.
 
-Como cada audio tiene pico 1, el multiplex puede llegar a 3; por eso se divide entre 3 antes del modulador (m_n = m/3, |m_n| ≤ 1).
+Como cada audio tiene pico 1, el multiplex puede llegar a 3; por eso se divide entre 3 antes del modulador. Así el mensaje que entra al modulador, m(t), nunca pasa de 1.
 
 ### 3.3 FM
 
-s(t) = A_c·cos[2π f_c t + 2π k_f ∫ m_n dt], con k_f = Δf = 150 kHz.
+s(t) = A_c·cos[2π f_c t + 2π k_f ∫ m(τ) dτ], con k_f = Δf = 150 kHz. Es la notación del curso (diap. 309): m(t) es el mensaje (aquí, el multiplex) y s(t) la señal FM.
 
 - **Relación de desviación:** DR = 150/115 = 1.30.
 - **Carson:** B_T = 2(Δf + f_m,máx) = 2(150 + 115) = **530 kHz**. La f_m,máx que se usa es la del multiplex (115 kHz), no la del audio.
@@ -80,8 +80,8 @@ s(t) = A_c·cos[2π f_c t + 2π k_f ∫ m_n dt], con k_f = Δf = 150 kHz.
 
 - **LO automático, inyección inferior:** f_LO = f_c − 1.7 MHz. A 10 MHz, el LO queda en 8.3 MHz.
 - **Mezclador:** da la diferencia (1.7 MHz, la FI) y la suma (18.3 MHz, que se filtra).
-- **Imagen:** f_c − 2·f_FI = 6.6 MHz. El preselector deja pasar f_c ± 350 kHz y rechaza al menos 60 dB a partir de ±1.55 MHz, así que la imagen, que está a 3.4 MHz de distancia, queda eliminada.
-- **Filtro de FI:** de 1.35 a 2.05 MHz (700 kHz). Es más ancho que Carson para tener margen.
+- **Imagen:** f_c − 2·f_FI = 6.6 MHz. La sección de RF (preselector) deja pasar f_c ± 350 kHz y rechaza al menos 60 dB a partir de ±1.55 MHz, así que la imagen, que está a 3.4 MHz de distancia, queda eliminada.
+- **Sección de FI:** filtro de 1.35 a 2.05 MHz (700 kHz). Es más ancho que Carson para tener margen.
 
 *¿Por qué inyección inferior?* Con inyección superior el producto suma llegaría a 24 MHz y haría falta más de 48 MHz de muestreo. Además, con la inferior el espectro no sale invertido en la FI.
 
@@ -91,9 +91,9 @@ s(t) = A_c·cos[2π f_c t + 2π k_f ∫ m_n dt], con k_f = Δf = 150 kHz.
 
 f_i[n] = (f_s / 2π) · ángulo(z[n] · z*[n−1])
 
-Es la versión digital de f_i = (1/2π)·dφ/dt y no necesita limitador. Después viene un filtro de 120 kHz (posdetección), que deja solo el multiplex.
+Es la versión digital de f_i = (1/2π)·dφ/dt y no necesita limitador. Después viene el filtro posdetección (diap. 376), de 120 kHz, que deja solo el multiplex.
 
-**Demultiplexor.** Para cada canal: pasabanda → × 2cos(2π f_k t) → pasabajos de 15 kHz.
+**Demultiplexor.** Para cada canal: pasabanda → oscilador local 2cos(2π f_k (t − τ_k)) → detector coherente (diap. 230) → pasabajos de 15 kHz.
 
 **Retardo de los filtros.** En DSB-SC, si la subportadora del receptor llega con un error de fase φ, la salida queda multiplicada por cos φ (diap. 237–238). Los filtros FIR retrasan la señal:
 
@@ -107,10 +107,10 @@ Es la versión digital de f_i = (1/2π)·dφ/dt y no necesita limitador. Despué
 |---|---|---|
 | Audio | 15 kHz | 48 kHz |
 | Multiplex | 120 kHz | 480 kHz |
-| FI (después de decimar) | 2.25 MHz | 4.8 MHz |
+| FI (después de bajar la tasa) | 2.25 MHz | 4.8 MHz |
 | RF y mezclador | 20.65 MHz | 48 MHz |
 
-Cada etapa trabaja a la tasa que necesita, y entre etapas se interpola o se decima por 10. Todos los filtros son FIR diseñados con ventana de Kaiser (60 dB de rechazo) en `disenar_fir_kaiser.m`, sin toolboxes.
+Cada etapa trabaja a la tasa que necesita. Entre etapas, los bloques «Subir tasa 1 a 10» (con un filtro interpolador) y «Bajar tasa 10 a 1» (después de un filtro antitraslape, diap. 400) cambian la frecuencia de muestreo por 10. Todos los filtros son FIR diseñados con ventana de Kaiser (60 dB de rechazo) en `disenar_fir_kaiser.m`, sin toolboxes.
 
 ### 3.7 Prénfasis y deénfasis
 
@@ -121,6 +121,7 @@ Como indica el curso (diap. 384), el prénfasis va antes del modulador y el deé
 - Prénfasis: y[n] = g·(x[n] − a·x[n−1]).
 - Deénfasis: el inverso exacto, y[n] = x[n]/g + a·y[n−1].
 - Con f₀ = 30 kHz: a = 0.675 y g = 1.20. El factor g mantiene la misma desviación pico.
+- En el modelo son los bloques «Filtro de preénfasis», al final del transmisor, y «Filtro de deénfasis», después del filtro posdetección. En la radio se activan con una casilla.
 
 Sin ruido, los dos filtros se cancelan y no cambian nada. Con ruido, el prénfasis no reduce el ruido total, lo **reparte**. La teoría da:
 
@@ -141,6 +142,19 @@ Se usa la definición del curso (Haykin, diap. 377): (SNR)_C = (A_c²/2) / (W·N
 ```
 Transmisor FDM → Modulador FM → Canal → Receptor superheterodino → Demultiplexor FDM
 ```
+
+Las señales principales llevan nombre con la notación del curso:
+
+| Señal | Qué es | Diap. |
+|---|---|---|
+| x1(t), x2(t), x3(t) | Los tres audios | 264 |
+| m(t) multiplex | Mensaje que entra al modulador FM | 309, 384 |
+| s(t) señal FM | Señal modulada | 365 |
+| x(t) = s(t) + w(t) | Lo que llega al receptor (w(t) es el ruido) | 365 |
+| m(t) recuperado | Multiplex a la salida del receptor | — |
+| audio 1, 2, 3 recuperado | Salidas del demultiplexor | — |
+
+Los bloques llevan nombres en español con los términos del curso. Dentro del receptor: «Sección de RF (preselector)», «Oscilador local», «Mezclador», «Filtro antitraslape», «Sección de FI», «Demodulador FM», «Filtro posdetección» y «Filtro de deénfasis». En el demultiplexor, cada canal tiene «pasabanda», «oscilador local», «detector coherente» y «pasabajos 15 kHz».
 
 Ningún bloque tiene números escritos a mano: todos leen la estructura `P` de `params_sistema.m`. Ese archivo también revisa el diseño antes de simular: bandas dentro de 120 kHz, Nyquist, imagen rechazada, producto suma fuera de la FI y filtros de 60 dB.
 
