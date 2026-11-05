@@ -14,6 +14,8 @@ Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, script
   - [ ] lo mismo con la casilla de prénfasis encendida → SDR casi igual
   - [ ] el mensaje de estado muestra la desviación usada (debe ser ≤ 100 %)
 
+- [ ] Abrir `sistema_fdm_fm.slx` y revisar el diagrama (nivel principal y cada subsistema). Se ordena solo con el «Auto Arrange» de Simulink, y las señales principales llevan nombre (x1–x3, m_n, s_FM, r, m_hat, y1–y3). Si algún subsistema queda confuso, sobre todo `Demodulador_FM`, que tiene líneas cruzadas, avisar cuál y cómo se ve (una captura sirve).
+
 ## 2. `graficas_sistema` (~1 min)
 
 - [ ] Salen 5 figuras: audios, multiplex, FM, receptor, audios recuperados.

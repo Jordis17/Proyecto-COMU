@@ -46,7 +46,7 @@ function construir_modelo(nombre)
         'FDM DSB-SC: LPF 15 kHz, interpolación x10 por inserción de ceros, subportadoras 20/60/100 kHz nom, m_n = m/3, prénfasis (opcional)');
 
     for k = 1:3
-        add_line(mdl, sprintf('Audio%d/1', k), sprintf('Transmisor_FDM/%d', k), 'autorouting', 'on');
+        nombrar(add_line(mdl, sprintf('Audio%d/1', k), sprintf('Transmisor_FDM/%d', k), 'autorouting', 'on'), sprintf('x%d', k));
     end
 
     %% ---------------- Modulador FM ----------------
@@ -55,14 +55,14 @@ function construir_modelo(nombre)
     construir_modulador_fm(fm);
     set_param(fm, 'Description', ...
         'Interpolación x100 en dos etapas x10 (fs_m -> fs_fi -> fs_rf) y FM: s = Ac cos(2 pi fc t + 2 pi kf * suma(m_n)/fs_rf)');
-    add_line(mdl, 'Transmisor_FDM/1', 'Modulador_FM/1', 'autorouting', 'on');
+    nombrar(add_line(mdl, 'Transmisor_FDM/1', 'Modulador_FM/1', 'autorouting', 'on'), 'm_n');
 
     %% ---------------- Canal: ideal o AWGN ----------------
     ch = [mdl '/Canal'];
     add_block('built-in/Subsystem', ch, 'Position', caja(720, 85, 120, 60));
     construir_canal(ch);
     set_param(ch, 'Description', 'r = s + n, n gaussiano de varianza P.sigma_ruido^2 (0 = canal ideal)');
-    add_line(mdl, 'Modulador_FM/1', 'Canal/1', 'autorouting', 'on');
+    nombrar(add_line(mdl, 'Modulador_FM/1', 'Canal/1', 'autorouting', 'on'), 's_FM');
 
     %% ---------------- Receptor superheterodino ----------------
     rx = [mdl '/Receptor_Superheterodino'];
@@ -70,14 +70,14 @@ function construir_modelo(nombre)
     construir_receptor(rx);
     set_param(rx, 'Description', ['Sección RF (preselector en f_c) -> mezclador con LO = f_c - f_FI -> ' ...
         'pasabajos + decimación -> pasabanda FI 1.7 MHz -> demodulador FM en cuadratura -> filtro posdetección -> deénfasis (opcional)']);
-    add_line(mdl, 'Canal/1', 'Receptor_Superheterodino/1', 'autorouting', 'on');
+    nombrar(add_line(mdl, 'Canal/1', 'Receptor_Superheterodino/1', 'autorouting', 'on'), 'r');
 
     %% ---------------- Demultiplexor FDM ----------------
     dm = [mdl '/Demultiplexor_FDM'];
     add_block('built-in/Subsystem', dm, 'Position', caja(1140, 70, 160, 200));
     construir_demux(dm);
     set_param(dm, 'Description', 'Por canal: BPF -> x 2cos(2 pi f_k (t - tau_k)) -> LPF 15 kHz -> decimación a fs_a');
-    add_line(mdl, 'Receptor_Superheterodino/1', 'Demultiplexor_FDM/1', 'autorouting', 'on');
+    nombrar(add_line(mdl, 'Receptor_Superheterodino/1', 'Demultiplexor_FDM/1', 'autorouting', 'on'), 'm_hat');
 
     %% ---------------- Registro de señales ----------------
     a_workspace(mdl, 'Log_m_n',  'sim_m_n',  caja(480, 230, 90, 30));
@@ -98,10 +98,11 @@ function construir_modelo(nombre)
     add_line(mdl, 'Receptor_Superheterodino/3', 'Log_mezcla/1','autorouting', 'on');
     for k = 1:3
         a_workspace(mdl, sprintf('Log_audio%d', k), sprintf('sim_y%d', k), caja(1380, 75 + 70*(k-1), 90, 30));
-        add_line(mdl, sprintf('Demultiplexor_FDM/%d', k), sprintf('Log_audio%d/1', k), 'autorouting', 'on');
+        nombrar(add_line(mdl, sprintf('Demultiplexor_FDM/%d', k), sprintf('Log_audio%d/1', k), 'autorouting', 'on'), sprintf('y%d', k));
     end
 
     set_param(mdl, 'Description', 'Sistema FDM + FM + receptor superheterodino');
+    ordenar_diagrama(mdl);
     save_system(mdl, fullfile(pwd, [mdl '.slx']));
     try
         fprintf('Multitarea: %s\n', get_param(mdl, 'EnableMultiTasking'));
@@ -421,6 +422,24 @@ function a_workspace(sys, nombre_bloque, variable, pos, max_puntos)
     add_block('simulink/Sinks/To Workspace', [sys '/' nombre_bloque], ...
         'VariableName', variable, 'SaveFormat', 'Array', 'MaxDataPoints', max_puntos, ...
         'SampleTime', '-1', 'Position', pos);
+end
+
+function nombrar(linea, nombre)
+% Pone nombre a una línea de señal (se ve sobre la línea en el diagrama).
+    try, set_param(linea, 'Name', nombre); catch, end
+end
+
+function ordenar_diagrama(mdl)
+% Ordena el diagrama principal y cada subsistema con el auto-ordenado de Simulink
+% (el mismo comando "Auto Arrange" del menú Format). Si la versión no lo tiene, se deja igual.
+    sistemas = [{mdl}; find_system(mdl, 'LookUnderMasks', 'all', 'BlockType', 'SubSystem')];
+    for i = numel(sistemas):-1:1          % de adentro hacia afuera
+        try
+            Simulink.BlockDiagram.arrangeSystem(sistemas{i});
+        catch err
+            if i == 1, fprintf('Aviso: no se pudo ordenar el diagrama (%s).\n', err.message); end
+        end
+    end
 end
 
 function p = caja(x, y, w, h)
