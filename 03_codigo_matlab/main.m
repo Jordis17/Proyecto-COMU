@@ -18,6 +18,7 @@
 %     probar_audio_real.m   pasa 3 WAV reales por el sistema y guarda los recuperados
 %     graficar_espectro.m   espectro sin toolboxes (Welch)
 %     comparar_senales.m    SDR entre el audio original y el recuperado
+%     preparar_entrega.m    (solo para el equipo) arma la carpeta y el .zip de entrega
 %     audios/audio1..3.wav  (opcional) audios reales a 48 kHz para el modo 'audio'
 
 clc;

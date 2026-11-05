@@ -38,7 +38,6 @@ Reglas de trabajo (vienen de las instrucciones del proyecto, archivo `07_instruc
 | `02_diseno/diseno_final.md` | **Documento principal**: resumen corto del diseño, resultados y propuesta del video |
 | `02_diseno/01_diagnostico_y_diseno_FDM_FM.md` | Detalle completo: diagnóstico de errores, cálculos y estado de las etapas 0–8 |
 | `02_diseno/prenfasis_deenfasis.md` | Detalle del prénfasis/deénfasis |
-| `02_diseno/analisis_proyecto_fdm_fm.md`, `diagnostico_ingenieria_comunicaciones.md` | Diagnósticos previos (de otra IA). Referencia, revisar críticamente |
 | `03_codigo_matlab/` | Todo el código del proyecto (17 archivos `.m`) |
 | `04_verificacion_python/proto_fdm_fm.py` | Prototipo en Python usado al inicio para validar el diseño |
 | `05_material_curso/presentacion_curso_OCR.txt` | Texto OCR (en inglés aproximado, escaneo) de las 620 diapositivas del curso, separadas por `===== DIAPOSITIVA NNN =====` |
@@ -87,6 +86,7 @@ main                 % tabla de diseño + genera el .slx si hace falta + abre la
 graficas_sistema     % gráficas de cada etapa con canal ideal (~1 min)
 analisis_awgn        % AWGN sin y con prénfasis/deénfasis (~8-10 min)
 probar_audio_real    % 3 WAV reales en audios/ -> audios recuperados en WAV (~9 min para 2 s)
+preparar_entrega     % copia la entrega a ../../entrega_FDM_FM, la revisa y crea el .zip
 ```
 
 Pruebas internas del equipo (no van en la entrega), en `03_codigo_matlab/verificacion/`:

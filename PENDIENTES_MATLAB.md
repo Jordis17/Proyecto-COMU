@@ -37,6 +37,13 @@ Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, script
 - [ ] Anotar el SDR de cada audio y escuchar los archivos `recuperado1..3.wav`: ¿se reconocen?
 - Opcional: repetir con `snr_c = 25` y con `enfasis = true` (variables al inicio del script).
 
+## 5. `preparar_entrega` (al final, < 1 min)
+
+- [ ] Crea la carpeta `entrega_FDM_FM` (dos niveles arriba de `03_codigo_matlab`) y `entrega_FDM_FM.zip`.
+- [ ] Todas las líneas deben salir `[OK]`, sin `[FALLA]`.
+- [ ] Si avisa que faltan audios, copiar los WAV a `audios/` y volver a correrlo.
+- [ ] Prueba final: abrir MATLAB nuevo, ir a `entrega_FDM_FM` y correr `main`.
+
 ## Si algo sale distinto
 
 | Síntoma | Causa probable |

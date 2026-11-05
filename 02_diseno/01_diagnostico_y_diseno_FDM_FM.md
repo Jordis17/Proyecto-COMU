@@ -15,7 +15,6 @@ Sistema: 3 audios → FDM → FM → canal (ideal / AWGN) → receptor superhete
 
 > **Fuentes:**
 > - `Intrucciones originales.md` (enunciado).
-> - Los dos diagnósticos previos.
 > - `Comunicaciones Eléctricas.pdf`: 620 diapositivas escaneadas, leídas mediante OCR. Diapositivas clave: 225–243 (DSB-SC, detección coherente, error de fase, piloto), 244–246 (FM estéreo), 263–266 (FDM), 309–328 (índice, Carson, Bessel, DR), 342–354 (discriminadores, PLL), 356–361 (superheterodino, imagen), 362–387 (ruido en FM, umbral, prénfasis).
 > - Tomasi (texto). Haykin y Stremler están escaneados: se usan a través de la presentación, que cita a Haykin.
 >
@@ -144,32 +143,9 @@ Por eso se implementa con AWGN. Se coloca donde indica el curso [diap. 384]: el 
 
 ---
 
-## 4. Revisión crítica de los diagnósticos previos
+## 4. (Eliminada)
 
-### 4.1 Diagnóstico 1
-
-**Correcto:**
-- La trampa de la tabla.
-- Carson con f_m del multiplex.
-- FI < f_m.
-- Ruido ∝ f² y umbral.
-- La doble selección de canal.
-
-**Imprecisiones:**
-- **La interpretación B de los 120 kHz es descartable.** El texto dice «para la señal multiplexada». Además, B_T ≤ 120 kHz exigiría Δf + f_m ≤ 60 kHz: no caben tres canales DSB-SC y con SSB quedaría Δf ≈ 0–5 kHz.
-- **«La sincronización DSB-SC es trivial con canal ideal».** No lo es: el retardo de los filtros desfasa las subportadoras (E5, curso diap. 238).
-- **«La selectividad no se demuestra».** Con AWGN, el preselector evita que se pliegue el ruido de la banda imagen, y se puede añadir una señal en la imagen.
-- **No advierte la invariancia del cómputo frente a K.**
-- **Menciona una rúbrica** que no aparece en el enunciado disponible.
-
-### 4.2 Diagnóstico 2
-
-Coherente en lo esencial.
-
-**Mejorable:**
-- **Δf = 25 kHz** (DR = 0.22). Según la figura de mérito del curso, la SNR de salida es ∝ Δf². Con 150 kHz, la mejora es (150/25)² = 36 → **+15.6 dB**.
-- **No concluye una arquitectura.**
-- **No cuantifica el desfase de DSB-SC.**
+Esta sección comentaba dos diagnósticos previos que ya se borraron del proyecto. Lo útil de ellos quedó incorporado en las secciones 2, 3 y 6.
 
 ---
 
