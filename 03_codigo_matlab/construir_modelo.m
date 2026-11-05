@@ -46,7 +46,7 @@ function construir_modelo(nombre)
         'FDM DSB-SC: LPF 15 kHz, interpolación x10 por inserción de ceros, subportadoras 20/60/100 kHz nom, m_n = m/3, prénfasis (opcional)');
 
     for k = 1:3
-        nombrar(add_line(mdl, sprintf('Audio%d/1', k), sprintf('Transmisor_FDM/%d', k), 'autorouting', 'on'), sprintf('x%d', k));
+        nombrar(add_line(mdl, sprintf('Audio%d/1', k), sprintf('Transmisor_FDM/%d', k), 'autorouting', 'on'), sprintf('x%d(t) audio %d', k, k));
     end
 
     %% ---------------- Modulador FM ----------------
@@ -55,14 +55,14 @@ function construir_modelo(nombre)
     construir_modulador_fm(fm);
     set_param(fm, 'Description', ...
         'Interpolación x100 en dos etapas x10 (fs_m -> fs_fi -> fs_rf) y FM: s = Ac cos(2 pi fc t + 2 pi kf * suma(m_n)/fs_rf)');
-    nombrar(add_line(mdl, 'Transmisor_FDM/1', 'Modulador_FM/1', 'autorouting', 'on'), 'm_n');
+    nombrar(add_line(mdl, 'Transmisor_FDM/1', 'Modulador_FM/1', 'autorouting', 'on'), 'm(t) multiplex');
 
     %% ---------------- Canal: ideal o AWGN ----------------
     ch = [mdl '/Canal'];
     add_block('built-in/Subsystem', ch, 'Position', caja(720, 85, 120, 60));
     construir_canal(ch);
     set_param(ch, 'Description', 'r = s + n, n gaussiano de varianza P.sigma_ruido^2 (0 = canal ideal)');
-    nombrar(add_line(mdl, 'Modulador_FM/1', 'Canal/1', 'autorouting', 'on'), 's_FM');
+    nombrar(add_line(mdl, 'Modulador_FM/1', 'Canal/1', 'autorouting', 'on'), 's(t) señal FM');
 
     %% ---------------- Receptor superheterodino ----------------
     rx = [mdl '/Receptor_Superheterodino'];
@@ -70,14 +70,14 @@ function construir_modelo(nombre)
     construir_receptor(rx);
     set_param(rx, 'Description', ['Sección RF (preselector en f_c) -> mezclador con LO = f_c - f_FI -> ' ...
         'pasabajos + decimación -> pasabanda FI 1.7 MHz -> demodulador FM en cuadratura -> filtro posdetección -> deénfasis (opcional)']);
-    nombrar(add_line(mdl, 'Canal/1', 'Receptor_Superheterodino/1', 'autorouting', 'on'), 'r');
+    nombrar(add_line(mdl, 'Canal/1', 'Receptor_Superheterodino/1', 'autorouting', 'on'), 'x(t) = s(t) + w(t)');
 
     %% ---------------- Demultiplexor FDM ----------------
     dm = [mdl '/Demultiplexor_FDM'];
     add_block('built-in/Subsystem', dm, 'Position', caja(1140, 70, 160, 200));
     construir_demux(dm);
     set_param(dm, 'Description', 'Por canal: BPF -> x 2cos(2 pi f_k (t - tau_k)) -> LPF 15 kHz -> decimación a fs_a');
-    nombrar(add_line(mdl, 'Receptor_Superheterodino/1', 'Demultiplexor_FDM/1', 'autorouting', 'on'), 'm_hat');
+    nombrar(add_line(mdl, 'Receptor_Superheterodino/1', 'Demultiplexor_FDM/1', 'autorouting', 'on'), 'm(t) recuperado');
 
     %% ---------------- Registro de señales ----------------
     a_workspace(mdl, 'Log_m_n',  'sim_m_n',  caja(480, 230, 90, 30));
@@ -98,10 +98,11 @@ function construir_modelo(nombre)
     add_line(mdl, 'Receptor_Superheterodino/3', 'Log_mezcla/1','autorouting', 'on');
     for k = 1:3
         a_workspace(mdl, sprintf('Log_audio%d', k), sprintf('sim_y%d', k), caja(1380, 75 + 70*(k-1), 90, 30));
-        nombrar(add_line(mdl, sprintf('Demultiplexor_FDM/%d', k), sprintf('Log_audio%d/1', k), 'autorouting', 'on'), sprintf('y%d', k));
+        nombrar(add_line(mdl, sprintf('Demultiplexor_FDM/%d', k), sprintf('Log_audio%d/1', k), 'autorouting', 'on'), sprintf('audio %d recuperado', k));
     end
 
     set_param(mdl, 'Description', 'Sistema FDM + FM + receptor superheterodino');
+    nombres_del_curso(mdl);
     ordenar_diagrama(mdl);
     save_system(mdl, fullfile(pwd, [mdl '.slx']));
     try
@@ -427,6 +428,124 @@ end
 function nombrar(linea, nombre)
 % Pone nombre a una línea de señal (se ve sobre la línea en el diagrama).
     try, set_param(linea, 'Name', nombre); catch, end
+end
+
+function nombres_del_curso(mdl)
+% Cambia los nombres internos de los bloques por nombres fáciles de leer, con la notación
+% de la presentación del curso: m(t) mensaje, s(t) señal FM, w(t) ruido, x(t) = s(t) + w(t)
+% (diap. 309, 365, 384); sección de RF, oscilador local, mezclador, sección de FI (diap. 358);
+% detector coherente (diap. 230); filtro antitraslape (diap. 400); filtro posdetección (diap. 376).
+% Se hace al final, con todo ya conectado: las líneas siguen unidas al cambiar el nombre.
+    tx = [mdl '/Transmisor_FDM'];  fm = [mdl '/Modulador_FM'];  ch = [mdl '/Canal'];
+    rx = [mdl '/Receptor_Superheterodino'];  dem = [rx '/Demodulador_FM'];  dm = [mdl '/Demultiplexor_FDM'];
+    L = {};
+    for k = 1:3
+        r = sprintf('%s/Canal%d_DSB', tx, k);
+        L = [L; {
+            sprintf('%s/Audio%d', mdl, k),          sprintf('Audio %d', k);
+            sprintf('%s/Log_audio%d', mdl, k),      sprintf('Guardar audio %d', k);
+            sprintf('%s/audio%d', tx, k),           sprintf('x%d(t)', k);
+            [r '/x'],                               'x(t)';
+            [r '/LPF_audio_15kHz'],                 'Pasabajos 15 kHz';
+            [r '/Cambio_tasa'],                     'Subir tasa 1 a 10';
+            [r '/Tren_pulsos_L1'],                  'Tren de pulsos';
+            [r '/Insercion_ceros'],                 'Inserción de ceros';
+            [r '/Filtro_interpolador'],             'Filtro interpolador';
+            [r '/Subportadora'],                    sprintf('Subportadora cos(2 pi f%d t)', k);
+            [r '/Modulador_DSB'],                   'Modulador DSB-SC';
+            [r '/y'],                               'señal DSB-SC';
+            r,                                      sprintf('Canal %d DSB-SC', k);
+            sprintf('%s/Canal%d_BPF', dm, k),       sprintf('Canal %d pasabanda', k);
+            sprintf('%s/Canal%d_subportadora_RX', dm, k), sprintf('Canal %d oscilador local', k);
+            sprintf('%s/Canal%d_deteccion_coherente', dm, k), sprintf('Canal %d detector coherente', k);
+            sprintf('%s/Canal%d_LPF_15kHz', dm, k), sprintf('Canal %d pasabajos 15 kHz', k);
+            sprintf('%s/Canal%d_decimacion_M3', dm, k), sprintf('Canal %d bajar tasa 10 a 1', k);
+            sprintf('%s/audio%d', dm, k),           sprintf('audio %d recuperado', k)}]; %#ok<AGROW>
+    end
+    for e = 'ab'
+        L = [L; {
+            [fm '/Cambio_tasa_' e],                 ['Subir tasa 1 a 10 (' e ')'];
+            [fm '/Tren_pulsos_' e],                 ['Tren de pulsos (' e ')'];
+            [fm '/Insercion_ceros_' e],             ['Inserción de ceros (' e ')'];
+            [fm '/Interpolador_' e],                ['Filtro interpolador (' e ')']}]; %#ok<AGROW>
+    end
+    L = [L; {
+        [tx '/Suma_FDM'],               'Suma de los 3 canales';
+        [tx '/Normalizacion'],          'Normalización (dividir entre 3)';
+        [tx '/Prenfasis'],              'Filtro de preénfasis';
+        [tx '/m_n'],                    'm(t) al modulador';
+        [tx '/m'],                      'multiplex m(t)';
+        [fm '/m_n'],                    'm(t)';
+        [fm '/Integrador'],             'Integrador';
+        [fm '/Ganancia_2pi_kf'],        '2 pi kf';
+        [fm '/Reloj'],                  'Reloj t';
+        [fm '/Ganancia_2pi_fc'],        '2 pi fc';
+        [fm '/Fase_total'],             'Fase total';
+        [fm '/cos'],                    'cos';
+        [fm '/Amplitud_Ac'],            'Amplitud Ac';
+        [fm '/s_FM'],                   's(t)';
+        [fm '/m_rf'],                   'm(t) a tasa RF';
+        [ch '/s'],                      's(t)';
+        [ch '/Ruido_gaussiano'],        'Ruido blanco gaussiano';
+        [ch '/sigma'],                  'Nivel de ruido';
+        [ch '/Suma_ruido'],             'Suma de ruido w(t)';
+        [ch '/r'],                      'x(t)';
+        [rx '/r'],                      'x(t)';
+        [rx '/Seccion_RF_preselector'], 'Sección de RF (preselector)';
+        [rx '/Oscilador_local'],        'Oscilador local';
+        [rx '/LPF_antialiasing_FI'],    'Filtro antitraslape';
+        [rx '/Decimacion_M1'],          'Bajar tasa 10 a 1 (FI)';
+        [rx '/Seccion_FI_pasabanda'],   'Sección de FI';
+        [rx '/Escala_1_kf'],            'Dividir entre kf';
+        [rx '/Filtro_posdeteccion'],    'Filtro posdetección';
+        [rx '/Decimacion_M2'],          'Bajar tasa 10 a 1 (multiplex)';
+        [rx '/Deshace_normalizacion'],  'Multiplicar por 3';
+        [rx '/Deenfasis'],              'Filtro de deénfasis';
+        [rx '/m_hat'],                  'm(t) recuperado';
+        [rx '/fi'],                     'señal de FI';
+        [rx '/mezcla'],                 'salida del mezclador';
+        [dem '/fi'],                    'señal de FI';
+        [dem '/cos_FI'],                'cos(2 pi fFI t)';
+        [dem '/menos_sen_FI'],          '-sen(2 pi fFI t)';
+        [dem '/Mezcla_I'],              'Mezcla en fase (I)';
+        [dem '/Mezcla_Q'],              'Mezcla en cuadratura (Q)';
+        [dem '/LPF_I'],                 'Pasabajos I';
+        [dem '/LPF_Q'],                 'Pasabajos Q';
+        [dem '/Retardo_I'],             'Muestra anterior de I';
+        [dem '/Retardo_Q'],             'Muestra anterior de Q';
+        [dem '/I_I1'],                  'I por I anterior';
+        [dem '/Q_Q1'],                  'Q por Q anterior';
+        [dem '/Q_I1'],                  'Q por I anterior';
+        [dem '/I_Q1'],                  'I por Q anterior';
+        [dem '/Re'],                    'Parte real';
+        [dem '/Im'],                    'Parte imaginaria';
+        [dem '/atan2'],                 'Ángulo girado (atan2)';
+        [dem '/fs_sobre_2pi'],          'Convertir a frecuencia';
+        [dem '/f_inst'],                'frecuencia instantánea';
+        dem,                            'Demodulador FM';
+        [dm '/m_hat'],                  'm(t) recuperado';
+        [mdl '/Log_m_n'],               'Guardar m(t) al modulador';
+        [mdl '/Log_m'],                 'Guardar multiplex m(t)';
+        [mdl '/Log_s_rf'],              'Guardar s(t)';
+        [mdl '/Log_m_rf'],              'Guardar m(t) a tasa RF';
+        [mdl '/Log_mezcla'],            'Guardar salida del mezclador';
+        [mdl '/Log_r_rf'],              'Guardar x(t)';
+        [mdl '/Log_fi'],                'Guardar señal de FI';
+        [mdl '/Log_m_hat'],             'Guardar m(t) recuperado';
+        tx,                             'Transmisor FDM';
+        fm,                             'Modulador FM';
+        rx,                             'Receptor superheterodino';
+        dm,                             'Demultiplexor FDM'}];
+    % primero los bloques más internos, para que la ruta de cada uno siga siendo válida
+    nivel = cellfun(@(c) numel(strfind(c, '/')), L(:,1));
+    [~, orden] = sort(nivel, 'descend');
+    for i = orden(:).'
+        try
+            set_param(L{i,1}, 'Name', L{i,2});
+        catch err
+            fprintf('Aviso: no se pudo renombrar %s (%s).\n', L{i,1}, err.message);
+        end
+    end
 end
 
 function ordenar_diagrama(mdl)

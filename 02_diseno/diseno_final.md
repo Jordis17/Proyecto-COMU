@@ -139,7 +139,7 @@ Se usa la definición del curso (Haykin, diap. 377): (SNR)_C = (A_c²/2) / (W·N
 **Modelo Simulink** (`sistema_fdm_fm.slx`, generado por `construir_modelo.m`). Solo usa bloques básicos, con solver discreto de paso fijo. Tiene cinco subsistemas:
 
 ```
-Transmisor_FDM → Modulador_FM → Canal → Receptor_Superheterodino → Demultiplexor_FDM
+Transmisor FDM → Modulador FM → Canal → Receptor superheterodino → Demultiplexor FDM
 ```
 
 Ningún bloque tiene números escritos a mano: todos leen la estructura `P` de `params_sistema.m`. Ese archivo también revisa el diseño antes de simular: bandas dentro de 120 kHz, Nyquist, imagen rechazada, producto suma fuera de la FI y filtros de 60 dB.

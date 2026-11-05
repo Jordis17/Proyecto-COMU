@@ -14,7 +14,7 @@ Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, script
   - [ ] lo mismo con la casilla de prénfasis encendida → SDR casi igual
   - [ ] el mensaje de estado muestra la desviación usada (debe ser ≤ 100 %)
 
-- [ ] Abrir `sistema_fdm_fm.slx` y revisar el diagrama (nivel principal y cada subsistema). Se ordena solo con el «Auto Arrange» de Simulink, y las señales principales llevan nombre (x1–x3, m_n, s_FM, r, m_hat, y1–y3). Si algún subsistema queda confuso, sobre todo `Demodulador_FM`, que tiene líneas cruzadas, avisar cuál y cómo se ve (una captura sirve).
+- [ ] Abrir `sistema_fdm_fm.slx` y revisar el diagrama (nivel principal y cada subsistema). Se ordena solo con el «Auto Arrange» de Simulink, las señales principales llevan nombre con la notación del curso (x1(t)–x3(t), m(t) multiplex, s(t) señal FM, x(t) = s(t) + w(t), m(t) recuperado, audio k recuperado) y los bloques tienen nombres en español (Sección de RF, Oscilador local, Sección de FI, Filtro posdetección, Detector coherente…). Si al generar el modelo aparece algún «Aviso: no se pudo renombrar…», copiar el mensaje. Si algún subsistema queda confuso, sobre todo «Demodulador FM», que tiene líneas cruzadas, avisar cuál y cómo se ve (una captura sirve).
 
 ## 2. `graficas_sistema` (~1 min)
 
@@ -51,7 +51,7 @@ Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, script
 
 | Síntoma | Causa probable |
 |---|---|
-| Error en el bloque `Deenfasis` con el prénfasis apagado | Simulink no acepta el denominador `[1 0]`. Avisar y se cambia. |
+| Error en el bloque «Filtro de deénfasis» con el prénfasis apagado | Simulink no acepta el denominador `[1 0]`. Avisar y se cambia. |
 | SDR con canal ideal mucho menor que antes | Se coló un cambio en los retardos τ_k. Comparar con la tabla de `params_sistema`. |
 | «Falla de diseño: ...» al iniciar | Alguna de las 9 comprobaciones falló. Copiar el texto completo. |
 | Error de memoria en `probar_audio_real` | Bajar `T_real` a 1 s. |
