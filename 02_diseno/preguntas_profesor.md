@@ -1,0 +1,144 @@
+# Preguntas probables del profesor
+
+Respuestas cortas para practicar. Las cifras salen de `diseno_final.md`. Lo importante es poder explicar el **porqué** con sus palabras, no repetir el texto.
+
+---
+
+## A. Enunciado y escalamiento
+
+**1. ¿Por qué dicen que la tabla de escalamiento está mal?**
+Divide por 100 la portadora y la FI, pero no el audio ni el multiplex. El multiplex pasa de ocupar el 1.2 % de la portadora al 120 %. Con 530 kHz de Carson, la FM quedaría en 100 ± 265 kHz y cruzaría 0 Hz. Además, la FI (17 kHz) quedaría por debajo del mensaje (115 kHz).
+
+**2. ¿Por qué K = 100 y no otro valor?**
+Cualquier K mantiene las proporciones si se aplica a todo. Con 100 se conservan los valores de portadora y FI que da la propia tabla (100 kHz y 17 kHz), y las cuentas quedan fáciles.
+
+**3. ¿Escalar ahorra cálculo?**
+No por sí solo. Un segundo real se convierte en 100 s simulados, pero con 100 veces menos muestras por segundo, y el total es el mismo. Lo que sí ahorra es que cada etapa trabaje a su propia frecuencia de muestreo: 48 kHz, 480 kHz, 4.8 MHz y 48 MHz.
+
+**4. Si todo está escalado, ¿cómo escuchan el audio?**
+Las muestras del audio no se cambian; solo se interpretan como si estuvieran 100 veces más separadas en el tiempo. Al reproducirlas a 48 kHz se escucha el audio original.
+
+**5. ¿Por qué no siguieron la regla de muestrear a 5–10 veces el ancho de banda?**
+En pasabanda lo que importa es la frecuencia más alta, no el ancho. El producto suma del mezclador llega a 20.65 MHz, así que Nyquist pide más de 41.3 MHz. Con la regla del enunciado (5–10 × 530 kHz) ni siquiera se representaría la portadora.
+
+---
+
+## B. FDM
+
+**6. ¿Por qué DSB-SC y no SSB?**
+Un audio real tiene contenido casi desde 0 Hz, así que las dos bandas laterales quedan pegadas a la subportadora. Separar una sola exigiría un filtro casi ideal. Con DSB-SC basta un multiplicador, y los 120 kHz alcanzan para tres canales de 30 kHz con guardas.
+
+**7. ¿Y por qué no AM con portadora, que se demodula con un detector de envolvente?**
+Las portadoras se comerían parte de la desviación de la FM sin llevar información, y eso empeora la SNR. Además, no hace falta: con DSB-SC y detección coherente funciona bien.
+
+**8. ¿Para qué sirven las guardas de 10 kHz?**
+Los filtros reales necesitan una banda de transición. Con 10 kHz, los filtros de cada canal pasan su banda completa y rechazan 60 dB la del vecino.
+
+**9. ¿Por qué dividen el multiplex entre 3?**
+Cada audio tiene pico 1, así que la suma puede llegar a 3. Al dividir entre 3, |m_n| ≤ 1 y la desviación nunca pasa de 150 kHz.
+
+**10. ¿Qué pasa si la subportadora del receptor no está en fase?**
+La salida queda multiplicada por cos φ (diap. 237–238). Los filtros retrasan la señal: sin compensar, las ganancias serían +0.09, −0.87 y −0.65. El canal 1 caería 21 dB. Por eso el receptor usa cos(2π f_k (t − τ_k)).
+
+**11. ¿Eso se puede hacer en un receptor real?**
+No exactamente, porque no se conoce el retardo. En la práctica se manda un tono piloto, como el de 19 kHz de la FM estéreo, o se usa un PLL. En la simulación el retardo es conocido y fijo, así que lo compensamos directamente. Lo dejamos como limitación.
+
+---
+
+## C. FM
+
+**12. ¿Cuál es el índice de modulación?**
+El mensaje tiene muchas frecuencias, así que no hay un único índice. Usamos la relación de desviación (diap. 328): DR = Δf / f_m,máx = 150 / 115 = 1.30.
+
+**13. ¿Por qué Carson con 115 kHz y no con 15 kHz?**
+Porque lo que entra al modulador es el multiplex, cuya frecuencia más alta es 115 kHz. Con 15 kHz se subestimaría mucho el ancho de banda.
+
+**14. ¿Por qué el ancho medido (unos 150 kHz) es menor que Carson (530 kHz)?**
+Carson supone un tono a la frecuencia máxima con la desviación máxima. En la práctica los tres audios casi nunca llegan juntos a su pico (la desviación real fue del 61 %), y la potencia está repartida en todo el multiplex. Carson es una cota para dimensionar, no el ancho exacto.
+
+**15. ¿Por qué Δf = 150 kHz?**
+La SNR de salida en FM crece con Δf² (figura de mérito, diap. 377–378), pero también crece el ancho de banda. Con 150 kHz la señal cabe con margen en la FI y en el muestreo. Pasar de 75 a 150 kHz da unos 6 dB más.
+
+**16. ¿Y si usaran una desviación mucho mayor?**
+Ganarían SNR, pero la FM sería más ancha. Entraría más ruido al filtro de FI, el umbral aparecería con una SNR más alta y la banda de FI quedaría más ajustada a la frecuencia de muestreo.
+
+---
+
+## D. Receptor superheterodino
+
+**17. ¿Qué es la frecuencia imagen y cómo la eliminan?**
+Es la otra frecuencia que, al mezclarse con el LO, también da 1.7 MHz: f_c − 2·f_FI = 6.6 MHz a 10 MHz. El preselector, antes del mezclador, deja pasar f_c ± 350 kHz y rechaza más de 60 dB desde ±1.55 MHz, así que la imagen, que está a 3.4 MHz de distancia, no pasa.
+
+**18. Si solo hay una emisora, ¿para qué el preselector?**
+Para el ruido. Sin preselector, el ruido de la banda imagen también llega a la FI. Lo medimos: con (SNR)_C = 25 dB, quitar el preselector empeora unos 3 dB, que es lo que predice la teoría (se duplica el ruido).
+
+**19. ¿Por qué inyección inferior, si los ejemplos del curso usan la superior?**
+Con la superior el producto suma llegaría a unos 24 MHz y haría falta muestrear a más de 48 MHz. Con la inferior cabe y el espectro no sale invertido. En radio AM se usa la superior por el rango de sintonía del oscilador, pero aquí el rango es solo de 9 a 11 MHz.
+
+**20. ¿Por qué 1.7 MHz es una FI válida?**
+Cumple la definición del curso (diap. 359): es menor que la portadora y mayor que el mensaje (115 kHz). Además, 1.7 MHz − 350 kHz > 0, así que la banda de FI no toca 0 Hz.
+
+**21. ¿Cómo se calcula el LO cuando cambio la portadora?**
+f_LO = f_c − 1.7 MHz, lo calcula `params_sistema.m`. Al mover la perilla también se recalculan la imagen y el preselector. La FI no cambia.
+
+**22. ¿Cómo demodulan la FM? En clase vimos discriminadores.**
+En cuadratura: bajamos la FI a 0 Hz con cos y −sen, y medimos cuánto gira la fase entre dos muestras. Eso es la frecuencia instantánea, f_i = (1/2π)·dφ/dt, que es exactamente lo que busca un discriminador. No necesita limitador. También probamos un discriminador como el del curso (limitador → derivador → envolvente) y dio peor calidad.
+
+**23. ¿Qué pasa si el receptor está desintonizado?**
+Con 600 kHz de error, la señal cae fuera del filtro de FI y el audio se pierde (SDR ≈ 0.9 dB). Con errores pequeños (50 kHz) sigue funcionando, porque la FI tiene margen y el pasabanda de cada canal elimina el nivel de DC que aparece.
+
+---
+
+## E. Ruido y prénfasis
+
+**24. ¿Cómo definen la SNR del canal?**
+Con la del curso (Haykin, diap. 377): (SNR)_C = (A_c²/2) / (W·N₀), con W = 120 kHz. El ruido se suma a la RF con varianza N₀·f_s/2.
+
+**25. ¿Por qué el canal 3 sale peor que el 1?**
+A la salida del discriminador el ruido crece con f² (diap. 385). El canal 3 está en 100 kHz y el canal 1 en 20 kHz. Integrando, la diferencia teórica es de unos 13 dB, y medimos unos 14 dB (los audios no tenían exactamente la misma potencia).
+
+**26. ¿Qué es el efecto umbral?**
+Cuando el ruido se hace comparable a la portadora, la fase da saltos y el demodulador produce picos. La calidad cae de golpe en vez de bajar poco a poco. En nuestro sistema aparece con una relación portadora a ruido de unos 11 dB en el ancho de Carson.
+
+**27. ¿Por qué no usaron el prénfasis con canal ideal?**
+Porque no hace falta: sin ruido el SDR ya es de unos 60 dB. Además, el prénfasis y el deénfasis son inversos, así que sin ruido se cancelan.
+
+**28. ¿Dónde pusieron el prénfasis y por qué ahí?**
+Antes del modulador FM y después del demodulador, como en la diap. 384. El mensaje que entra al modulador es el multiplex, así que se filtra el multiplex completo. Es un filtro de primer orden que sube las frecuencias altas; el deénfasis es su inverso exacto.
+
+**29. ¿Por qué el prénfasis empeora el canal 1?**
+Mantenemos la misma desviación pico para no cambiar el ancho de banda. Si se suben los canales altos, hay que bajar un poco el total, y el canal 1 queda con menos señal. El prénfasis no quita ruido en total: lo reparte. El canal 3 mejora unos 2 dB y el canal 1 pierde unos 6 dB, pero el canal 1 tenía SNR de sobra y el 3 era el que limitaba.
+
+**30. ¿Por qué no usaron el prénfasis de 75 µs de la radio FM?**
+En la FM comercial el audio principal está en banda base, donde el ruido crece dentro del propio audio. En nuestro canal 3 el ruido depende sobre todo de la posición de la subportadora, así que dentro del audio es casi plano y un prénfasis por audio casi no ayudaría.
+
+**31. ¿El prénfasis mueve el umbral?**
+No, porque la desviación y el ancho de banda son los mismos.
+
+---
+
+## F. Implementación
+
+**32. ¿Por qué hicieron sus propios filtros?**
+Uno de los dos no tiene DSP System Toolbox ni Signal Processing Toolbox. Diseñamos los FIR con ventana de Kaiser en `disenar_fir_kaiser.m`, que sube el orden hasta medir 60 dB de rechazo.
+
+**33. ¿Cómo saben que el modelo de Simulink está bien?**
+Escribimos la misma cadena en MATLAB puro y comparamos muestra por muestra: las diferencias fueron menores a 10⁻⁹. También medimos el SDR de los audios recuperados (unos 60 dB) y comparamos el ruido con la teoría (menos de 1 dB de diferencia).
+
+**34. ¿Qué es el SDR que reportan?**
+La potencia del audio original dividida entre la potencia del error, después de alinear el retardo y la ganancia. 60 dB significa que el error es un millón de veces más pequeño que la señal.
+
+**35. ¿Por qué tarda tanto la simulación?**
+La parte de RF va a 48 MHz nominales: un segundo de audio son 48 millones de muestras. En modo acelerado, un segundo de audio tarda unos 4–5 minutos.
+
+**36. ¿Qué se actualiza cuando cambio la portadora en la GUI?**
+Se recalculan los parámetros: LO, imagen y coeficientes del preselector. La GUI muestra los valores nuevos al instante, y al simular el modelo los usa, porque ningún bloque tiene números fijos.
+
+---
+
+## Cosas que conviene NO decir
+
+- «El prénfasis mejora todos los canales». No es cierto: los reparte.
+- «Carson da el ancho exacto». Es una aproximación para dimensionar.
+- «El escalamiento hace la simulación más rápida». Lo que la acelera es usar varias frecuencias de muestreo.
+- «En la vida real se compensa el retardo igual». En la vida real se usa un piloto o un PLL.
