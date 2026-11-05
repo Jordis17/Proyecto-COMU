@@ -2,8 +2,9 @@ function construir_modelo(nombre)
 %CONSTRUIR_MODELO  Genera el modelo Simulink del sistema a partir de bloques básicos.
 %   construir_modelo()            crea/reemplaza 'sistema_fdm_fm.slx' en la carpeta actual
 %
-%   ESTADO: etapas 1-6 -> fuentes, transmisor FDM (DSB-SC), modulador FM, canal (ideal/AWGN),
-%   receptor superheterodino y demultiplexor FDM. La GUI se agrega en la etapa 7.
+%   Contiene: fuentes, transmisor FDM (DSB-SC + prénfasis opcional), modulador FM, canal
+%   (ideal/AWGN), receptor superheterodino (con deénfasis opcional) y demultiplexor FDM.
+%   La GUI (radio_fdm_fm.m) solo cambia parámetros y llama a sim().
 %   El .slx siempre se puede regenerar ejecutando este script.
 %
 %   Los bloques NO contienen números escritos a mano: todo se lee de las variables del
@@ -20,8 +21,9 @@ function construir_modelo(nombre)
     %% Configuración del solver: discreto, paso fijo, una sola tarea [§8 del enunciado]
     set_param(mdl, 'SolverType', 'Fixed-step', 'Solver', 'FixedStepDiscrete', ...
         'FixedStep', 'auto', 'StopTime', 'fuente.T_stop');
-    % Una sola tarea para todas las tasas: así los Rate Transition no agregan retardo.
-    % (En modo multitarea, el paso de tasa lenta a rápida retrasa una muestra lenta.)
+    % Una sola tarea para todas las tasas. Aun así, cada Rate Transition de tasa lenta a
+    % rápida retrasa 1 muestra lenta (medido en verificar_etapa2); params_sistema lo incluye
+    % en tau_k con P.rt_retardo.
     try, set_param(mdl, 'EnableMultiTasking', 'off'); catch, end
     try, set_param(mdl, 'SolverMode', 'SingleTasking'); catch, end
     set_param(mdl, 'ReturnWorkspaceOutputs', 'on');
@@ -41,7 +43,7 @@ function construir_modelo(nombre)
     add_block('built-in/Subsystem', tx, 'Position', caja(220, 70, 160, 200));
     construir_tx_fdm(tx);
     set_param(tx, 'Description', ...
-        'FDM DSB-SC: LPF 15 kHz, interpolación x10 por inserción de ceros, subportadoras 20/60/100 kHz nom, m_n = m/3');
+        'FDM DSB-SC: LPF 15 kHz, interpolación x10 por inserción de ceros, subportadoras 20/60/100 kHz nom, m_n = m/3, prénfasis (opcional)');
 
     for k = 1:3
         add_line(mdl, sprintf('Audio%d/1', k), sprintf('Transmisor_FDM/%d', k), 'autorouting', 'on');
@@ -67,7 +69,7 @@ function construir_modelo(nombre)
     add_block('built-in/Subsystem', rx, 'Position', caja(900, 70, 170, 120));
     construir_receptor(rx);
     set_param(rx, 'Description', ['Sección RF (preselector en f_c) -> mezclador con LO = f_c - f_FI -> ' ...
-        'pasabajos + decimación -> pasabanda FI 1.7 MHz -> demodulador FM en cuadratura -> filtro posdetección']);
+        'pasabajos + decimación -> pasabanda FI 1.7 MHz -> demodulador FM en cuadratura -> filtro posdetección -> deénfasis (opcional)']);
     add_line(mdl, 'Canal/1', 'Receptor_Superheterodino/1', 'autorouting', 'on');
 
     %% ---------------- Demultiplexor FDM (etapa 6) ----------------
@@ -106,7 +108,7 @@ function construir_modelo(nombre)
         fprintf('Multitarea: %s\n', get_param(mdl, 'EnableMultiTasking'));
     catch
     end
-    fprintf('Modelo %s.slx creado (etapas 1-6: fuentes, FDM, FM, canal, superheterodino, demux).\n', mdl);
+    fprintf('Modelo %s.slx creado (fuentes, FDM, FM, canal, superheterodino, demux).\n', mdl);
 end
 
 % =========================================================================
@@ -127,9 +129,17 @@ function construir_tx_fdm(tx)
     add_block('simulink/Math Operations/Gain', [tx '/Normalizacion'], 'Gain', '1/P.normalizacion', ...
         'Position', caja(420, 165, 50, 30));
     add_line(tx, 'Suma_FDM/1', 'Normalizacion/1', 'autorouting', 'on');
-    add_block('built-in/Outport', [tx '/m_n'], 'Position', caja(520, 173, 30, 14));
-    add_block('built-in/Outport', [tx '/m'],   'Position', caja(520, 253, 30, 14));
-    add_line(tx, 'Normalizacion/1', 'm_n/1', 'autorouting', 'on');
+    % Prénfasis del multiplex (curso, diap. 384): y[n] = g (x[n] - a x[n-1]).
+    % Con P.enfasis = false, P.enf.num_tx = [1 0] y el bloque es un cable.
+    add_block('simulink/Discrete/Discrete Filter', [tx '/Prenfasis'], ...
+        'Numerator', 'P.enf.num_tx', 'Denominator', '1', 'SampleTime', '-1', ...
+        'Position', caja(500, 165, 80, 30));
+    set_param([tx '/Prenfasis'], 'Description', ...
+        'Prénfasis H(z) = g (1 - a z^-1): realza los canales altos antes del modulador FM');
+    add_block('built-in/Outport', [tx '/m_n'], 'Position', caja(620, 173, 30, 14));
+    add_block('built-in/Outport', [tx '/m'],   'Position', caja(620, 253, 30, 14));
+    add_line(tx, 'Normalizacion/1', 'Prenfasis/1', 'autorouting', 'on');
+    add_line(tx, 'Prenfasis/1', 'm_n/1', 'autorouting', 'on');
     add_line(tx, 'Suma_FDM/1', 'm/1', 'autorouting', 'on');
 end
 
@@ -296,7 +306,14 @@ function construir_receptor(rx)
         'Position', caja(1010, 67, 50, 30));
     add_block('simulink/Math Operations/Gain', [rx '/Deshace_normalizacion'], 'Gain', 'P.normalizacion', ...
         'Position', caja(1090, 67, 50, 30));
-    add_block('built-in/Outport', [rx '/m_hat'],  'Position', caja(1180, 75, 30, 14));
+    % Deénfasis justo después del demodulador (curso, diap. 384): inverso exacto del prénfasis,
+    % H(z) = (1/g) / (1 - a z^-1). Con P.enfasis = false es un cable.
+    add_block('simulink/Discrete/Discrete Filter', [rx '/Deenfasis'], ...
+        'Numerator', 'P.enf.num_rx', 'Denominator', 'P.enf.den_rx', 'SampleTime', '-1', ...
+        'Position', caja(1170, 67, 80, 30));
+    set_param([rx '/Deenfasis'], 'Description', ...
+        'Deénfasis H(z) = (1/g)/(1 - a z^-1): devuelve el multiplex a su forma original y atenúa el ruido de alta frecuencia');
+    add_block('built-in/Outport', [rx '/m_hat'],  'Position', caja(1290, 75, 30, 14));
     add_block('built-in/Outport', [rx '/fi'],     'Position', caja(650, 160, 30, 14));
     add_block('built-in/Outport', [rx '/mezcla'], 'Position', caja(300, 160, 30, 14));
 
@@ -311,7 +328,8 @@ function construir_receptor(rx)
     add_line(rx, 'Escala_1_kf/1', 'Filtro_posdeteccion/1', 'autorouting', 'on');
     add_line(rx, 'Filtro_posdeteccion/1', 'Decimacion_M2/1', 'autorouting', 'on');
     add_line(rx, 'Decimacion_M2/1', 'Deshace_normalizacion/1', 'autorouting', 'on');
-    add_line(rx, 'Deshace_normalizacion/1', 'm_hat/1', 'autorouting', 'on');
+    add_line(rx, 'Deshace_normalizacion/1', 'Deenfasis/1', 'autorouting', 'on');
+    add_line(rx, 'Deenfasis/1', 'm_hat/1', 'autorouting', 'on');
     add_line(rx, 'Seccion_FI_pasabanda/1', 'fi/1', 'autorouting', 'on');
     add_line(rx, 'Mezclador/1', 'mezcla/1', 'autorouting', 'on');
 end

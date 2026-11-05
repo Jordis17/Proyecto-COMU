@@ -28,6 +28,7 @@ function R = modelo_referencia(P, X)
         m  = m + xk .* cos(2*pi*P.f_sc(k)*t_m);         % 3) DSB-SC
     end
     m_n = m / P.normalizacion;                            % 4) |m_n| <= 1
+    m_n = filter(P.enf.num_tx, 1, m_n);                   % 4b) prénfasis (cable si P.enfasis = false)
 
     % 5) interpolación x L2 = L2a * L2b hasta la tasa de RF (dos etapas x10)
     Ni = Nm * P.L2a;
@@ -64,6 +65,7 @@ function R = modelo_referencia(P, X)
     finst = [0, angle(z(2:end) .* conj(z(1:end-1)))] * P.fs_fi / (2*pi);
     m_hat = filter(P.h.mux, 1, finst / P.kf);             % filtro posdetección (120 kHz nom)
     m_hat = retrasar(m_hat(1:P.M2:end), P.rt_dec) * P.normalizacion;   % -> fs_m, deshace /3
+    m_hat = filter(P.enf.num_rx, P.enf.den_rx, m_hat);   % deénfasis (cable si P.enfasis = false)
 
     %% ===================== DEMULTIPLEXOR FDM =====================
     t_m2 = (0:numel(m_hat)-1) / P.fs_m;

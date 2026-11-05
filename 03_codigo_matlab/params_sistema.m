@@ -13,6 +13,9 @@ function P = params_sistema(fc_nom_Hz, opciones)
 %        .semilla     semilla del ruido del canal (por defecto 1)
 %        .desintonia  desintonía del receptor respecto a la portadora [Hz nominales] (por defecto 0)
 %        .log_rf_max  máximo de muestras RF que se registran (por defecto inf; la GUI usa menos)
+%        .enfasis     true/false: filtros de prénfasis (TX) y deénfasis (RX) sobre el multiplex
+%                     (por defecto false)
+%        .f0_enfasis  frecuencia de quiebre del prénfasis [Hz nominales] (por defecto 30 kHz)
 %
 %   CONVENCIÓN: todas las frecuencias del modelo están ESCALADAS por K = 100
 %   (valor simulado = valor nominal / K). El tiempo simulado es K veces el real.
@@ -36,6 +39,8 @@ function P = params_sistema(fc_nom_Hz, opciones)
     % Retardo de los Rate Transition rápido->lento (decimación), en muestras de la tasa lenta.
     % Se espera 0; verificar_etapa5 lo mide.
     rt_dec = obtener(opciones, 'rt_dec', 0);
+    enfasis    = obtener(opciones, 'enfasis', false);
+    f0_enf_nom = obtener(opciones, 'f0_enfasis', 30e3);
 
     %% ---------------- Escalamiento [DECISIÓN, E1] ----------------
     P.K = 100;                        % factor de escala uniforme
@@ -53,6 +58,35 @@ function P = params_sistema(fc_nom_Hz, opciones)
     P.fs_m    = 480e3 / K;                      % tasa del multiplex
     P.L1      = P.fs_m / P.fs_a;                % interpolación audio -> multiplex (10)
     P.normalizacion = 3;                        % m_n = m/3  -> |m_n| <= 1
+
+    %% ---------------- Prénfasis / deénfasis del multiplex [REQ 4.5] ----------------
+    % Curso, diap. 384-387: el prénfasis va antes del modulador FM y el deénfasis justo
+    % después del discriminador. Aquí el "mensaje" que entra al modulador es el multiplex,
+    % así que se filtra el multiplex completo (a fs_m):
+    %   prénfasis : y[n] = g*(x[n] - a*x[n-1])     -> realza las altas frecuencias (canal 3)
+    %   deénfasis : y[n] = x[n]/g + a*y[n-1]         -> inverso exacto: H_de = 1/H_pre
+    % con a = exp(-2*pi*f0/fs_m). La ganancia g mantiene el pico de m_n en <= 1 (misma
+    % desviación pico, mismo Carson): cada canal k sale escalado por ~|H(f_k)|, así que
+    % g = 3 / suma_k |H(f_k + Wa)|  (|H| crece con f, el máximo de cada banda está en el borde superior).
+    % Como H_de*H_pre = 1, el par no cambia los retardos tau_k ni la señal sin ruido.
+    P.enfasis = logical(enfasis);
+    P.f0_enf  = f0_enf_nom / K;
+    if P.enfasis
+        P.alfa_enf = exp(-2*pi*P.f0_enf / P.fs_m);
+    else
+        P.alfa_enf = 0;                              % filtro = cable
+    end
+    H_enf = @(f) abs(1 - P.alfa_enf * exp(-1j*2*pi*f/P.fs_m));
+    P.g_enf = 3 / sum(H_enf(P.f_sc + P.Wa));
+    P.enf.num_tx = P.g_enf * [1, -P.alfa_enf];      % prénfasis (FIR de 2 coeficientes)
+    P.enf.num_rx = 1 / P.g_enf;                      % deénfasis (IIR de 1 polo)
+    P.enf.den_rx = [1, -P.alfa_enf];
+    % mejora teórica de la SNR de cada canal (ruido del discriminador ~ f^2, Haykin):
+    %   mejora_k = g^2 * integral(f^2) / integral(f^2/|H|^2)   sobre f_k +/- Wa
+    for k = 1:3
+        ff = linspace(P.f_sc(k) - P.Wa, P.f_sc(k) + P.Wa, 501);
+        P.enf.mejora_dB(k) = 10*log10(P.g_enf^2 * trapz(ff, ff.^2) / trapz(ff, ff.^2 ./ H_enf(ff).^2));
+    end
 
     %% ---------------- FM [DECISIÓN, 6.3-6.4] ----------------
     P.Ac      = 1;                              % amplitud de portadora
@@ -160,6 +194,7 @@ function P = params_sistema(fc_nom_Hz, opciones)
     P.vista.fcrx_MHz   = P.fc_rx * K / 1e6;
     P.vista.df_kHz     = P.df * K / 1e3;
     P.vista.carson_kHz = P.B_carson * K / 1e3;
+    P.vista.f0_enf_kHz = P.f0_enf * K / 1e3;
 
     %% ---------------- Comprobaciones automáticas ----------------
     P.chequeos = comprobar(P, bordes_canal);
@@ -251,6 +286,12 @@ function imprimir_tabla(P)
     fprintf('\nRetardo hasta el producto del canal k (tau_k) y ganancia si NO se compensara:\n');
     for k = 1:3
         fprintf('  canal %d: tau = %7.2f us nom  -> cos(2 pi f_k tau) = %+.2f\n', k, P.tau(k)*1e6/K, P.ganancia_sin_compensar(k));
+    end
+    if P.enfasis
+        fprintf('\nPrénfasis/deénfasis ACTIVO: f0 = %.0f kHz nom, a = %.4f, g = %.4f\n', P.f0_enf*K/1e3, P.alfa_enf, P.g_enf);
+        fprintf('  mejora teórica de SNR por canal: %+.1f / %+.1f / %+.1f dB\n', P.enf.mejora_dB);
+    else
+        fprintf('\nPrénfasis/deénfasis apagado.\n');
     end
     if ~isinf(P.snr_c_dB)
         fprintf('\nAWGN: (SNR)_C = %.1f dB -> CNR en B_T = %.1f dB, SNR bloque = %.1f dB, sigma = %.4g\n', ...

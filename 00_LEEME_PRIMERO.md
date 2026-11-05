@@ -86,6 +86,7 @@ verificar_etapa2     % transmisor FDM: Simulink vs referencia
 verificar_etapa3     % modulador FM
 verificar_etapa5     % cadena completa, canal ideal
 verificar_etapa8     % barrido AWGN y prueba sin preselector (varios minutos)
+verificar_enfasis    % AWGN con y sin prénfasis/deénfasis (unos 6-8 min)
 ```
 
 ### Mapa de archivos

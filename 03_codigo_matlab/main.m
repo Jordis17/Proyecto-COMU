@@ -11,6 +11,7 @@
 %     radio_fdm_fm.m        interfaz tipo radio
 %     modelo_referencia.m   la misma cadena en MATLAB, para verificar el modelo
 %     verificar_etapa*.m    scripts de verificación de cada etapa
+%     verificar_enfasis.m   AWGN con y sin prénfasis/deénfasis
 %     audios/audio1..3.wav  (opcional) audios reales a 48 kHz para el modo 'audio'
 
 clc;

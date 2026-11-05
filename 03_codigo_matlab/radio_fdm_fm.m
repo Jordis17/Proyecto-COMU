@@ -23,7 +23,7 @@ function radio_fdm_fm()
     % ---- panel de controles
     pc = uipanel(g, 'Title', 'Radio');
     gl = uigridlayout(pc, [19 2]);
-    gl.RowHeight = {150, 22, 22, 22, 22, 22, 22, 10, 22, 28, 10, 22, 22, 22, 22, 10, 30, 30, '1x'};
+    gl.RowHeight = {150, 22, 22, 22, 22, 22, 22, 10, 22, 28, 10, 22, 22, 22, 22, 22, 30, 30, '1x'};
     gl.ColumnWidth = {150, '1x'};
 
     perilla = uiknob(gl, 'continuous', 'Limits', [9 11], 'Value', 10, ...
@@ -58,6 +58,8 @@ function radio_fdm_fm()
     etiqueta(gl, 15, '(SNR)_C [dB]:');
     ed_snr = uieditfield(gl, 'numeric', 'Value', 25, 'Limits', [0 60]);
     ed_snr.Layout.Row = 15; ed_snr.Layout.Column = 2;
+    cb_enf = uicheckbox(gl, 'Text', 'Prénfasis / deénfasis', 'Value', false);
+    cb_enf.Layout.Row = 16; cb_enf.Layout.Column = [1 2];
 
     bt_sim = uibutton(gl, 'Text', 'Sintonizar y simular', 'FontWeight', 'bold', ...
         'ButtonPushedFcn', @(~,~) simular());
@@ -103,7 +105,7 @@ function radio_fdm_fm()
             snr = Inf;  if cb_awgn.Value, snr = ed_snr.Value; end
             fc = perilla.Value;
             P = params_sistema(fc * 1e6, struct('imprimir', false, 'T_real', T, 'snr_c_dB', snr, ...
-                'desintonia', ed_des.Value * 1e3, 'log_rf_max', 2^18));
+                'desintonia', ed_des.Value * 1e3, 'log_rf_max', 2^18, 'enfasis', cb_enf.Value));
             rng(1);
             fuente = generar_fuentes(P, dd_fuente.Value);
             lbl_estado.Text = sprintf(['Simulando %.2f s reales (%.0f s simulados)... ' ...
@@ -123,8 +125,11 @@ function radio_fdm_fm()
             t_sim = toc;
             S.out = out;  S.P_sim = P;  S.fuente_sim = fuente;
             graficar_todo();
-            lbl_estado.Text = sprintf('Simulación lista en %.1f s. f_c = %.1f MHz, LO = %.2f MHz%s.', ...
-                t_sim, P.vista.fc_MHz, P.vista.fLO_MHz, ternario(isinf(snr), ', canal ideal', sprintf(', (SNR)_C = %g dB', snr)));
+            pico = max(abs(out.sim_m_n(:)));       % pico de m_n = desviación usada / Df
+            lbl_estado.Text = sprintf(['Simulación lista en %.1f s. f_c = %.1f MHz, LO = %.2f MHz%s%s. ' ...
+                'Desviación pico usada: %.0f %% de %.0f kHz.'], ...
+                t_sim, P.vista.fc_MHz, P.vista.fLO_MHz, ternario(isinf(snr), ', canal ideal', sprintf(', (SNR)_C = %g dB', snr)), ...
+                ternario(P.enfasis, ', con prénfasis', ''), 100*pico, P.vista.df_kHz);
         catch err
             lbl_estado.Text = ['Error: ' err.message];
         end
