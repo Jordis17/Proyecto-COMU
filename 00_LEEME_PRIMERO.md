@@ -65,14 +65,15 @@ Tres audios de 15 kHz → **FDM** (DSB-SC) en ≤ 120 kHz → **FM** con portado
 | Filtros | FIR Kaiser propios (`disenar_fir_kaiser.m`), 60 dB | **Sin toolboxes**: Abner no tiene DSP ni Signal Processing Toolbox |
 | Simulink | Solo bloques básicos; solver discreto paso fijo; `EnableMultiTasking` off; modo acelerado | Portabilidad y velocidad (4.3×) |
 | Ruido | (SNR)_C de Haykin = A_c²/(2·W·N₀), W = 120 kHz | Definición del curso (diap. 377) |
+| Prénfasis/deénfasis | Filtros de 1.er orden sobre el multiplex (antes del modulador / después del demodulador), f₀ = 30 kHz, misma desviación pico; on/off en la GUI | Curso diap. 384–387; reparte la SNR: canal 3 ≈ +2 dB, canal 1 ≈ −6 dB (teoría y Python; falta Simulink) |
 
 ### Errores del enunciado detectados (resumen; detalle en el documento de diseño)
 
 1. **Tabla de escalamiento (§5):** escala portadora y FI ÷100 pero deja audio y FDM → B_FDM/f_c pasa de 0.012 a 1.2, la FM cruza 0 Hz, FI (17 kHz) < f_m,máx (115 kHz). **Corrección:** escalar todo por K = 100.
 2. **«Se escala por limitaciones computacionales»:** escalar no ahorra muestras (N = T_real·f_s,nominal). El ahorro se obtiene con multirritmo.
 3. **Muestrear a 5–10 × ancho de banda (§8):** el criterio es f_s > 2·f_máx incluyendo el producto suma del mezclador (hasta 20.65 MHz) → 48 MHz.
-4. **Prénfasis/deénfasis como remedio de calidad:** solo actúa sobre ruido; con canal ideal no corrige nada.
-5. Matices: «índice de modulación» con mensaje compuesto → DR; falta sección de RF (preselector) en el receptor descrito.
+4. **Prénfasis/deénfasis (§4.5) no es un error:** es una condición. Con canal ideal no hace falta (SDR ≈ 60 dB). Con AWGN el canal 3 sale unos 14 dB peor por el ruido ∝ f², así que se implementa sobre el multiplex y se mide (`verificar_enfasis.m`).
+5. **Matices de redacción:** «índice de modulación» con mensaje compuesto → DR; falta sección de RF (preselector) en el receptor descrito.
 
 ---
 
@@ -93,7 +94,7 @@ verificar_enfasis    % AWGN con y sin prénfasis/deénfasis (unos 6-8 min)
 
 | Archivo | Función |
 |---|---|
-| `params_sistema.m` | Todos los parámetros, filtros, retardos τ_k, σ del ruido; 18 `assert` de consistencia. Opciones: `imprimir`, `snr_c_dB`, `T_real`, `tau_extra`, `rt_retardo` (1), `rt_dec` (0), `semilla`, `desintonia`, `log_rf_max` |
+| `params_sistema.m` | Todos los parámetros, filtros, retardos τ_k, σ del ruido; 18 `assert` de consistencia. Opciones: `imprimir`, `snr_c_dB`, `T_real`, `tau_extra`, `rt_retardo` (1), `rt_dec` (0), `semilla`, `desintonia`, `log_rf_max`, `enfasis` (false), `f0_enfasis` (30 kHz) |
 | `disenar_fir_kaiser.m` | Diseño FIR LP/BP por ventana de Kaiser, sube el orden hasta cumplir el rechazo |
 | `construir_modelo.m` | Genera `sistema_fdm_fm.slx` por código (subsistemas Transmisor_FDM, Modulador_FM, Canal, Receptor_Superheterodino/Demodulador_FM, Demultiplexor_FDM) |
 | `version_modelo.m`, `modelo_al_dia.m` | Control de versión del `.slx` (v = 7); lo regenera si está viejo |
@@ -111,7 +112,7 @@ verificar_enfasis    % AWGN con y sin prénfasis/deénfasis (unos 6-8 min)
 - **Rate Transition** (lenta → rápida) añade 1 muestra lenta de retardo incluso en una sola tarea (medido) → `rt_retardo = 1`. La decimación no añade retardo (`rt_dec = 0`).
 - **From Workspace**: los tiempos se adelantan 0.25 muestra para evitar que tome la muestra anterior por redondeo.
 - Interpolación ×100 en dos etapas ×10 (inserción de ceros con Pulse Generator × Rate Transition + FIR).
-- El filtro del canal 1 en el demux es **pasabanda** (5–35 kHz), no pasobajas, por el offset de DC del discriminador alternativo.
+- El filtro del canal 1 en el demux es **pasabanda** (5–35 kHz), igual que los otros dos: elimina cualquier nivel de DC a la salida del demodulador (por ejemplo, con desintonía).
 - Teoría de ruido por canal: (SNR)_k = (SNR)_C · W·Δf²·P_x / [18·W_a·(f_k² + W_a²/3)].
 
 ---
@@ -154,7 +155,7 @@ Barrido AWGN (`verificar_etapa8`, SDR en dB, canales 1/2/3):
 
 - Etapas 0–8 **completas y verificadas** (ver documento de diseño).
 - Existe un **guion del video** (7 escenas repartidas entre Jordi y Abner) en un documento aparte; no está en este paquete.
-- Pendientes opcionales mencionados: limpiar el paquete de entrega; evaluar un «énfasis por canal»; revisar que todo corra en una instalación limpia de R2026a sin toolboxes.
+- Pendientes opcionales mencionados: limpiar el paquete de entrega; medir en Simulink el prénfasis/deénfasis (`verificar_enfasis.m`); revisar que todo corra en una instalación limpia de R2026a sin toolboxes.
 
 ### Sugerencia de orden para la revisión
 
