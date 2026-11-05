@@ -500,7 +500,7 @@ Cada simulación de 0.3 s reales tarda ≈ 40 s en modo acelerado.
 
 ## 9. Consultas al profesor y entrega de archivos
 
-No hay ninguna contradicción técnica bloqueante. La duda administrativa quedó resuelta: **además del video se entregan los `.slx` y `.m`** (R13).
+No hay ninguna contradicción técnica bloqueante. La duda administrativa quedó resuelta: **además del video se entregan los `.slx` y `.m`** (R13). La lista final de archivos está en `diseno_final.md` (sección 4): el `.slx`, 8 `.m`, los audios y un LEEME, armados con `preparar_entrega`.
 
 **Consecuencias para la implementación [DECISIÓN]:** como el profesor abrirá y ejecutará los archivos, el modelo debe funcionar sin depender de nuestro equipo.
 - **Un solo punto de entrada.** Un script, por ejemplo `main.m`, que ejecute `params_sistema.m`, abra la GUI o simule el modelo con los valores por defecto.

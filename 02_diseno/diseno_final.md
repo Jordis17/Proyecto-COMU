@@ -169,12 +169,14 @@ Ningún bloque tiene números escritos a mano: todos leen la estructura `P` de `
 
 **Scripts:**
 
-| Script | Qué hace |
-|---|---|
-| `main` | Imprime el diseño y abre la radio |
-| `graficas_sistema` | Figuras de cada etapa con canal ideal |
-| `analisis_awgn` | Barrido de ruido, con y sin prénfasis |
-| `probar_audio_real` | Pasa tres WAV por el sistema y guarda los audios recuperados |
+| Script | Qué hace | ¿Se entrega? |
+|---|---|---|
+| `main` | Imprime el diseño y abre la radio | Sí |
+| `graficas_sistema` | Figuras de cada etapa con canal ideal | Sí |
+| `analisis_awgn` | Barrido de ruido, con y sin prénfasis | No (resultados en el video; va en el respaldo) |
+| `probar_audio_real` | Pasa tres WAV por el sistema y guarda los audios recuperados | No (los WAV recuperados se usan en el video; va en el respaldo) |
+
+**Entrega.** Al profesor se le manda el video y `entrega_FDM_FM.zip`, que contiene el modelo `sistema_fdm_fm.slx`, 8 archivos `.m` (`main`, `params_sistema`, `disenar_fir_kaiser`, `generar_fuentes`, `radio_fdm_fm`, `graficas_sistema`, `graficar_espectro`, `comparar_senales`), los tres WAV y un `LEEME.txt`. El script `preparar_entrega` la arma y comprueba que funcione sola. También crea `entrega_FDM_FM_respaldo.zip`, con los 10 `.m`, que no se manda.
 
 ## 5. Resultados (Simulink R2026a)
 

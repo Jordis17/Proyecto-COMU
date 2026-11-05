@@ -2,9 +2,8 @@ Colocar aquí tres audios reales:  audio1.wav, audio2.wav, audio3.wav
 
 - De preferencia a 48 kHz (si tienen otra frecuencia de muestreo, se convierten con interpolación).
 - Mono o estéreo (se pasan a mono).
-- Que el sonido empiece al inicio del archivo: la GUI y probar_audio_real.m usan solo
-  los primeros segundos (0.3 s en la GUI por defecto, 2 s en probar_audio_real.m).
-- Conviene que sean distintos y fáciles de reconocer (voz, música, un instrumento).
-  El sistema limita cada audio a 15 kHz.
+- Que el sonido empiece al inicio del archivo: solo se usan los primeros segundos
+  (en la radio, la duración elegida; 0.3 s por defecto).
+- El sistema limita cada audio a 15 kHz.
 
-probar_audio_real.m guarda aquí original1..3.wav y recuperado1..3.wav.
+Para usarlos en la radio, elegir la fuente «audio».
