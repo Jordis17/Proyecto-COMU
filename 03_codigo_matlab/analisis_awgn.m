@@ -26,7 +26,7 @@ rng(1);
 P0 = params_sistema(10e6, opc);
 fuente = generar_fuentes(P0, modo);
 Px = mean(fuente.X.^2, 2).';        % potencia de cada audio normalizado
-modelo_al_dia(mdl);
+if exist('modelo_al_dia', 'file'), modelo_al_dia(mdl); end
 load_system(mdl);
 try
     set_param(mdl, 'SimulationMode', 'accelerator');

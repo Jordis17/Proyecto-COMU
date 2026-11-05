@@ -107,8 +107,8 @@ verificar_etapa8     % barrido AWGN y prueba sin preselector
 | `main.m` | Punto de entrada: imprime el diseño y abre la radio |
 | `params_sistema.m` | Todos los parámetros, filtros, retardos τ_k y σ del ruido; 9 comprobaciones del diseño. Opciones: `imprimir`, `snr_c_dB`, `T_real`, `desintonia`, `enfasis` (false), `f0_enfasis` (30 kHz), `log_rf_max` |
 | `disenar_fir_kaiser.m` | Diseño FIR LP/BP por ventana de Kaiser; sube el orden hasta cumplir el rechazo |
-| `construir_modelo.m` | Genera `sistema_fdm_fm.slx` por código (Transmisor_FDM, Modulador_FM, Canal, Receptor_Superheterodino, Demultiplexor_FDM) |
-| `modelo_al_dia.m` | Regenera el `.slx` si no existe o si `construir_modelo.m` es más nuevo |
+| `construir_modelo.m` | **(No se entrega.)** Genera `sistema_fdm_fm.slx` por código (Transmisor_FDM, Modulador_FM, Canal, Receptor_Superheterodino, Demultiplexor_FDM) |
+| `modelo_al_dia.m` | **(No se entrega.)** Regenera el `.slx` si no existe o si `construir_modelo.m` es más nuevo. Los scripts de la entrega lo usan solo si existe; sin él, usan el `.slx` tal cual |
 | `generar_fuentes.m` | Fuentes: `demo`, `tonos`, `ruido`, `audio` (WAV en la carpeta `audios/`, que hay que crear) |
 | `radio_fdm_fm.m` | GUI: perilla de portadora, LO automático, selector de audio, AWGN, prénfasis, desintonía |
 | `graficas_sistema.m` | Figuras de cada etapa: audios, multiplex, FM con Carson, receptor, audios recuperados |

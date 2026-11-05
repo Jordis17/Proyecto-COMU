@@ -101,7 +101,7 @@ function construir_modelo(nombre)
         add_line(mdl, sprintf('Demultiplexor_FDM/%d', k), sprintf('Log_audio%d/1', k), 'autorouting', 'on');
     end
 
-    set_param(mdl, 'Description', 'Sistema FDM + FM + receptor superheterodino. Generado por construir_modelo.m');
+    set_param(mdl, 'Description', 'Sistema FDM + FM + receptor superheterodino');
     save_system(mdl, fullfile(pwd, [mdl '.slx']));
     try
         fprintf('Multitarea: %s\n', get_param(mdl, 'EnableMultiTasking'));

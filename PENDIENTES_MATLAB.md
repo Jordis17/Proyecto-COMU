@@ -39,7 +39,8 @@ Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, script
 
 ## 5. `preparar_entrega` (al final, < 1 min)
 
-- [ ] Crea la carpeta `entrega_FDM_FM` (dos niveles arriba de `03_codigo_matlab`) y `entrega_FDM_FM.zip`.
+- [ ] Crea la carpeta `entrega_FDM_FM` (dos niveles arriba de `03_codigo_matlab`) y `entrega_FDM_FM.zip`. Lleva 10 `.m` y el `.slx`; `construir_modelo.m` y `modelo_al_dia.m` no se entregan.
+- [ ] Si ordenan el diagrama del `.slx` a mano, háganlo **después** de cualquier cambio en `construir_modelo.m`. Si ese archivo cambia luego, el `.slx` se vuelve a generar y se pierde el orden manual.
 - [ ] Todas las líneas deben salir `[OK]`, sin `[FALLA]`.
 - [ ] Si avisa que faltan audios, copiar los WAV a `audios/` y volver a correrlo.
 - [ ] Prueba final: abrir MATLAB nuevo, ir a `entrega_FDM_FM` y correr `main`.

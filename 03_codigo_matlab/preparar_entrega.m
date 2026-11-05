@@ -2,7 +2,7 @@
 %   Ejecutar desde esta carpeta:  >> preparar_entrega
 %
 %   1) Genera sistema_fdm_fm.slx si falta o está desactualizado.
-%   2) Crea ../../entrega_FDM_FM con los .m de la entrega, el .slx, los WAV de audios/
+%   2) Crea ../../entrega_FDM_FM con los .m de la entrega (10), el .slx, los WAV de audios/
 %      y un LEEME.txt para el profesor. Las pruebas internas (verificacion/) no se copian.
 %   3) Revisa que la carpeta funcione sola: que cada función se encuentre dentro de ella
 %      y que params_sistema y el modelo carguen sin errores.
@@ -14,8 +14,8 @@ origen  = fileparts(mfilename('fullpath'));
 destino = fullfile(origen, '..', '..', 'entrega_FDM_FM');
 mdl     = 'sistema_fdm_fm';
 
-archivos = {'main.m', 'params_sistema.m', 'disenar_fir_kaiser.m', 'construir_modelo.m', ...
-            'modelo_al_dia.m', 'generar_fuentes.m', 'radio_fdm_fm.m', 'graficas_sistema.m', ...
+% construir_modelo.m y modelo_al_dia.m no se entregan: se manda el .slx ya hecho.
+archivos = {'main.m', 'params_sistema.m', 'disenar_fir_kaiser.m', 'generar_fuentes.m', 'radio_fdm_fm.m', 'graficas_sistema.m', ...
             'analisis_awgn.m', 'probar_audio_real.m', 'graficar_espectro.m', 'comparar_senales.m'};
 
 %% 1) modelo al día
@@ -58,7 +58,7 @@ fprintf(fid, ['Sistema FDM + FM con receptor superheterodino\n' ...
     '  probar_audio_real  pasa audios/audio1..3.wav por el sistema (~9 min para 2 s)\n\n' ...
     'Escalamiento: todas las frecuencias del modelo están divididas por K = 100.\n' ...
     'La interfaz muestra siempre los valores nominales (10 MHz, 1.7 MHz, etc.).\n\n' ...
-    'El modelo sistema_fdm_fm.slx lo genera construir_modelo.m; si se borra, main lo vuelve a crear.\n'], version);
+    'El modelo Simulink es sistema_fdm_fm.slx (solo bloques básicos, solver discreto de paso fijo).\n'], version);
 fclose(fid);
 
 %% 3) comprobar que la carpeta funciona sola

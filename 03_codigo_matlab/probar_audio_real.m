@@ -22,7 +22,7 @@ P = params_sistema(fc_nom, struct('T_real', T_real, 'snr_c_dB', snr_c, 'enfasis'
     'log_rf_max', 2^18, 'imprimir', false));
 fuente = generar_fuentes(P, 'audio');
 mdl = 'sistema_fdm_fm';
-modelo_al_dia(mdl);
+if exist('modelo_al_dia', 'file'), modelo_al_dia(mdl); end
 load_system(mdl);
 fprintf('Simulando %.1f s de audio real (unos %.0f min)...\n', T_real, 4.5*T_real);
 try

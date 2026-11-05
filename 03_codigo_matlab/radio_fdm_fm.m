@@ -111,7 +111,7 @@ function radio_fdm_fm()
             lbl_estado.Text = sprintf(['Simulando %.2f s reales (%.0f s simulados)... ' ...
                 'En modo acelerado tarda unos %.0f s (más la 1.ª vez, que compila).'], T, P.T_sim, 270*T);
             drawnow;
-            modelo_al_dia(mdl);            % regenera el .slx si es de una versión anterior
+            if exist('modelo_al_dia', 'file'), modelo_al_dia(mdl); end
             load_system(mdl);
             assignin('base', 'P', P);
             assignin('base', 'fuente', fuente);

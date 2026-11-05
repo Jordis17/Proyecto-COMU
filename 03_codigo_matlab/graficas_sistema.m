@@ -21,7 +21,7 @@ P = params_sistema(fc_nom, struct('T_real', T_real));
 fuente = generar_fuentes(P, modo);
 K = P.K;
 mdl = 'sistema_fdm_fm';
-modelo_al_dia(mdl);
+if exist('modelo_al_dia', 'file'), modelo_al_dia(mdl); end
 load_system(mdl);
 try
     set_param(mdl, 'SimulationMode', 'accelerator');
