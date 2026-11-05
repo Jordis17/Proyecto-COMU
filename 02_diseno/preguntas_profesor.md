@@ -35,10 +35,10 @@ Las portadoras se comerían parte de la desviación de la FM sin llevar informac
 Los filtros reales necesitan una banda de transición. Con 10 kHz, los filtros de cada canal pasan su banda completa y rechazan 60 dB la del vecino.
 
 **9. ¿Por qué dividen el multiplex entre 3?**
-Cada audio tiene pico 1, así que la suma puede llegar a 3. Al dividir entre 3, |m_n| ≤ 1 y la desviación nunca pasa de 150 kHz.
+Cada audio tiene pico 1, así que la suma puede llegar a 3. Al dividir entre 3 (bloque «Normalización (dividir entre 3)»), la señal m(t) que entra al modulador nunca pasa de 1 y la desviación nunca pasa de 150 kHz.
 
 **10. ¿Qué pasa si la subportadora del receptor no está en fase?**
-La salida queda multiplicada por cos φ (diap. 237–238). Los filtros retrasan la señal: sin compensar, las ganancias serían +0.09, −0.87 y −0.65. El canal 1 caería 21 dB. Por eso el receptor usa cos(2π f_k (t − τ_k)).
+La salida queda multiplicada por cos φ (diap. 237–238). Los filtros retrasan la señal: sin compensar, las ganancias serían +0.09, −0.87 y −0.65. El canal 1 caería 21 dB. Por eso el «Canal k oscilador local» del demultiplexor genera cos(2π f_k (t − τ_k)) y el «Canal k detector coherente» multiplica por esa señal ya corregida.
 
 **11. ¿Eso se puede hacer en un receptor real?**
 No exactamente, porque no se conoce el retardo. En la práctica se manda un tono piloto, como el de 19 kHz de la FM estéreo, o se usa un PLL. En la simulación el retardo es conocido y fijo, así que lo compensamos directamente. Lo dejamos como limitación.
@@ -67,7 +67,7 @@ Ganarían SNR, pero la FM sería más ancha. Entraría más ruido al filtro de F
 ## D. Receptor superheterodino
 
 **17. ¿Qué es la frecuencia imagen y cómo la eliminan?**
-Es la otra frecuencia que, al mezclarse con el LO, también da 1.7 MHz: f_c − 2·f_FI = 6.6 MHz a 10 MHz. El preselector, antes del mezclador, deja pasar f_c ± 350 kHz y rechaza más de 60 dB desde ±1.55 MHz, así que la imagen, que está a 3.4 MHz de distancia, no pasa.
+Es la otra frecuencia que, al mezclarse con el LO, también da 1.7 MHz: f_c − 2·f_FI = 6.6 MHz a 10 MHz. La sección de RF (preselector), antes del mezclador, deja pasar f_c ± 350 kHz y rechaza más de 60 dB desde ±1.55 MHz, así que la imagen, que está a 3.4 MHz de distancia, no pasa.
 
 **18. Si solo hay una emisora, ¿para qué el preselector?**
 Para el ruido. Sin preselector, el ruido de la banda imagen también llega a la FI. Lo medimos: con (SNR)_C = 25 dB, quitar el preselector empeora unos 3 dB, que es lo que predice la teoría (se duplica el ruido).
@@ -82,7 +82,7 @@ Cumple la definición del curso (diap. 359): es menor que la portadora y mayor q
 f_LO = f_c − 1.7 MHz, lo calcula `params_sistema.m`. Al mover la perilla también se recalculan la imagen y el preselector. La FI no cambia.
 
 **22. ¿Cómo demodulan la FM? En clase vimos discriminadores.**
-En cuadratura: bajamos la FI a 0 Hz con cos y −sen, y medimos cuánto gira la fase entre dos muestras. Eso es la frecuencia instantánea, f_i = (1/2π)·dφ/dt, que es exactamente lo que busca un discriminador. No necesita limitador. También probamos un discriminador como el del curso (limitador → derivador → envolvente) y dio peor calidad.
+En cuadratura: bajamos la FI a 0 Hz con cos y −sen, y medimos cuánto gira la fase entre dos muestras. Eso es la frecuencia instantánea, f_i = (1/2π)·dφ/dt, que es exactamente lo que busca un discriminador. No necesita limitador. En el modelo es el subsistema «Demodulador FM», dentro del receptor. También probamos un discriminador como el del curso (limitador → derivador → envolvente) y dio peor calidad.
 
 **23. ¿Qué pasa si el receptor está desintonizado?**
 Con 600 kHz de error, la señal cae fuera del filtro de FI y el audio se pierde (SDR ≈ 0.9 dB). Con errores pequeños (50 kHz) sigue funcionando, porque la FI tiene margen y el pasabanda de cada canal elimina el nivel de DC que aparece.
@@ -104,7 +104,7 @@ Cuando el ruido se hace comparable a la portadora, la fase da saltos y el demodu
 Porque no hace falta: sin ruido el SDR ya es de unos 60 dB. Además, el prénfasis y el deénfasis son inversos, así que sin ruido se cancelan.
 
 **28. ¿Dónde pusieron el prénfasis y por qué ahí?**
-Antes del modulador FM y después del demodulador, como en la diap. 384. El mensaje que entra al modulador es el multiplex, así que se filtra el multiplex completo. Es un filtro de primer orden que sube las frecuencias altas; el deénfasis es su inverso exacto.
+Antes del modulador FM y después del demodulador, como en la diap. 384. El mensaje que entra al modulador es el multiplex, así que se filtra el multiplex completo. Es un filtro de primer orden que sube las frecuencias altas; el deénfasis es su inverso exacto. En el modelo son el «Filtro de preénfasis» (al final del transmisor) y el «Filtro de deénfasis» (después del filtro posdetección).
 
 **29. ¿Por qué el prénfasis empeora el canal 1?**
 Mantenemos la misma desviación pico para no cambiar el ancho de banda. Si se suben los canales altos, hay que bajar un poco el total, y el canal 1 queda con menos señal. El prénfasis no quita ruido en total: lo reparte. El canal 3 mejora unos 2 dB y el canal 1 pierde unos 6 dB, pero el canal 1 tenía SNR de sobra y el 3 era el que limitaba.
@@ -133,6 +133,12 @@ La parte de RF va a 48 MHz nominales: un segundo de audio son 48 millones de mue
 
 **36. ¿Qué se actualiza cuando cambio la portadora en la GUI?**
 Se recalculan los parámetros: LO, imagen y coeficientes del preselector. La GUI muestra los valores nuevos al instante, y al simular el modelo los usa, porque ningún bloque tiene números fijos.
+
+**37. ¿Qué significan los nombres de las señales del modelo?**
+Usamos la notación del curso (diap. 309, 365 y 384): m(t) es el mensaje que entra al modulador, que aquí es el multiplex; s(t) es la señal FM; w(t) es el ruido del canal, y x(t) = s(t) + w(t) es lo que llega al receptor. Los audios son x1(t), x2(t) y x3(t), como en el esquema de FDM (diap. 264).
+
+**38. ¿Para qué sirven los bloques «Subir tasa» y «Bajar tasa»?**
+Cada parte del sistema trabaja a la frecuencia de muestreo que necesita: 48 kHz el audio, 480 kHz el multiplex, 4.8 MHz la FI y 48 MHz la RF. «Subir tasa» (con el tren de pulsos, la inserción de ceros y el filtro interpolador) pasa a una tasa 10 veces mayor; «Bajar tasa» toma 1 de cada 10 muestras, después de un filtro que evita el traslape. Si todo fuera a 48 MHz, la simulación sería muchísimo más lenta.
 
 ---
 

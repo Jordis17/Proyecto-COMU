@@ -78,7 +78,7 @@ Las partes están repartidas entre los dos, pero cada uno debería poder explica
 **Texto:**
 > El oscilador local se calcula solo: es la portadora menos 1.7 MHz. Con 10 MHz queda en 8.3 MHz. El mezclador da la diferencia, que es la FI de 1.7 MHz, y la suma, de 18.3 MHz, que se elimina con un filtro.
 >
-> Antes del mezclador pusimos un preselector, como en el esquema del curso. Su función es quitar la frecuencia imagen, que está a 6.6 MHz: si llegara al mezclador, también caería en 1.7 MHz. El filtro de FI deja pasar de 1.35 a 2.05 MHz, más que el ancho de Carson.
+> Antes del mezclador está la sección de RF, que hace de preselector, igual que en el esquema del curso. Su función es quitar la frecuencia imagen, que está a 6.6 MHz: si llegara al mezclador, también caería en 1.7 MHz. Después, la sección de FI deja pasar de 1.35 a 2.05 MHz, más que el ancho de Carson.
 >
 > Usamos inyección inferior porque con la superior el producto suma pasaría de 24 MHz y no cabría con 48 MHz de muestreo.
 
@@ -88,14 +88,17 @@ Las partes están repartidas entre los dos, pero cada uno debería poder explica
 
 ### 4a. Modelo Simulink · Jordi (5:15–6:15)
 
-**Pantalla:** `sistema_fdm_fm.slx`. Abrir los subsistemas en orden; detenerse en el demodulador y en el demultiplexor.
+**Pantalla:** `sistema_fdm_fm.slx`.
+1. Nivel principal: señalar los nombres de las señales x1(t)…x3(t), m(t) multiplex, s(t) señal FM, x(t) = s(t) + w(t) y m(t) recuperado.
+2. Abrir «Receptor superheterodino» y, dentro, «Demodulador FM».
+3. Abrir «Demultiplexor FDM».
 
 **Texto:**
-> El modelo tiene cinco subsistemas, uno por cada parte: transmisor FDM, modulador FM, canal, receptor superheterodino y demultiplexor. Solo usa bloques básicos de Simulink, con solver discreto de paso fijo. Ningún bloque tiene números escritos a mano: todo sale de un archivo de parámetros, que antes de simular revisa que el diseño tenga sentido.
+> El modelo tiene cinco subsistemas, uno por cada parte: transmisor FDM, modulador FM, canal, receptor superheterodino y demultiplexor FDM. Las señales llevan los nombres del curso: m(t) es el multiplex que entra al modulador, s(t) es la señal FM y x(t), que es s(t) más el ruido w(t), es lo que llega al receptor. Solo usa bloques básicos de Simulink, con solver discreto de paso fijo, y todos los valores salen de un archivo de parámetros.
 >
-> El demodulador FM trabaja en cuadratura: bajamos la FI a cero con un coseno y un seno, y medimos cuánto gira la fase entre una muestra y la siguiente. Ese giro es la frecuencia instantánea.
+> Dentro del receptor están los bloques del esquema del curso: sección de RF, oscilador local, mezclador, sección de FI, demodulador FM y filtro posdetección. El demodulador FM trabaja en cuadratura: bajamos la FI a cero con un coseno y un seno, y medimos cuánto gira la fase entre una muestra y la siguiente. Ese giro es la frecuencia instantánea.
 >
-> En el demultiplexor, cada canal se filtra, se multiplica por su subportadora y pasa por un pasabajos. Aquí hay un detalle: los filtros retrasan la señal, y en DSB-SC un desfase en la subportadora multiplica la salida por el coseno de ese desfase. Sin corregirlo, el canal 1 quedaba con una ganancia de 0.09, casi nada. Por eso calculamos el retardo de los filtros y desfasamos la subportadora del receptor en esa misma cantidad.
+> En el demultiplexor, cada canal tiene un pasabanda, su oscilador local, un detector coherente y un pasabajos de 15 kHz. Aquí hay un detalle: los filtros retrasan la señal, y en DSB-SC un desfase en la subportadora multiplica la salida por el coseno de ese desfase. Sin corregirlo, el canal 1 quedaba con una ganancia de 0.09, casi nada. Por eso calculamos el retardo de los filtros y desfasamos la subportadora del receptor en esa misma cantidad.
 
 ### 4b. Demostración de la GUI · Abner (6:15–7:30)
 
@@ -129,7 +132,7 @@ Las partes están repartidas entre los dos, pero cada uno debería poder explica
 >
 > Primero, mientras el ruido no es muy fuerte, los resultados quedan a menos de 1 dB de la fórmula teórica. Segundo, el canal 3 siempre sale unos 14 dB peor que el canal 1. La razón es que, a la salida del discriminador FM, el ruido crece con el cuadrado de la frecuencia, y el canal 3 está en la subportadora más alta. Tercero, por debajo de unos 11 dB de relación portadora a ruido en el ancho de Carson, la calidad se cae de golpe: es el efecto umbral de la FM.
 >
-> Aquí entra el prénfasis. Como dice el curso, va antes del modulador FM y el deénfasis va después del demodulador. En nuestro caso filtramos el multiplex completo con un filtro de primer orden, que sube las frecuencias altas, y en el receptor aplicamos el filtro inverso. Sin ruido, los dos filtros se cancelan y no cambia nada.
+> Aquí entra el prénfasis. Como dice el curso, va antes del modulador FM y el deénfasis va después del demodulador. En el modelo son el «Filtro de preénfasis», al final del transmisor, y el «Filtro de deénfasis», después del filtro posdetección. Filtramos el multiplex completo con un filtro de primer orden que sube las frecuencias altas, y en el receptor aplicamos el filtro inverso. Sin ruido, los dos filtros se cancelan y no cambia nada. En la radio se activan con una casilla.
 >
 > Con ruido, el canal 3 mejora unos [PENDIENTE: +2] dB y el canal 1 pierde unos [PENDIENTE: 6] dB. Es decir, el prénfasis no quita ruido en total: lo reparte. Y eso nos sirve, porque el canal 3 era el que limitaba la calidad, y el canal 1 tenía calidad de sobra. La diferencia entre canales baja de 14 a unos [PENDIENTE: 6] dB.
 
