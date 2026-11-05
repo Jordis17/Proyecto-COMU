@@ -35,7 +35,9 @@ Reglas de trabajo (vienen de las instrucciones del proyecto, archivo `07_instruc
 | `00_LEEME_PRIMERO.md` | Este archivo: contexto, estado y resultados |
 | `07_instrucciones_permanentes_IA.md` | Instrucciones permanentes del proyecto (rol, criterios, puntos a auditar) |
 | `01_enunciado/enunciado_original_profesor.md` | Enunciado del profesor. **Contiene errores intencionales** |
-| `02_diseno/01_diagnostico_y_diseno_FDM_FM.md` | **Documento principal**: diagnóstico de errores, diseño numérico completo y estado de las etapas 0–8 |
+| `02_diseno/diseno_final.md` | **Documento principal**: resumen corto del diseño, resultados y propuesta del video |
+| `02_diseno/01_diagnostico_y_diseno_FDM_FM.md` | Detalle completo: diagnóstico de errores, cálculos y estado de las etapas 0–8 |
+| `02_diseno/prenfasis_deenfasis.md` | Detalle del prénfasis/deénfasis |
 | `02_diseno/analisis_proyecto_fdm_fm.md`, `diagnostico_ingenieria_comunicaciones.md` | Diagnósticos previos (de otra IA). Referencia, revisar críticamente |
 | `03_codigo_matlab/` | Todo el código del proyecto (17 archivos `.m`) |
 | `04_verificacion_python/proto_fdm_fm.py` | Prototipo en Python usado al inicio para validar el diseño |
@@ -84,6 +86,7 @@ cd 03_codigo_matlab
 main                 % tabla de diseño + genera el .slx si hace falta + abre la radio
 graficas_sistema     % gráficas de cada etapa con canal ideal (~1 min)
 analisis_awgn        % AWGN sin y con prénfasis/deénfasis (~8-10 min)
+probar_audio_real    % 3 WAV reales en audios/ -> audios recuperados en WAV (~9 min para 2 s)
 ```
 
 Pruebas internas del equipo (no van en la entrega), en `03_codigo_matlab/verificacion/`:
@@ -110,6 +113,7 @@ verificar_etapa8     % barrido AWGN y prueba sin preselector
 | `radio_fdm_fm.m` | GUI: perilla de portadora, LO automático, selector de audio, AWGN, prénfasis, desintonía |
 | `graficas_sistema.m` | Figuras de cada etapa: audios, multiplex, FM con Carson, receptor, audios recuperados |
 | `analisis_awgn.m` | Barrido AWGN frente a la teoría, sin y con prénfasis. Guarda CSV, MAT y PNG |
+| `probar_audio_real.m` | Pasa `audios/audio1..3.wav` por el sistema y guarda `recuperado1..3.wav` (ver `audios/LEEME.txt`) |
 | `graficar_espectro.m` | Espectro sin toolbox (Welch propio) |
 | `comparar_senales.m` | SDR alineando retardo (fraccionario) y ganancia |
 
