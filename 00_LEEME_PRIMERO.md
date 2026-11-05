@@ -38,6 +38,9 @@ Reglas de trabajo (vienen de las instrucciones del proyecto, archivo `07_instruc
 | `02_diseno/diseno_final.md` | **Documento principal**: resumen corto del diseño, resultados y propuesta del video |
 | `02_diseno/01_diagnostico_y_diseno_FDM_FM.md` | Detalle completo: diagnóstico de errores, cálculos y estado de las etapas 0–8 |
 | `02_diseno/prenfasis_deenfasis.md` | Detalle del prénfasis/deénfasis |
+| `02_diseno/guion_video.md` | Guion del video (~10 min, repartido entre Jordi y Abner) |
+| `02_diseno/preguntas_profesor.md` | 38 preguntas probables del profesor con respuesta corta |
+| `PENDIENTES_MATLAB.md` | Lista de lo que hay que correr en MATLAB y qué debe salir |
 | `03_codigo_matlab/` | Todo el código del proyecto (17 archivos `.m`) |
 | `04_verificacion_python/proto_fdm_fm.py` | Prototipo en Python usado al inicio para validar el diseño |
 | `05_material_curso/presentacion_curso_OCR.txt` | Texto OCR (en inglés aproximado, escaneo) de las 620 diapositivas del curso, separadas por `===== DIAPOSITIVA NNN =====` |
@@ -50,7 +53,7 @@ Reglas de trabajo (vienen de las instrucciones del proyecto, archivo `07_instruc
 
 ## 3. El proyecto en una página
 
-Tres audios de 15 kHz → **FDM** (DSB-SC) en ≤ 120 kHz → **FM** con portadora seleccionable de 9–11 MHz → canal (ideal o **AWGN**) → **receptor superheterodino** (preselector RF, LO, mezclador, FI 1.7 MHz) → demodulador FM → demultiplexor FDM → audio 1, 2 o 3 en una **GUI tipo radio**. Todo en MATLAB/Simulink.
+Tres audios de 15 kHz → **FDM** (DSB-SC) en ≤ 120 kHz → **FM** con portadora seleccionable de 9–11 MHz → canal (ideal o **AWGN**) → **receptor superheterodino** (sección de RF, oscilador local, mezclador, sección de FI de 1.7 MHz) → demodulador FM → demultiplexor FDM → audio 1, 2 o 3 en una **GUI tipo radio**. Todo en MATLAB/Simulink.
 
 ### Decisiones principales del equipo
 
@@ -60,7 +63,7 @@ Tres audios de 15 kHz → **FDM** (DSB-SC) en ≤ 120 kHz → **FM** con portado
 | Arquitectura de simulación | **Multirritmo**: audio 48 kHz, multiplex 480 kHz, FI 4.8 MHz, RF 48 MHz (nominales) | Escalar no reduce muestras; el ahorro real viene de las tasas por etapa |
 | FDM | DSB-SC, subportadoras **20 / 60 / 100 kHz**, bandas 5–35 / 45–75 / 85–115 kHz, guardas 10 kHz, multiplex ÷3 | Audio llega casi a 0 Hz → SSB exigiría filtros casi ideales |
 | FM | **Δf = k_f = 150 kHz**, f_m,máx = 115 kHz, DR = 1.30, Carson 530 kHz, Bessel (n = 3) 690 kHz | Compromiso SNR (∝Δf²) / ancho de banda |
-| Superheterodino | **Inyección inferior** f_LO = f_c − 1.7 MHz; imagen f_c − 3.4 MHz; preselector ±350 kHz (rechazo 60 dB desde ±1.55 MHz); FI 1.35–2.05 MHz en dos etapas (LPF a 48 MHz, ↓10, BPF a 4.8 MHz) | Suma más baja (cabe en 48 MHz), sin inversión espectral |
+| Superheterodino | **Inyección inferior** f_LO = f_c − 1.7 MHz; imagen f_c − 3.4 MHz; sección de RF (preselector) ±350 kHz (rechazo 60 dB desde ±1.55 MHz); FI 1.35–2.05 MHz en dos etapas (LPF a 48 MHz, ↓10, BPF a 4.8 MHz) | Suma más baja (cabe en 48 MHz), sin inversión espectral |
 | Demodulación FM | En **cuadratura**: f_i = (f_s/2π)·arg(z[n]·z*[n−1]) con atan2 | Discriminador del curso (limitador→derivador→envolvente) probado como alternativa, peor desempeño |
 | Detección DSB-SC | Coherente con fase compensada: cos(2π f_k (t − τ_k)), τ_1 = 411.79 µs, τ_2 = τ_3 = 226.37 µs | Sin compensar, ganancias +0.09 / −0.87 / −0.65 |
 | Filtros | FIR Kaiser propios (`disenar_fir_kaiser.m`), 60 dB | **Sin toolboxes**: Abner no tiene DSP ni Signal Processing Toolbox |
@@ -107,7 +110,7 @@ verificar_etapa8     % barrido AWGN y prueba sin preselector
 | `main.m` | Punto de entrada: imprime el diseño y abre la radio |
 | `params_sistema.m` | Todos los parámetros, filtros, retardos τ_k y σ del ruido; 9 comprobaciones del diseño. Opciones: `imprimir`, `snr_c_dB`, `T_real`, `desintonia`, `enfasis` (false), `f0_enfasis` (30 kHz), `log_rf_max` |
 | `disenar_fir_kaiser.m` | Diseño FIR LP/BP por ventana de Kaiser; sube el orden hasta cumplir el rechazo |
-| `construir_modelo.m` | **(No se entrega.)** Genera `sistema_fdm_fm.slx` por código (Transmisor_FDM, Modulador_FM, Canal, Receptor_Superheterodino, Demultiplexor_FDM) |
+| `construir_modelo.m` | **(No se entrega.)** Genera `sistema_fdm_fm.slx` por código (subsistemas Transmisor FDM, Modulador FM, Canal, Receptor superheterodino, Demultiplexor FDM) y pone los nombres de bloques y señales (sección 5) |
 | `modelo_al_dia.m` | **(No se entrega.)** Regenera el `.slx` si no existe o si `construir_modelo.m` es más nuevo. Los scripts de la entrega lo usan solo si existe; sin él, usan el `.slx` tal cual |
 | `generar_fuentes.m` | Fuentes: `demo`, `tonos`, `ruido`, `audio` (WAV en la carpeta `audios/`, que hay que crear) |
 | `radio_fdm_fm.m` | GUI: perilla de portadora, LO automático, selector de audio, AWGN, prénfasis, desintonía |
@@ -123,6 +126,7 @@ En `verificacion/` quedan `modelo_referencia.m` (la misma cadena en MATLAB puro)
 
 ## 5. Detalles de implementación que conviene saber
 
+- **Nombres en el modelo:** las señales principales usan la notación del curso: x1(t)–x3(t) (audios, diap. 264), m(t) multiplex (mensaje que entra al modulador, diap. 309/384), s(t) señal FM, x(t) = s(t) + w(t) (lo que llega al receptor, diap. 365), m(t) recuperado y audio k recuperado. Los bloques tienen nombres en español con términos del curso: «Sección de RF (preselector)», «Oscilador local», «Mezclador», «Filtro antitraslape», «Sección de FI», «Demodulador FM», «Filtro posdetección», «Filtro de preénfasis/deénfasis» y, en cada canal, «pasabanda», «oscilador local», «detector coherente», «pasabajos 15 kHz». Los cambios de frecuencia de muestreo se llaman «Subir tasa 1 a 10» y «Bajar tasa 10 a 1». En el código (`params_sistema.m`) se sigue usando `m_n` para el multiplex normalizado.
 - **Rate Transition** (lenta → rápida) añade 1 muestra lenta de retardo incluso en una sola tarea (medido) → `P.rt_retardo = 1`. La decimación no añade retardo.
 - **From Workspace**: los tiempos se adelantan 0.25 muestra para evitar que tome la muestra anterior por redondeo.
 - Interpolación ×100 en dos etapas ×10 (inserción de ceros con Pulse Generator × Rate Transition + FIR).
@@ -167,14 +171,15 @@ Barrido AWGN (`verificar_etapa8`, SDR en dB, canales 1/2/3):
 
 ## 7. Estado y pendientes
 
-- Etapas 0–8 **completas y verificadas** (ver documento de diseño).
-- Existe un **guion del video** (7 escenas repartidas entre Jordi y Abner) en un documento aparte; no está en este paquete.
-- Pendientes opcionales mencionados: medir en Simulink el prénfasis/deénfasis (`analisis_awgn.m`); revisar que todo corra en una instalación limpia de R2026a sin toolboxes.
+- Etapas 0–8 **completas y verificadas** en MATLAB R2026a (ver documento de diseño).
+- Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, nombres de bloques, scripts nuevos) **todavía no se han corrido en MATLAB**: seguir `PENDIENTES_MATLAB.md`.
+- El guion del video y las preguntas probables están en `02_diseno/`; faltan los datos marcados [PENDIENTE] (prénfasis medido en Simulink y audio real).
+- Faltan los tres audios reales (`03_codigo_matlab/audios/audio1..3.wav`).
 
 ### Sugerencia de orden para la revisión
 
 1. Leer el enunciado (`01_enunciado`) y buscar tú mismo los errores antes de ver la solución.
-2. Leer `02_diseno/01_diagnostico_y_diseno_FDM_FM.md` y contrastar.
-3. Revisar `params_sistema.m` (corazón del diseño) y luego `construir_modelo.m`, `modelo_referencia.m`, `radio_fdm_fm.m`.
+2. Leer `02_diseno/diseno_final.md` (y el detalle en `01_diagnostico_y_diseno_FDM_FM.md`) y contrastar.
+3. Revisar `params_sistema.m` (corazón del diseño) y luego `construir_modelo.m`, `verificacion/modelo_referencia.m`, `radio_fdm_fm.m`.
 4. Comprobar coherencia entre los números del documento, el código y los resultados de la sección 6.
 5. Entregar: hallazgos priorizados (crítico / importante / menor), riesgos para la defensa en el video y preguntas probables del profesor.
