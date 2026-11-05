@@ -1,5 +1,8 @@
 %VERIFICAR_ETAPA5  Sistema completo en Simulink (canal ideal): superheterodino + demux FDM.
 %   Ejecutar desde la carpeta del proyecto:  >> verificar_etapa5
+%   UBICACIÓN: carpeta verificacion/. Se ejecuta desde 03_codigo_matlab con:
+%       >> addpath verificacion
+%   Son pruebas internas del equipo: no forman parte del entregable.
 %   1) Construye el modelo completo y lo simula (modo acelerado si está disponible).
 %   2) Compara FI, multiplex demodulado y los 3 audios con modelo_referencia.m.
 %   3) Mide el SDR de cada audio recuperado frente al original (alineando retardo y ganancia).
@@ -45,10 +48,10 @@ fprintf('\nError máximo vs referencia:  FI %.3g | multiplex demodulado %.3g | a
 if e_fi > 1e-6
     n1 = min(numel(fi_sim), 2e5);
     [e2, d2] = mejor_desfase(fi_sim(1:n1), R.fi(1:n1), 30);
-    fprintf('  FI coincide con error %.3g desplazada %d muestras de fs_fi -> revisar P.rt_dec\n', e2, d2);
+    fprintf('  FI coincide con error %.3g desplazada %d muestras de fs_fi -> revisar los retardos de las decimaciones\n', e2, d2);
 elseif e_mh > 1e-6
     [e2, d2] = mejor_desfase(mhat_sim, R.m_hat, 30);
-    fprintf('  Multiplex coincide con error %.3g desplazado %d muestras de fs_m -> revisar P.rt_dec\n', e2, d2);
+    fprintf('  Multiplex coincide con error %.3g desplazado %d muestras de fs_m -> revisar los retardos de las decimaciones\n', e2, d2);
 end
 
 %% 3) calidad de los audios recuperados (lo que importa)

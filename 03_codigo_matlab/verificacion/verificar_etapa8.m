@@ -1,5 +1,8 @@
 %VERIFICAR_ETAPA8  Evaluación del sistema con canal AWGN (Simulink).
 %   Ejecutar desde la carpeta del proyecto:  >> verificar_etapa8
+%   UBICACIÓN: carpeta verificacion/. Se ejecuta desde 03_codigo_matlab con:
+%       >> addpath verificacion
+%   Son pruebas internas del equipo: no forman parte del entregable.
 %   A) Barrido de (SNR)_C: SDR medido de cada audio frente a la predicción teórica
 %      (SNR)_k = (SNR)_C * W * Df^2 * Px / [18 * Wa * (f_k^2 + Wa^2/3)]      [doc §6.9]
 %      derivada de la DEP de ruido a la salida del discriminador S_No(f) = N0 f^2 / Ac^2
