@@ -1,0 +1,1373 @@
+<title>Radio FDM-FM superheterodina</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,500..800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: guía de estudio que sigue el orden de la presentación del curso — índice fijo, columna de lectura, recuadros "En el curso" / "En el proyecto" / "Más allá del curso" y bancos de prueba */
+:root{
+  --bg:#F4F6F8; --panel:#FFFFFF; --ink:#16202B; --muted:#5B6776; --line:#D6DCE3; --grid:#E6EAEF;
+  --accent:#2750C8; --accent-soft:rgba(39,80,200,.10);
+  --curso:#6B4FB8; --curso-soft:rgba(107,79,184,.09);
+  --c1:#0D8A78; --c2:#C27612; --c3:#B4337A; --c1s:rgba(13,138,120,.16); --c2s:rgba(194,118,18,.16); --c3s:rgba(180,51,122,.16);
+  --warn:#C23B2E; --warn-soft:rgba(194,59,46,.12); --ok:#2C8A55; --ok-soft:rgba(44,138,85,.12);
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif; --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F151B; --panel:#161E27; --ink:#E4E9EF; --muted:#98A4B3; --line:#2A3542; --grid:#202A35;
+  --accent:#7D9CFF; --accent-soft:rgba(125,156,255,.14); --curso:#B39BFF; --curso-soft:rgba(179,155,255,.12);
+  --c1:#3CC3AD; --c2:#F0A445; --c3:#EA73B1; --c1s:rgba(60,195,173,.18); --c2s:rgba(240,164,69,.18); --c3s:rgba(234,115,177,.18);
+  --warn:#FF6E5E; --warn-soft:rgba(255,110,94,.14); --ok:#5ECB8C; --ok-soft:rgba(94,203,140,.14); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F151B; --panel:#161E27; --ink:#E4E9EF; --muted:#98A4B3; --line:#2A3542; --grid:#202A35;
+  --accent:#7D9CFF; --accent-soft:rgba(125,156,255,.14); --curso:#B39BFF; --curso-soft:rgba(179,155,255,.12);
+  --c1:#3CC3AD; --c2:#F0A445; --c3:#EA73B1; --c1s:rgba(60,195,173,.18); --c2s:rgba(240,164,69,.18); --c3s:rgba(234,115,177,.18);
+  --warn:#FF6E5E; --warn-soft:rgba(255,110,94,.14); --ok:#5ECB8C; --ok-soft:rgba(94,203,140,.14); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans);margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+header.hero{padding-block:40px 28px;border-bottom:1px solid var(--line)}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:var(--display);font-stretch:85%;font-weight:800;font-size:clamp(34px,5.4vw,58px);line-height:1.02;margin:12px 0 14px;text-wrap:balance;letter-spacing:-.01em}
+.lead{font-size:18px;max-width:64ch;margin:0}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.fact{font:500 13px/1 var(--mono);padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);font-variant-numeric:tabular-nums}
+.fact b{color:var(--accent);font-weight:600}
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;margin-top:28px}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;max-height:calc(100vh - 32px);overflow:auto;font-size:14px}
+nav.toc .grp{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 8px 4px}
+nav.toc ol{list-style:none;padding:0;margin:0;display:grid;gap:1px}
+nav.toc a{display:flex;gap:10px;padding:5px 8px;border-radius:6px;color:var(--muted);text-decoration:none}
+nav.toc a span{font:12px/1.9 var(--mono);opacity:.75;min-width:18px}
+nav.toc a:hover,nav.toc a.on{background:var(--accent-soft);color:var(--ink)}
+main{min-width:0;max-width:820px}
+section{padding-block:28px 12px;border-bottom:1px solid var(--line);scroll-margin-top:16px}
+section:last-child{border-bottom:0}
+h2{font-family:var(--display);font-stretch:90%;font-weight:750;font-size:30px;line-height:1.1;margin:0 0 6px;text-wrap:balance}
+h2 .num{font:600 13px var(--mono);color:var(--accent);display:block;letter-spacing:.1em;margin-bottom:6px}
+h3{font-family:var(--display);font-weight:700;font-size:20px;margin:28px 0 8px;text-wrap:balance}
+p{margin:0 0 14px;max-width:68ch}
+.sub{color:var(--muted);font-size:17px;margin-bottom:18px}
+code,.mono{font-family:var(--mono);font-size:.88em}
+code{background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+ul,ol{padding-left:22px;margin:0 0 14px;max-width:66ch}
+li{margin-bottom:6px}
+.formula{font-family:var(--mono);font-size:15px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 16px;margin:6px 0 16px;overflow-x:auto;white-space:nowrap;font-variant-numeric:tabular-nums}
+.formula .eq{color:var(--accent);font-weight:600}
+.box{border-radius:10px;padding:14px 16px;margin:10px 0 18px;max-width:72ch;border:1px solid var(--line)}
+.box > .bh{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.box p:last-child,.box ul:last-child{margin-bottom:0}
+.box.curso{background:var(--curso-soft);border-color:var(--curso)}
+.box.curso > .bh{color:var(--curso)}
+.box.curso .diap{font:500 12px var(--mono);text-transform:none;letter-spacing:0;padding:2px 7px;border-radius:999px;border:1px solid var(--curso)}
+.box.proy{background:var(--accent-soft);border-color:var(--accent)}
+.box.proy > .bh{color:var(--accent)}
+.box.puente{background:var(--panel);border-style:dashed;border-color:var(--muted)}
+.box.puente > .bh{color:var(--muted)}
+.box.warn{background:var(--warn-soft);border-color:var(--warn)}
+.box.warn > .bh{color:var(--warn)}
+.lab{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin:12px 0 22px}
+.lab-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.lab-h .t{font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.lab-h .q{font-size:14px;color:var(--muted)}
+.ctrls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px;margin-bottom:12px}
+.ctrl{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.ctrl label{display:flex;justify-content:space-between;gap:8px}
+.ctrl output{font:600 13px var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=number]{font:500 14px var(--mono);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 8px;width:100%}
+select,button{font:500 14px var(--sans);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 10px}
+button{cursor:pointer}
+button:hover{border-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent}
+.seg button.on{background:var(--accent);color:var(--panel)}
+.btns{display:flex;gap:6px;flex-wrap:wrap}
+svg.plot{width:100%;height:auto;display:block}
+.gridl{stroke:var(--grid);stroke-width:1}
+.axisl{stroke:var(--muted);stroke-width:1}
+.tick{fill:var(--muted);font:11px var(--mono)}
+.albl{fill:var(--muted);font:12px var(--sans)}
+.lbl{fill:var(--ink);font:12px var(--sans)}
+.lblm{fill:var(--muted);font:11px var(--sans)}
+.readout{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.pill{font:500 13px var(--mono);padding:5px 9px;border-radius:999px;border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.pill.ok{border-color:var(--ok);color:var(--ok);background:var(--ok-soft)}
+.pill.bad{border-color:var(--warn);color:var(--warn);background:var(--warn-soft)}
+.pill.acc{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.n{font-family:var(--mono);white-space:nowrap}
+.tag{font:600 11px var(--mono);padding:2px 6px;border-radius:4px;white-space:nowrap}
+.tag.err{background:var(--warn-soft);color:var(--warn)} .tag.dec{background:var(--accent-soft);color:var(--accent)} .tag.ok{background:var(--ok-soft);color:var(--ok)}
+.infobox{border:1px solid var(--line);border-radius:8px;padding:14px;margin-top:10px;background:var(--bg);min-height:120px}
+.infobox h4{margin:0 0 6px;font-family:var(--display);font-size:17px}
+.infobox p{font-size:15px;margin-bottom:8px}
+.infobox .meta{font:12px var(--mono);color:var(--muted)}
+details.step{border:1px solid var(--line);border-radius:10px;background:var(--panel);margin:10px 0}
+details.step summary{cursor:pointer;padding:14px 16px;display:flex;gap:14px;align-items:baseline;list-style:none;flex-wrap:wrap}
+details.step summary::-webkit-details-marker{display:none}
+details.step summary .k{font:600 13px var(--mono);color:var(--accent);min-width:72px}
+details.step summary .s{font-weight:600}
+details.step summary .st{margin-left:auto}
+details.step[open] summary{border-bottom:1px solid var(--line)}
+details.step .body{padding:14px 16px}
+pre{font:13px/1.55 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;margin:6px 0 14px}
+.quiz .q{margin-bottom:18px}
+.quiz .opt{display:flex;gap:8px;align-items:flex-start;padding:7px 10px;border:1px solid var(--line);border-radius:6px;margin:6px 0;cursor:pointer;font-size:15px;background:var(--bg)}
+.quiz .opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.quiz .opt.wrong{border-color:var(--warn);background:var(--warn-soft)}
+.quiz .fb{font-size:14px;margin-top:6px}
+.chk{border-top:1px dashed var(--line);margin-top:18px;padding-top:14px}
+.chk > .bh{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ok);margin-bottom:6px}
+details.sol{margin:4px 0 16px}
+details.sol summary{cursor:pointer;color:var(--accent);font-weight:500}
+dl.gl{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr);gap:8px 18px;margin:0}
+dl.gl dt{font-weight:600}
+dl.gl dd{margin:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:5px}
+.small{font-size:13px;color:var(--muted)}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0 12px}
+.flow .blk{font:500 13px var(--sans);padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);cursor:pointer}
+.flow .blk.on{border-color:var(--accent);background:var(--accent-soft)}
+.flow .ar{color:var(--muted);font-family:var(--mono)}
+.chkl{display:flex;align-items:center;gap:6px;justify-content:flex-start!important}
+@media (max-width:900px){.layout{grid-template-columns:1fr;gap:8px}nav.toc{position:static;max-height:none}nav.toc ol{display:flex;overflow-x:auto;gap:4px;padding-bottom:6px}nav.toc .grp{display:none}nav.toc a{white-space:nowrap}.two{grid-template-columns:1fr}}
+@media (max-width:520px){dl.gl{grid-template-columns:1fr}dl.gl dd{margin-bottom:8px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">Comunicaciones Eléctricas I · EL5513 · ITCR</div>
+  <h1>Radio FDM-FM con receptor superheterodino</h1>
+  <p class="lead">Guía de estudio del proyecto, construida sobre la presentación del curso. Cada tema empieza por lo que vieron en clase, con las diapositivas exactas, y termina en cómo se usó en el proyecto. Donde el proyecto necesitó algo que el curso no cubre, se explica desde cero a partir de lo que sí vieron. Al final está el modelo Simulink bloque por bloque y su construcción paso a paso.</p>
+  <div class="facts">
+    <span class="fact">3 audios de <b>15 kHz</b></span>
+    <span class="fact">FDM DSB-SC en <b>120 kHz</b></span>
+    <span class="fact">FM con Δf <b>150 kHz</b></span>
+    <span class="fact">portadora <b>9–11 MHz</b></span>
+    <span class="fact">FI <b>1.7 MHz</b></span>
+    <span class="fact">escala <b>K = 100</b></span>
+    <span class="fact">SDR canal ideal <b>≈ 60 dB</b></span>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Capítulos" id="toc">
+  <div class="grp">Antes de empezar</div>
+  <ol><li><a href="#inicio"><span>00</span>Cómo usar la guía</a></li><li><a href="#mapa"><span>01</span>El sistema completo</a></li></ol>
+  <div class="grp">Teoría del curso</div>
+  <ol>
+    <li><a href="#muestreo"><span>02</span>Muestreo</a></li>
+    <li><a href="#filtros"><span>03</span>Filtros y distorsión</a></li>
+    <li><a href="#dsb"><span>04</span>DSB-SC</a></li>
+    <li><a href="#fdm"><span>05</span>FDM</a></li>
+    <li><a href="#fm"><span>06</span>FM</a></li>
+    <li><a href="#demod"><span>07</span>Demodulación FM</a></li>
+    <li><a href="#superhet"><span>08</span>Superheterodino</a></li>
+    <li><a href="#ruido"><span>09</span>Ruido en FM</a></li>
+  </ol>
+  <div class="grp">El proyecto</div>
+  <ol>
+    <li><a href="#errores"><span>10</span>Errores del enunciado</a></li>
+    <li><a href="#diseno"><span>11</span>Diseño numérico</a></li>
+    <li><a href="#simulink"><span>12</span>Modelo Simulink</a></li>
+    <li><a href="#construccion"><span>13</span>Construcción</a></li>
+    <li><a href="#uso"><span>14</span>Archivos y uso</a></li>
+    <li><a href="#practica"><span>15</span>Práctica</a></li>
+    <li><a href="#glosario"><span>16</span>Glosario</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="inicio">
+  <h2><span class="num">Capítulo 00</span>Cómo usar esta guía</h2>
+  <p class="sub">Siga los capítulos en orden: cada uno se apoya en el anterior, igual que en el curso.</p>
+  <p>Cada capítulo de teoría usa tres tipos de recuadro:</p>
+  <div class="box curso"><div class="bh">En el curso <span class="diap">diap. 000</span></div><p>Lo que dice la presentación del curso (basada en Haykin y en Tomasi), con su notación y el número de diapositiva para buscarla en el PDF.</p></div>
+  <div class="box proy"><div class="bh">En el proyecto</div><p>Cómo se usa esa idea en el sistema, con los números reales del diseño.</p></div>
+  <div class="box puente"><div class="bh">Más allá del curso</div><p>Algo que el proyecto necesitó y que la presentación no cubre directamente. Se explica partiendo de lo que sí vieron.</p></div>
+  <p>Además hay <strong>bancos de prueba</strong> interactivos (mueva los controles y observe) y, al final de cada capítulo, un <strong>autochequeo</strong> de dos o tres preguntas.</p>
+  <h3>Mapa entre la presentación y el proyecto</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Tema del curso</th><th>Diapositivas</th><th>Dónde aparece en el proyecto</th><th>Cap.</th></tr></thead>
+    <tbody>
+      <tr><td>Banda base y pasobanda</td><td class="n">48–51</td><td>Audios (banda base) y señal FM (pasobanda)</td><td class="n">01</td></tr>
+      <tr><td>Teorema de muestreo, traslape, filtro antitraslape</td><td class="n">391–400</td><td>Frecuencias de muestreo por etapa y filtros antes de decimar</td><td class="n">02</td></tr>
+      <tr><td>Distorsión lineal: magnitud constante y fase lineal</td><td class="n">181–185</td><td>Filtros FIR de fase lineal y su retardo</td><td class="n">03</td></tr>
+      <tr><td>Intermodulación: frecuencias suma y diferencia</td><td class="n">165</td><td>Productos del mezclador</td><td class="n">03, 08</td></tr>
+      <tr><td>DSB-SC: modulación, detección coherente, errores de fase y frecuencia</td><td class="n">225–238</td><td>Las tres subportadoras y su demodulación</td><td class="n">04</td></tr>
+      <tr><td>Portadora piloto, FM estéreo, PLL</td><td class="n">243–253</td><td>Referencia de FDM sobre FM y de la sincronía</td><td class="n">04, 05</td></tr>
+      <tr><td>FDM y ejemplo FDMA con SSB</td><td class="n">263–266</td><td>Plan de frecuencias de los tres canales</td><td class="n">05</td></tr>
+      <tr><td>SSB y transformada de Hilbert</td><td class="n">275–292</td><td>Por qué se eligió DSB-SC</td><td class="n">05</td></tr>
+      <tr><td>FM: K<sub>1</sub>, Δf, índice, Bessel, Carson, relación de desviación, potencia</td><td class="n">309–334</td><td>Modulador FM, Δf = 150 kHz, anchos de banda</td><td class="n">06</td></tr>
+      <tr><td>Demodulación FM: discriminadores, limitador, PLL</td><td class="n">342–354, 375</td><td>Demodulador en cuadratura</td><td class="n">07</td></tr>
+      <tr><td>Señales de banda angosta: componentes en fase y cuadratura</td><td class="n">174</td><td>Ramas I y Q del demodulador</td><td class="n">07</td></tr>
+      <tr><td>Heterodinaje, superheterodino, FI, imagen</td><td class="n">356–361</td><td>Receptor completo</td><td class="n">08</td></tr>
+      <tr><td>Figura de mérito, ruido en FM, umbral, prénfasis</td><td class="n">362–387</td><td>Evaluación con AWGN</td><td class="n">09</td></tr>
+    </tbody></table></div>
+  <p class="small">Los números de diapositiva corresponden a las páginas del PDF «Comunicaciones Eléctricas» del curso.</p>
+</section>
+
+<section id="mapa">
+  <h2><span class="num">Capítulo 01</span>El sistema completo</h2>
+  <p class="sub">Tres audios viajan juntos en una sola señal de radio y se separan otra vez en el receptor.</p>
+  <div class="box curso"><div class="bh">En el curso <span class="diap">diap. 48–51</span></div>
+    <p>Una <strong>señal en banda base</strong> es la información en su forma original, sin trasladar en frecuencia; el audio (20 Hz–20 kHz) es el ejemplo típico. Una <strong>señal pasobanda</strong> es la banda base ya modulada: trasladada a una banda de alta frecuencia, apta para transmitirse. Los sistemas en banda base solo sirven para distancias cortas.</p></div>
+  <p>El proyecto recorre ese camino dos veces. Los tres audios (banda base) se trasladan a tres carriles de frecuencia distintos (<strong>FDM</strong>, capítulos 04–05), y el resultado, llamado <em>multiplex</em>, se traslada otra vez a 10 MHz con <strong>FM</strong> (capítulo 06). El receptor deshace todo en orden inverso: baja la señal a una frecuencia intermedia (<strong>superheterodino</strong>, capítulo 08), recupera el multiplex (capítulo 07) y separa los audios.</p>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Diagrama interactivo</span><span class="q">Toque cada bloque para ver qué hace y en qué capítulo se explica</span></div>
+    <div class="scroll"><svg id="mapSvg" class="plot" viewBox="0 0 760 300" role="img" aria-label="Diagrama de bloques del sistema"></svg></div>
+    <div id="mapInfo" class="infobox" aria-live="polite"></div>
+  </div>
+  <div class="box proy"><div class="bh">En el proyecto: dos selecciones distintas</div>
+    <p>En la radio hay dos decisiones independientes. <b>Sintonizar</b> elige la portadora y ocurre antes del mezclador. <b>Elegir el audio 1, 2 o 3</b> ocurre al final, después de separar el multiplex. Cambiar de audio no toca el receptor.</p></div>
+</section>
+
+<section id="muestreo">
+  <h2><span class="num">Capítulo 02</span>Muestreo</h2>
+  <p class="sub">Una simulación es digital: todo el sistema vive en muestras, así que este tema va primero.</p>
+  <div class="box curso"><div class="bh">En el curso <span class="diap">diap. 391–400</span></div>
+    <p><strong>Teorema de muestreo:</strong> una señal limitada en banda a W hertz queda descrita por completo por sus muestras si se toma una cada 1/(2W) segundos. 2W es la <strong>frecuencia de Nyquist</strong>.</p>
+    <p>Muestrear produce un espectro <strong>periódico</strong>: copias de G(f) repetidas cada f<sub>s</sub> (diap. 394). Si la señal no está limitada en banda, las copias se solapan: es el <strong>traslape</strong> o <em>aliasing</em> (diap. 398). Para evitarlo: (1) un <strong>filtro pasobajas antitraslape</strong> antes de muestrear y (2) muestrear un poco por encima de la frecuencia de Nyquist (diap. 400).</p></div>
+  <div class="formula"><span class="eq">f<sub>s</sub> &gt; 2·f<sub>máx</sub></span> &nbsp;&nbsp;(f<sub>máx</sub> = la frecuencia más alta presente)</div>
+  <p><strong>En palabras simples:</strong> si se toman pocas muestras, una frecuencia alta se disfraza de una más baja y ya no hay forma de saber cuál era. Pruebe el banco: con f<sub>s</sub> = 48 kHz, todo lo que pase de 24 kHz se ve como otra frecuencia.</p>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Banco 2.1 · Traslape</span><span class="q">Suba la frecuencia por encima de f<sub>s</sub>/2 = 24 kHz</span></div>
+    <div class="ctrls"><div class="ctrl"><label for="alf">Frecuencia de la señal <output id="alfo"></output></label><input type="range" id="alf" min="1" max="60" step="0.5" value="5"></div></div>
+    <svg id="alSvg" class="plot"></svg>
+    <div class="readout" id="alOut"></div>
+  </div>
+  <div class="box proy"><div class="bh">En el proyecto</div>
+    <p>El sistema tiene señales muy distintas: audios de 15 kHz, un multiplex de 120 kHz y una portadora de 10 MHz que, al pasar por el mezclador, genera un producto de hasta 20.65 MHz. Cada etapa se muestrea a la tasa que su f<sub>máx</sub> exige:</p>
+    <div class="scroll"><table><thead><tr><th>Etapa</th><th>f<sub>máx</sub></th><th>2·f<sub>máx</sub></th><th>f<sub>s</sub> usada</th></tr></thead><tbody>
+      <tr><td>Audio</td><td class="n">15 kHz</td><td class="n">30 kHz</td><td class="n">48 kHz</td></tr>
+      <tr><td>Multiplex FDM</td><td class="n">120 kHz</td><td class="n">240 kHz</td><td class="n">480 kHz</td></tr>
+      <tr><td>RF y mezclador (peor caso, 11 MHz)</td><td class="n">20.65 MHz</td><td class="n">41.3 MHz</td><td class="n">48 MHz</td></tr>
+      <tr><td>FI y demodulador</td><td class="n">2.05 MHz</td><td class="n">4.1 MHz</td><td class="n">4.8 MHz</td></tr>
+    </tbody></table></div>
+    <p>Antes de cada reducción de tasa hay un filtro pasobajas: es el filtro antitraslape de la diapositiva 400.</p></div>
+  <div class="box puente"><div class="bh">Más allá del curso: cambiar la tasa de una señal ya muestreada</div>
+    <p>El curso muestrea una vez, de analógico a digital. En la simulación hay que <strong>cambiar</strong> de tasa varias veces. Bajar la tasa (<strong>decimar</strong> por M) es quedarse con 1 de cada M muestras, después del filtro antitraslape. Subir la tasa (<strong>interpolar</strong> por L) se hace en dos pasos: insertar L−1 ceros entre muestras y pasar un pasobajas que «rellena» los huecos. Los ceros crean copias del espectro (las mismas copias periódicas de la diap. 394) y el filtro las elimina.</p></div>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Banco 2.2 · Interpolación ×4</span><span class="q">Avance paso a paso</span></div>
+    <div class="seg" id="intStep" style="margin-bottom:10px"><button data-v="0" class="on">1 · Muestras lentas</button><button data-v="1">2 · Inserción de ceros</button><button data-v="2">3 · Filtro pasobajas</button></div>
+    <svg id="intSvg" class="plot"></svg>
+    <p class="small" id="intTxt" style="margin-top:8px"></p>
+  </div>
+  <div class="scroll"><svg id="rateSvg" class="plot" viewBox="0 0 760 210" role="img" aria-label="Cadena de tasas de muestreo del sistema"></svg></div>
+  <p class="small">La cadena de tasas del sistema: la señal sube a 48 MHz solo para la parte de radio y baja en cuanto puede.</p>
+  <div class="chk"><div class="bh">Autochequeo</div><div class="quiz" data-quiz="muestreo"></div></div>
+</section>
+
+<section id="filtros">
+  <h2><span class="num">Capítulo 03</span>Filtros, distorsión y retardo</h2>
+  <p class="sub">Un buen filtro deja pasar lo que debe sin deformarlo, pero siempre retrasa la señal.</p>
+  <div class="box curso"><div class="bh">En el curso <span class="diap">diap. 181–185</span></div>
+    <p>Una señal pasa <strong>sin distorsión</strong> por un sistema si la forma de onda de salida es idéntica a la de entrada, aunque esté escalada y retrasada. Para eso, la función de transferencia debe tener <strong>magnitud constante</strong> y <strong>fase lineal decreciente</strong> con ω:</p>
+    <p class="mono">|H(ω)| = k &nbsp;&nbsp;y&nbsp;&nbsp; θ<sub>h</sub>(ω) = −ω·t<sub>d</sub> &nbsp;→&nbsp; t<sub>d</sub> = −dθ<sub>h</sub>/dω constante</p>
+    <p>Si k no es constante hay <strong>distorsión de amplitud</strong>; si t<sub>d</sub> no es constante hay <strong>distorsión de fase</strong>. No basta con atenuar o amplificar por igual: todas las componentes deben llegar <strong>con el mismo retardo</strong> para sumarse correctamente (diap. 182).</p></div>
+  <p><strong>En palabras simples:</strong> dentro de su banda de paso, un filtro ideal multiplica todo por la misma constante y retrasa todo el mismo tiempo. Retrasar no es un defecto; lo que deforma es retrasar distinto a cada frecuencia.</p>
+  <div class="box puente"><div class="bh">Más allá del curso: filtros FIR de fase lineal</div>
+    <p>Un filtro <strong>FIR</strong> calcula cada salida como una suma ponderada de las últimas N entradas: y[n] = Σ h[k]·x[n−k]. Si los coeficientes son simétricos (h[k] = h[N−1−k]), su fase es exactamente lineal: cumple la condición de la diap. 181 y retrasa todas las frecuencias lo mismo:</p>
+    <div class="formula"><span class="eq">retardo = (N − 1)/2 muestras = (N − 1)/(2·f<sub>s</sub>) segundos</span></div>
+    <p>Para diseñarlos se usó el <strong>método de ventana</strong>: se toma la respuesta al impulso del filtro ideal (una función sinc), se recorta a N coeficientes y se suaviza con una ventana de <strong>Kaiser</strong>. La fórmula de Kaiser da cuántos coeficientes hacen falta para una atenuación A (dB) y un ancho de transición Δf:</p>
+    <div class="formula"><span class="eq">N ≈ (A − 7.95) / (2.285·Δω) + 1</span>, &nbsp;Δω = 2π·Δf / f<sub>s</sub></div>
+    <p>Menos transición o más atenuación exigen más coeficientes, y más coeficientes significan más retardo.</p></div>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Banco 3.1 · Diseñe un pasobajas FIR</span><span class="q">Elija un ejemplo o cambie las especificaciones</span></div>
+    <div class="btns" style="margin-bottom:10px" id="kzPre">
+      <button data-p="48,15,18,60">Audio a 48 kHz</button><button data-p="480,15,20,60">Pasobajas tras el demux</button><button data-p="4800,120,240,60">Posdetección</button><button data-p="48,15,16,80">Transición estrecha</button>
+    </div>
+    <div class="ctrls">
+      <div class="ctrl"><label for="kzFs">f<sub>s</sub> [kHz]</label><input type="number" id="kzFs" value="48" min="1"></div>
+      <div class="ctrl"><label for="kzFp">Fin de la banda de paso [kHz]</label><input type="number" id="kzFp" value="15" min="0.1" step="0.1"></div>
+      <div class="ctrl"><label for="kzFst">Inicio del rechazo [kHz]</label><input type="number" id="kzFst" value="18" min="0.2" step="0.1"></div>
+      <div class="ctrl"><label for="kzA">Atenuación A [dB]</label><input type="number" id="kzA" value="60" min="21" max="100"></div>
+    </div>
+    <div class="two"><svg id="kzH" class="plot"></svg><svg id="kzImp" class="plot"></svg></div>
+    <div class="readout" id="kzOut"></div>
+    <p class="small" style="margin-top:8px">Es un cálculo ilustrativo con la fórmula de Kaiser; los filtros reales del proyecto los diseña <code>disenar_fir_kaiser.m</code>, que además sube el orden hasta comprobar el rechazo.</p>
+  </div>
+  <div class="box curso"><div class="bh">En el curso: frecuencias suma y diferencia <span class="diap">diap. 165</span></div>
+    <p>Cuando dos señales pasan por un elemento no lineal aparecen <strong>frecuencias de suma y diferencia</strong> (productos cruzados). En un amplificador eso es distorsión indeseada; en un <strong>mezclador</strong> es exactamente lo que se busca. El capítulo 08 lo usa para trasladar la señal a la FI.</p></div>
+  <div class="box proy"><div class="bh">En el proyecto</div>
+    <p>Todos los filtros son FIR de fase lineal con 60 dB de rechazo, diseñados por una función propia, <code>disenar_fir_kaiser.m</code>, para no depender de ninguna toolbox. Su retardo se suma a lo largo de la cadena y se compensa en el receptor (capítulo 04): por ejemplo, un filtro de 177 coeficientes a 480 kHz retrasa 88 muestras = 183 µs.</p></div>
+  <div class="chk"><div class="bh">Autochequeo</div><div class="quiz" data-quiz="filtros"></div></div>
+</section>
+
+<section id="dsb">
+  <h2><span class="num">Capítulo 04</span>DSB-SC y detección coherente</h2>
+  <p class="sub">La forma más simple de mover un audio en frecuencia: multiplicarlo por un coseno.</p>
+  <div class="box curso"><div class="bh">En el curso <span class="diap">diap. 225–232</span></div>
+    <p>La modulación de amplitud con portadora suprimida (<strong>DSB-SC</strong>) multiplica el mensaje f(t) por la portadora:</p>
+    <p class="mono">φ(t) = f(t)·cos ω<sub>c</sub>t &nbsp;&nbsp;→&nbsp;&nbsp; Φ(ω) = ½F(ω + ω<sub>c</sub>) + ½F(ω − ω<sub>c</sub>)</p>
+    <p>El espectro del mensaje se <strong>traslada</strong> ±ω<sub>c</sub> sin cambiar de forma, con una banda lateral inferior y una superior; el ancho de banda es el <strong>doble</strong> del mensaje (diap. 229). La portadora no aparece en el espectro: está suprimida.</p>
+    <p>Para demodular se multiplica otra vez por la portadora y se filtra con un pasobajas (diap. 230):</p>
+    <p class="mono">φ(t)·cos ω<sub>c</sub>t = ½f(t) + ½f(t)·cos 2ω<sub>c</sub>t &nbsp;→ LPF →&nbsp; ½f(t)</p>
+    <p>Esto se llama <strong>detección coherente</strong> o síncrona (diap. 231): el oscilador del receptor debe estar sincronizado con el del transmisor.</p></div>
+  <div class="box curso"><div class="bh">En el curso: errores de fase y frecuencia <span class="diap">diap. 237–238</span></div>
+    <p>Si el oscilador local tiene un error de frecuencia Δω y de fase φ<sub>0</sub>, tras el pasobajas queda:</p>
+    <p class="mono">e<sub>o</sub>(t) = ½f(t)·cos[(Δω)t + φ<sub>0</sub>]</p>
+    <p>Un error de fase constante multiplica la salida por cos φ<sub>0</sub>: con 90° la salida desaparece. Un error de frecuencia hace que la salida suba y baje (batido). Por eso hay que conocer en el receptor la fase y la frecuencia correctas de la portadora.</p></div>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Banco 4.1 · Demodulación coherente con errores</span><span class="q">Gris: mensaje original · azul: salida del demodulador</span></div>
+    <div class="ctrls">
+      <div class="ctrl"><label for="dsPh">Error de fase φ<sub>0</sub> <output id="dsPho"></output></label><input type="range" id="dsPh" min="0" max="180" step="5" value="0"></div>
+      <div class="ctrl"><label for="dsDf">Error de frecuencia Δf <output id="dsDfo"></output></label><input type="range" id="dsDf" min="0" max="300" step="10" value="0"></div>
+    </div>
+    <svg id="dsSvg" class="plot"></svg>
+    <div class="readout" id="dsOut"></div>
+  </div>
+  <div class="box curso"><div class="bh">En el curso: cómo se sincroniza en la práctica <span class="diap">diap. 243, 247–253</span></div>
+    <p>Un método es enviar una <strong>portadora piloto</strong>: un tono cuya frecuencia y fase están ligadas a la portadora; el ejemplo es la FM estéreo comercial. En el receptor, un <strong>PLL</strong> (lazo de seguimiento de fase) se engancha al piloto y genera la portadora sincronizada.</p></div>
+  <div class="box proy"><div class="bh">En el proyecto: el problema del retardo</div>
+    <p>Como el transmisor y el receptor están en la misma simulación, la frecuencia de las subportadoras es exacta (Δω = 0). Pero la <strong>fase</strong> no: entre el modulador DSB-SC y el detector, la señal atraviesa una docena de filtros FIR, y cada uno la retrasa (capítulo 03). Un retardo τ en una subportadora f<sub>k</sub> es un error de fase:</p>
+    <div class="formula"><span class="eq">φ<sub>0</sub> = 2π·f<sub>k</sub>·τ</span> &nbsp;&nbsp;→&nbsp;&nbsp; ganancia del canal = cos(2π·f<sub>k</sub>·τ)</div>
+    <p>Con los filtros del proyecto, τ ≈ 226 µs en los canales 2 y 3 y 412 µs en el canal 1, que tiene un filtro más largo. Sin corregirlo, el canal 2 salía multiplicado por −0.87 y el canal 1 por 0.09: casi desaparecía. La solución fue generar en el receptor cada subportadora ya retrasada, cos(2π f<sub>k</sub>(t − τ<sub>k</sub>)), con τ<sub>k</sub> calculado sumando los retardos conocidos de los filtros. Es la misma idea que usa la FM estéreo, que retrasa a propósito el canal L+R para que llegue en fase con L−R (Tomasi).</p></div>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Banco 4.2 · Ganancia de cada canal según el retardo</span><span class="q">Mueva τ, cargue los retardos reales y active la compensación</span></div>
+    <div class="ctrls">
+      <div class="ctrl"><label for="tau">Retardo τ <output id="tauo"></output></label><input type="range" id="tau" min="0" max="500" step="1" value="0"></div>
+      <div class="ctrl"><label>Escenario</label><div class="btns"><button id="tauReal">Retardos reales del proyecto</button><label class="chkl"><input type="checkbox" id="tauComp"> Compensar en el receptor</label></div></div>
+    </div>
+    <svg id="tauSvg" class="plot"></svg>
+    <div class="readout" id="tauOut"></div>
+  </div>
+  <div class="chk"><div class="bh">Autochequeo</div><div class="quiz" data-quiz="dsb"></div></div>
+</section>
+
+<section id="fdm">
+  <h2><span class="num">Capítulo 05</span>Multiplexación por división de frecuencia</h2>
+  <p class="sub">Varias señales comparten un medio ocupando frecuencias distintas.</p>
+  <div class="box curso"><div class="bh">En el curso <span class="diap">diap. 263–266</span></div>
+    <p><strong>Esquema general</strong> (diap. 264): cada señal x<sub>k</sub>(t) se multiplica por una portadora distinta ω<sub>ck</sub>, se suman y se transmiten. Entre canales quedan <strong>bandas de guarda</strong>. En el receptor, para cada canal: filtro pasabanda, multiplicación por su portadora y pasobajas.</p>
+    <p><strong>Ejemplo práctico, FDMA telefónico</strong> (diap. 265–266): tres voces de 300–3400 Hz se mezclan con portadoras de 20, 25 y 30 kHz y un pasabanda conserva solo la banda lateral superior (SSB). Cada canal ocupa 5 kHz.</p></div>
+  <div class="box curso"><div class="bh">En el curso: SSB frente a DSB <span class="diap">diap. 275–292</span></div>
+    <p>La SSB transmite una sola banda lateral: ahorra la mitad del ancho de banda y energía. Se puede generar con un filtro que elimine una banda o con la <strong>transformada de Hilbert</strong> (diap. 289). Desventajas: receptores más complejos y difíciles de sintonizar (diap. 291).</p></div>
+  <div class="box curso"><div class="bh">En el curso: la FM estéreo <span class="diap">diap. 244–246</span></div>
+    <p>Es el ejemplo real más parecido al proyecto: FDM <em>sobre</em> FM. El canal L+R va en banda base (0–15 kHz), hay un piloto en 19 kHz y el canal L−R va en <strong>DSB-SC</strong> sobre una subportadora de 38 kHz (23–53 kHz). Todo ese multiplex modula en FM la portadora.</p></div>
+  <p><strong>En palabras simples:</strong> cada audio recibe su propio «carril» de frecuencias. Multiplicar por cos(2π f<sub>k</sub> t) mueve el audio para que quede centrado en f<sub>k</sub> (capítulo 04). Si los carriles no se tocan, el receptor puede separarlos con filtros.</p>
+  <div class="formula"><span class="eq">m(t) = x<sub>1</sub>(t)·cos(2π·20k·t) + x<sub>2</sub>(t)·cos(2π·60k·t) + x<sub>3</sub>(t)·cos(2π·100k·t)</span></div>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Banco 5.1 · Arme el plan FDM</span><span class="q">Mueva las subportadoras y vea si los canales caben en 120 kHz</span></div>
+    <div class="ctrls">
+      <div class="ctrl"><label for="f1">Subportadora 1 <output id="f1o"></output></label><input type="range" id="f1" min="0" max="140" step="1" value="20"></div>
+      <div class="ctrl"><label for="f2">Subportadora 2 <output id="f2o"></output></label><input type="range" id="f2" min="0" max="140" step="1" value="60"></div>
+      <div class="ctrl"><label for="f3">Subportadora 3 <output id="f3o"></output></label><input type="range" id="f3" min="0" max="140" step="1" value="100"></div>
+      <div class="ctrl"><label for="fw">Ancho de cada audio <output id="fwo"></output></label><input type="range" id="fw" min="3" max="20" step="1" value="15"></div>
+      <div class="ctrl"><label for="fmod">Modulación de las subportadoras</label><select id="fmod"><option value="dsb">DSB-SC (la del proyecto)</option><option value="ssb">SSB, banda superior (ejemplo del curso)</option></select></div>
+      <div class="ctrl"><label>Planes de ejemplo</label><div class="btns"><button id="fdmReset">Proyecto</button><button id="fdmCurso">Ejemplo del curso</button></div></div>
+    </div>
+    <svg id="fdmSvg" class="plot"></svg>
+    <div class="readout" id="fdmOut"></div>
+  </div>
+  <div class="box proy"><div class="bh">En el proyecto: plan elegido</div>
+    <p>Subportadoras en 20, 60 y 100 kHz con DSB-SC: los canales ocupan 5–35, 45–75 y 85–115 kHz, con guardas de 10 kHz, y caben en los 120 kHz del enunciado (75 % de ocupación). Antes de sumar, el multiplex se divide entre 3 para que nunca supere 1 (lo necesita el modulador FM, capítulo 06).</p>
+    <p><strong>Por qué DSB-SC y no SSB como en el ejemplo del curso:</strong> la voz telefónica empieza en 300 Hz, así que junto a la portadora queda un hueco de 600 Hz donde el filtro de SSB puede cortar. El audio real llega casi a 0 Hz: no hay hueco, y haría falta un filtro casi vertical. Como 120 kHz alcanzan para tres canales DSB-SC con guardas, DSB-SC es lo más simple, y es el mismo esquema del canal L−R de la FM estéreo.</p></div>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Escuche los audios de prueba</span><span class="q">Sonidos parecidos a los de la fuente «demo» del proyecto</span></div>
+    <div class="btns"><button data-snd="1">▶ Audio 1 · arpegio</button><button data-snd="2">▶ Audio 2 · sirena</button><button data-snd="3">▶ Audio 3 · pitidos</button></div>
+    <p class="small" style="margin-top:8px">Tres sonidos muy distintos para reconocer al oído que cada canal sale por su lado.</p>
+  </div>
+  <div class="chk"><div class="bh">Autochequeo</div><div class="quiz" data-quiz="fdm"></div></div>
+</section>
+
+<section id="fm">
+  <h2><span class="num">Capítulo 06</span>Modulación de frecuencia</h2>
+  <p class="sub">El mensaje mueve la frecuencia de la portadora hacia arriba y hacia abajo.</p>
+  <div class="box curso"><div class="bh">En el curso <span class="diap">diap. 309–311</span></div>
+    <p>Con un tono modulante v<sub>m</sub>(t) = V<sub>m</sub>·sen(ω<sub>m</sub>t), la onda FM es:</p>
+    <p class="mono">m(t) = V<sub>c</sub>·cos[ω<sub>c</sub>t + (K<sub>1</sub>V<sub>m</sub>/f<sub>m</sub>)·sen(ω<sub>m</sub>t)]</p>
+    <ul>
+      <li><strong>Sensibilidad a la desviación</strong> K<sub>1</sub> [Hz/V]: cuántos hertz se mueve la frecuencia por cada volt de mensaje. Haykin la llama k<sub>f</sub>.</li>
+      <li><strong>Desviación de frecuencia</strong>: Δf = K<sub>1</sub>·V<sub>m</sub> [Hz].</li>
+      <li><strong>Índice de modulación</strong>: m = Δf / f<sub>m</sub> (adimensional). Haykin lo llama β.</li>
+      <li><strong>Porcentaje de modulación</strong> (diap. 311): Δf<sub>real</sub> / Δf<sub>máx permitida</sub> × 100.</li>
+    </ul></div>
+  <div class="box curso"><div class="bh">En el curso: análisis en frecuencia <span class="diap">diap. 312–321</span></div>
+    <p>Un solo tono produce <strong>infinitos pares de bandas laterales</strong>, separadas de la portadora por múltiplos de f<sub>m</sub>. Con la identidad de Bessel:</p>
+    <p class="mono">m(t) = V<sub>c</sub> Σ J<sub>n</sub>(m)·cos[(ω<sub>c</sub> + nω<sub>m</sub>)t + nπ/2]</p>
+    <p>J<sub>n</sub>(m) es la amplitud del n-ésimo par. Una banda lateral es <strong>significativa</strong> si J<sub>n</sub> ≥ 0.01, es decir, al menos el 1 % de la portadora sin modular (diap. 320). A mayor m, más bandas significativas.</p></div>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Banco 6.1 · Tabla de Bessel</span><span class="q">Como la tabla de la diap. 321, calculada para cualquier m</span></div>
+    <div class="ctrls"><div class="ctrl"><label for="bsM">Índice de modulación m <output id="bsMo"></output></label><input type="range" id="bsM" min="0" max="8" step="0.05" value="1.3"></div></div>
+    <div class="scroll"><table id="bsTab"></table></div>
+    <div class="readout" id="bsOut"></div>
+  </div>
+  <div class="box curso"><div class="bh">En el curso: ancho de banda <span class="diap">diap. 325–328</span></div>
+    <ul>
+      <li><strong>Índice bajo</strong> (m &lt; 1, FM de banda angosta): B ≈ 2f<sub>m</sub>. <strong>Índice alto</strong> (m &gt; 10): B ≈ 2Δf. En general, según Bessel: <span class="mono">B = 2·n·f<sub>m</sub></span> (diap. 325).</li>
+      <li><strong>Regla de Carson</strong>: <span class="mono">B = 2(Δf + f<sub>m</sub>)</span>. Es un resultado experimental que abarca cerca del 98 % de la potencia (diap. 326).</li>
+      <li><strong>Ejemplo Carson vs Bessel</strong> (diap. 327): con Δf = 10 kHz y f<sub>m</sub> = 10 kHz (m = 1), Carson da 40 kHz y la tabla de Bessel da 60 kHz: con índices bajos, Carson se queda corto.</li>
+      <li><strong>Relación de desviación</strong> (diap. 328): <span class="mono">DR = Δf<sub>máx</sub> / f<sub>m(máx)</sub></span>. Es el índice del «peor caso»: el que da el ancho de banda máximo.</li>
+    </ul></div>
+  <div class="box curso"><div class="bh">En el curso: potencia <span class="diap">diap. 331–334</span></div>
+    <p>La potencia promedio de la onda FM es <strong>igual</strong> a la de la portadora sin modular: la modulación solo reparte esa potencia entre la portadora y las bandas laterales (J<sub>0</sub>² + 2ΣJ<sub>n</sub>² = 1). Compruébelo en la tabla del banco 6.1: la suma siempre da 100 %.</p></div>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Banco 6.2 · Explorador FM</span><span class="q">Cambie Δf y el tono; compare Carson con Bessel</span></div>
+    <div class="ctrls">
+      <div class="ctrl"><label for="fmD">Desviación Δf <output id="fmDo"></output></label><input type="range" id="fmD" min="5" max="300" step="5" value="150"></div>
+      <div class="ctrl"><label for="fmM">Tono modulante f<sub>m</sub> <output id="fmMo"></output></label><input type="range" id="fmM" min="5" max="115" step="1" value="115"></div>
+      <div class="ctrl"><label>Casos de ejemplo</label><div class="btns"><button id="fmCurso">Diap. 327</button><button id="fmProy">Proyecto</button></div></div>
+    </div>
+    <svg id="fmTime" class="plot"></svg>
+    <svg id="fmSpec" class="plot" style="margin-top:8px"></svg>
+    <div class="legend"><span><i style="background:var(--accent)"></i>bandas significativas (≥ 1 %)</span><span><i style="background:var(--muted)"></i>bandas pequeñas</span><span><i style="background:var(--c2)"></i>Carson</span><span><i style="background:var(--c3)"></i>Bessel</span></div>
+    <div class="readout" id="fmOut"></div>
+  </div>
+  <div class="box proy"><div class="bh">En el proyecto</div>
+    <p>El mensaje no es un tono sino el multiplex completo, normalizado a |m<sub>n</sub>| ≤ 1. La onda que genera el modulador es:</p>
+    <div class="formula"><span class="eq">s(t) = A<sub>c</sub>·cos( 2π f<sub>c</sub> t + 2π k<sub>f</sub> ∫ m<sub>n</sub>(τ) dτ )</span>, &nbsp;k<sub>f</sub> = Δf = 150 kHz</div>
+    <ul>
+      <li>La frecuencia modulante máxima es la del <strong>multiplex</strong>: f<sub>m(máx)</sub> = 115 kHz (borde del canal 3), no los 15 kHz del audio.</li>
+      <li>DR = 150/115 = <strong>1.30</strong>. Carson = 2(150 + 115) = <strong>530 kHz</strong>. Con m = 1.30, la tabla de Bessel da 3 bandas significativas: B = 2·3·115 = <strong>690 kHz</strong>. Igual que en la diap. 327, Carson subestima; por eso los filtros de RF y FI se dimensionaron para 690 kHz.</li>
+      <li>El ancho que se midió en la simulación fue mucho menor (148 kHz al 99 % de la potencia), porque el multiplex real casi nunca llega al pico: el porcentaje de modulación (diap. 311) fue de 61 %.</li>
+    </ul></div>
+  <div class="box puente"><div class="bh">Más allá del curso: por qué Δf = 150 kHz</div>
+    <p>El enunciado no fija Δf. La figura de mérito de Haykin (capítulo 09, diap. 377–378) dice que la SNR de salida crece con <strong>Δf²</strong>, a costa de más ancho de banda: duplicar Δf da 6 dB más, pero ensancha la FM y sube el umbral. 150 kHz es un compromiso: DR = 1.3, parecido al de la FM estéreo comercial (75/53 ≈ 1.4), y un ancho que cabe con holgura en la FI de 1.7 MHz.</p></div>
+  <div class="chk"><div class="bh">Autochequeo</div><div class="quiz" data-quiz="fm"></div></div>
+</section>
+
+<section id="demod">
+  <h2><span class="num">Capítulo 07</span>Demodulación FM</h2>
+  <p class="sub">Convertir variaciones de frecuencia otra vez en voltaje.</p>
+  <div class="box curso"><div class="bh">En el curso <span class="diap">diap. 342–354, 375</span></div>
+    <p>Hay dos formas (diap. 342): <strong>directa</strong>, con el discriminador de frecuencia, e <strong>indirecta</strong>, con un PLL.</p>
+    <ul>
+      <li><strong>Discriminador con circuito sintonizado</strong> (diap. 343): un detector de pendiente convierte la FM en AM y un detector de envolvente la demodula. Variantes: detector de pendiente, de pendiente balanceado, Foster-Seeley y detector de relación.</li>
+      <li>Responden también a la amplitud, por eso necesitan un <strong>limitador</strong> (diap. 348, 375): recorta la onda para que su amplitud sea constante.</li>
+      <li><strong>Demodulador con PLL</strong> (diap. 354): el VCO sigue la frecuencia de entrada; el voltaje de control que lo mantiene enganchado es el mensaje demodulado.</li>
+    </ul>
+    <p>La idea común: la salida debe ser proporcional a la <strong>frecuencia instantánea</strong>, que es la derivada de la fase dividida entre 2π.</p></div>
+  <div class="formula"><span class="eq">f<sub>i</sub>(t) = (1/2π)·dθ(t)/dt = f<sub>c</sub> + k<sub>f</sub>·m<sub>n</sub>(t)</span></div>
+  <div class="box curso"><div class="bh">En el curso: componentes en fase y cuadratura <span class="diap">diap. 174</span></div>
+    <p>Una señal de banda angosta alrededor de una frecuencia central se puede describir con dos componentes: <strong>en fase</strong> (I) y <strong>en cuadratura</strong> (Q), o equivalentemente con su <strong>envolvente</strong> y su <strong>fase</strong>. La transformada de Hilbert de las diap. 275–289 es la herramienta que construye la componente en cuadratura.</p></div>
+  <div class="box puente"><div class="bh">Más allá del curso: el demodulador en cuadratura</div>
+    <p>El proyecto usa la descripción I/Q de la diap. 174 para medir la fase directamente:</p>
+    <ol>
+      <li>La señal de FI se multiplica por cos(2π f<sub>FI</sub> t) y por −sen(2π f<sub>FI</sub> t): son dos detectores coherentes como los del capítulo 04, uno en fase y otro en cuadratura.</li>
+      <li>Un pasobajas en cada rama deja I(t) y Q(t). Juntas forman el número complejo z = I + jQ, cuyo ángulo es la fase θ(t) de la señal FM.</li>
+      <li>Como la frecuencia es la derivada de la fase, basta con medir <strong>cuánto gira z de una muestra a la siguiente</strong>:</li>
+    </ol>
+    <div class="formula"><span class="eq">f<sub>i</sub>[n] = (f<sub>s</sub>/2π)·arg( z[n]·z*[n−1] )</span> &nbsp;→ en Simulink: atan2(Q·I<sub>ant</sub> − I·Q<sub>ant</sub>, I·I<sub>ant</sub> + Q·Q<sub>ant</sub>)</div>
+    <p>Es la versión digital del discriminador ideal: no tiene la no linealidad del detector de pendiente (diap. 345) y no necesita limitador, porque el ángulo de z no depende de su amplitud.</p></div>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Banco 7.1 · El fasor z gira con la frecuencia</span><span class="q">Cada punto es una muestra de z a 4.8 MHz; el giro entre puntos es la frecuencia</span></div>
+    <div class="ctrls"><div class="ctrl"><label for="iqD">Desviación instantánea f<sub>i</sub> − f<sub>FI</sub> <output id="iqDo"></output></label><input type="range" id="iqD" min="-300" max="300" step="10" value="150"></div></div>
+    <svg id="iqSvg" class="plot"></svg>
+    <div class="readout" id="iqOut"></div>
+  </div>
+  <div class="box proy"><div class="bh">En el proyecto</div>
+    <p>El demodulador está en el subsistema <code>Demodulador_FM</code>, armado solo con bloques básicos (capítulo 12). Se probaron dos: el de cuadratura dio SDR ≈ 60 dB; el discriminador clásico del curso (limitador → derivador → detector de envolvente) funcionó, pero con peor SDR y más diafonía. Se usa el de cuadratura y el clásico queda como comparación.</p>
+    <p>Un detalle encontrado al probar el clásico: el derivador digital deja un pequeño nivel de continua. Por eso el filtro del canal 1 es un pasabanda de 5–35 kHz y no un pasobajas: si dejara pasar 0 Hz, esa continua se mezclaría con la subportadora de 20 kHz y arruinaría el canal 1.</p></div>
+  <div class="chk"><div class="bh">Autochequeo</div><div class="quiz" data-quiz="demod"></div></div>
+</section>
+
+<section id="superhet">
+  <h2><span class="num">Capítulo 08</span>El receptor superheterodino</h2>
+  <p class="sub">Todo lo que se recibe se lleva a una frecuencia fija, la FI, y ahí se procesa.</p>
+  <div class="box curso"><div class="bh">En el curso <span class="diap">diap. 356–360</span></div>
+    <p><strong>Heterodinaje</strong> (diap. 357): trasladar el espectro de una señal mezclándola con otra frecuencia en un mezclador (multiplicador) con un oscilador local.</p>
+    <p><strong>Esquema general</strong> (diap. 358): antena → <em>sección de RF</em> (sintonizador) → <em>mezclador</em> con el oscilador local → <em>sección de FI</em> (se amplifica y se filtra con un pasabanda de alto Q) → detector → amplificador de audio. La sintonía de la sección de RF y del oscilador es común. El detector «podría ser otro tipo de demodulador, siempre diseñado para la FI».</p>
+    <p><strong>Receptor heterodino</strong> (diap. 359): traslada cualquier señal recibida a una frecuencia fija, la <strong>FI</strong>; el demodulador y sus filtros se diseñan para esa frecuencia. Si la FI es menor que la portadora recibida pero mayor que la señal de salida final, el receptor es <strong>superheterodino</strong>.</p></div>
+  <div class="formula"><span class="eq">cos(a)·cos(b) = ½cos(a−b) + ½cos(a+b)</span> &nbsp;→&nbsp; el mezclador produce la <b>diferencia</b> y la <b>suma</b> (diap. 165)</div>
+  <div class="box curso"><div class="bh">En el curso: la frecuencia imagen <span class="diap">diap. 361</span></div>
+    <p>Es la frecuencia que, con el mismo oscilador local, también da como resultado la FI. Está a 2·FI de la frecuencia deseada. <strong>Ejemplo del curso:</strong> f<sub>RF</sub> = 100 MHz, FI = 10.7 MHz, f<sub>local</sub> = 110.7 MHz (inyección superior). Una señal en 121.4 MHz también da 121.4 − 110.7 = 10.7 MHz: es la imagen, y si no se rechaza antes del mezclador interfiere a la salida del filtro de FI.</p></div>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Banco 8.1 · Calculadora</span><span class="q">Compruebe el ejemplo del curso y el del proyecto</span></div>
+    <div class="ctrls">
+      <div class="ctrl"><label for="ccRF">f<sub>RF</sub> [MHz]</label><input type="number" id="ccRF" value="100" step="0.1"></div>
+      <div class="ctrl"><label for="ccFI">FI [MHz]</label><input type="number" id="ccFI" value="10.7" step="0.1"></div>
+      <div class="ctrl"><label for="ccInj">Inyección</label><select id="ccInj"><option value="sup">Superior (f_LO = f_RF + FI)</option><option value="inf">Inferior (f_LO = f_RF − FI)</option></select></div>
+      <div class="ctrl"><label>Casos</label><div class="btns"><button id="ccCurso">Diap. 361</button><button id="ccProy">Proyecto</button></div></div>
+    </div>
+    <div class="readout" id="ccOut"></div>
+  </div>
+  <p>Para eliminar la imagen, antes del mezclador va un filtro pasabanda centrado en la frecuencia sintonizada: la <strong>sección de RF</strong> o <strong>preselector</strong>. Pruebe el banco siguiente: active la emisora intrusa en la imagen y apague el preselector.</p>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Banco 8.2 · Sintonice la radio del proyecto</span><span class="q">Portadora, inyección, desintonía, preselector e imagen</span></div>
+    <div class="ctrls">
+      <div class="ctrl"><label for="shFc">Portadora f<sub>c</sub> <output id="shFco"></output></label><input type="range" id="shFc" min="9" max="11" step="0.1" value="10"></div>
+      <div class="ctrl"><label for="shDet">Desintonía del receptor <output id="shDeto"></output></label><input type="range" id="shDet" min="-1000" max="1000" step="50" value="0"></div>
+      <div class="ctrl"><label>Inyección del LO</label><div class="seg" id="shInj"><button data-v="inf" class="on">Inferior</button><button data-v="sup">Superior</button></div></div>
+      <div class="ctrl"><label>Opciones</label>
+        <label class="chkl"><input type="checkbox" id="shPre" checked> Preselector activo</label>
+        <label class="chkl"><input type="checkbox" id="shImg"> Emisora intrusa en la imagen</label></div>
+    </div>
+    <div class="small">Entrada del receptor (RF)</div>
+    <svg id="shRF" class="plot"></svg>
+    <div class="small" style="margin-top:6px">Salida del mezclador</div>
+    <svg id="shMix" class="plot"></svg>
+    <div class="readout" id="shOut"></div>
+  </div>
+  <div class="box proy"><div class="bh">En el proyecto</div>
+    <ul>
+      <li><strong>FI = 1.7 MHz</strong> (dato del enunciado). Cumple la definición de la diap. 359: es menor que la portadora (9–11 MHz) y mayor que la señal de salida (el multiplex, 115 kHz).</li>
+      <li><strong>Inyección inferior:</strong> f<sub>LO</sub> = f<sub>c</sub> − 1.7 MHz (8.3 MHz para 10 MHz). El curso muestra la superior; la inferior se eligió porque el producto suma es más bajo (18.3 MHz), lo que permite muestrear a 48 MHz, y porque no invierte el espectro en la FI.</li>
+      <li><strong>Imagen</strong> en f<sub>c</sub> − 3.4 MHz = 6.6 MHz. El preselector deja pasar f<sub>c</sub> ± 350 kHz y rechaza 60 dB desde ± 1.55 MHz.</li>
+      <li><strong>Sección de FI</strong> en dos pasos: un pasobajas quita el producto suma, se decima por 10 y un pasabanda deja 1.35–2.05 MHz (700 kHz ≥ los 690 kHz de Bessel).</li>
+      <li>La sintonía de RF y del LO es común, como en la diap. 358: en la interfaz, una sola perilla mueve la portadora y el LO la sigue automáticamente.</li>
+    </ul></div>
+  <div class="chk"><div class="bh">Autochequeo</div><div class="quiz" data-quiz="superhet"></div></div>
+</section>
+
+<section id="ruido">
+  <h2><span class="num">Capítulo 09</span>Ruido en FM</h2>
+  <p class="sub">Se suma ruido blanco al canal y se mide cuánto empeora cada audio.</p>
+  <div class="box curso"><div class="bh">En el curso: modelo y figura de mérito <span class="diap">diap. 364–367</span></div>
+    <p>Modelo del receptor (diap. 365): a la señal modulada s(t) se le suma ruido <strong>AWGN</strong> w(t) con densidad espectral N<sub>0</sub>/2; un filtro pasabanda ideal de ancho B<sub>T</sub> (el de la señal modulada) deja x(t) = s(t) + n(t), que entra al demodulador.</p>
+    <p><strong>Figura de mérito</strong> (diap. 366): (SNR)<sub>O</sub>/(SNR)<sub>C</sub>, comparando sistemas con la misma potencia transmitida. (SNR)<sub>C</sub> es la relación señal a ruido <strong>del canal</strong>, medida en el ancho de banda del mensaje W. Procedimiento (diap. 367): calcular (SNR)<sub>C</sub>, calcular (SNR)<sub>O</sub> a la salida y su cociente.</p></div>
+  <div class="box curso"><div class="bh">En el curso: ruido en receptores FM <span class="diap">diap. 374–378, 385</span></div>
+    <p class="mono">S<sub>No</sub>(f) = N<sub>0</sub>·f² / A<sub>c</sub>² &nbsp;(|f| ≤ W) &nbsp;&nbsp;|&nbsp;&nbsp; (SNR)<sub>O</sub> = 3A<sub>c</sub>²k<sub>f</sub>²P / (2N<sub>0</sub>W³) &nbsp;&nbsp;|&nbsp;&nbsp; (SNR)<sub>C</sub> = A<sub>c</sub>² / (2WN<sub>0</sub>)</p>
+    <p class="mono">Figura de mérito = 3k<sub>f</sub>²P / W² &nbsp;∝ D²,&nbsp; D = Δf/W</p>
+    <p>La densidad del ruido a la salida del discriminador <strong>crece con f²</strong> (diap. 385). Conclusión de la diap. 378: aumentar la desviación mejora la SNR a costa de más ancho de banda, algo que no ocurre en AM.</p></div>
+  <div class="box curso"><div class="bh">En el curso: umbral, captura y prénfasis <span class="diap">diap. 381–387</span></div>
+    <ul>
+      <li><strong>Umbral</strong> (diap. 381–382): por encima de cierta SNR la FM funciona muy bien; por debajo, el ruido toma el control de la fase y la señal colapsa de golpe.</li>
+      <li><strong>Captura</strong> (diap. 383): con dos señales en la misma frecuencia, el receptor FM se queda con la más fuerte.</li>
+      <li><strong>Prénfasis y deénfasis</strong> (diap. 384–387): como el ruido crece con f² y el audio tiene poca energía en agudos, se refuerzan los agudos antes de transmitir y se atenúan después de demodular. Es un par de filtros complementarios que actúa sobre el ruido.</li>
+    </ul></div>
+  <div class="box puente"><div class="bh">Más allá del curso: el ruido en cada canal FDM</div>
+    <p>En el curso, el mensaje está en banda base (0–W). En el proyecto, cada audio está sobre una subportadora f<sub>k</sub>, en la zona donde el ruido f² es más alto. Integrando S<sub>No</sub>(f) alrededor de cada subportadora y aplicando la detección coherente del capítulo 04:</p>
+    <div class="formula"><span class="eq">(SNR)<sub>k</sub> = (SNR)<sub>C</sub> · W·Δf²·P<sub>x</sub> / [ 18·W<sub>a</sub>·(f<sub>k</sub>² + W<sub>a</sub>²/3) ]</span></div>
+    <p>W = 120 kHz, W<sub>a</sub> = 15 kHz y P<sub>x</sub> es la potencia de cada audio. El 18 sale de la normalización ÷3 y de la detección coherente. Con f<sub>k</sub> = 20, 60 y 100 kHz, el ruido relativo es 0, +8.9 y +13.3 dB: el canal 3 es el más ruidoso. Por eso un prénfasis por audio, como el de la FM comercial, aporta poco aquí: el ruido depende sobre todo de la subportadora, no de la frecuencia dentro del audio.</p></div>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Banco 9.1 · Calidad de cada audio con ruido</span><span class="q">Puntos: medido en Simulink · líneas discontinuas: teoría</span></div>
+    <div class="ctrls">
+      <div class="ctrl"><label for="nzD">Desviación Δf (cambia la teoría) <output id="nzDo"></output></label><input type="range" id="nzD" min="50" max="300" step="25" value="150"></div>
+      <div class="ctrl"><label for="nzS">(SNR)<sub>C</sub> de lectura <output id="nzSo"></output></label><input type="range" id="nzS" min="10" max="40" step="1" value="25"></div>
+    </div>
+    <svg id="nzSvg" class="plot"></svg>
+    <div class="legend"><span><i style="background:var(--c1)"></i>canal 1 (20 kHz)</span><span><i style="background:var(--c2)"></i>canal 2 (60 kHz)</span><span><i style="background:var(--c3)"></i>canal 3 (100 kHz)</span><span><i style="background:var(--warn-soft);border:1px solid var(--warn)"></i>zona de umbral (aprox.)</span></div>
+    <div class="readout" id="nzOut"></div>
+  </div>
+  <div class="box proy"><div class="bh">En el proyecto: resultados</div>
+    <ul>
+      <li>(SNR)<sub>C</sub> se definió exactamente como en la diap. 377, con W = 120 kHz (el mensaje es el multiplex).</li>
+      <li><strong>Por encima del umbral</strong>, Simulink coincide con la teoría con un error de 0.4 a 0.8 dB.</li>
+      <li><strong>Umbral:</strong> cuando la CNR en el ancho de Carson baja de ~11 dB, el canal 1 cae bruscamente; poco más abajo colapsan los tres.</li>
+      <li><strong>Diferencia entre canales:</strong> medida 10.7 y 14.3 dB, teoría 10.4 y 14.2 dB.</li>
+      <li><strong>Sin preselector</strong> el SDR baja 3.0 / 2.7 / 2.6 dB: el ruido de la banda imagen también llega a la FI y se suma (capítulo 08). La teoría predice 3 dB.</li>
+    </ul></div>
+  <div class="chk"><div class="bh">Autochequeo</div><div class="quiz" data-quiz="ruido"></div></div>
+</section>
+
+<section id="errores">
+  <h2><span class="num">Capítulo 10</span>Los errores intencionales del enunciado</h2>
+  <p class="sub">Con la teoría de los capítulos anteriores se puede demostrar qué está mal y por qué.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Sección</th><th>Qué dice</th><th>Tipo</th><th>Corrección</th><th>Diap.</th></tr></thead>
+    <tbody>
+      <tr><td class="n">§5</td><td>Tabla: portadora y FI ÷100, audio y FDM sin escalar</td><td><span class="tag err">error</span></td><td>Escalar todo por K = 100</td><td class="n">359, 326</td></tr>
+      <tr><td class="n">§5</td><td>Se escala «por limitaciones computacionales»</td><td><span class="tag err">premisa imprecisa</span></td><td>Escalar no ahorra muestras; el ahorro viene del multirritmo</td><td class="n">391–397</td></tr>
+      <tr><td class="n">§8</td><td>Muestrear a 5–10 veces el ancho de banda</td><td><span class="tag err">inadecuada</span></td><td>f<sub>s</sub> &gt; 2·f<sub>máx</sub> por etapa, incluido el producto suma</td><td class="n">397, 165</td></tr>
+      <tr><td class="n">§4.5</td><td>Si la calidad es baja, usar prénfasis/deénfasis</td><td><span class="tag err">inadecuada</span></td><td>Con canal ideal no corrige nada: solo actúa sobre ruido</td><td class="n">384–387</td></tr>
+      <tr><td class="n">§4.3</td><td>«Definir el índice de modulación»</td><td><span class="tag dec">matiz</span></td><td>Con mensaje compuesto se usa DR = Δf/f<sub>m(máx)</sub></td><td class="n">328</td></tr>
+      <tr><td class="n">§4.5</td><td>Receptor con conversión, FI y demodulación</td><td><span class="tag dec">incompleta</span></td><td>Falta la sección de RF (preselector)</td><td class="n">358, 361</td></tr>
+      <tr><td class="n">§4.2</td><td>120 kHz para la señal multiplexada</td><td><span class="tag ok">válida</span></td><td>Es el ancho del multiplex, no el de la FM</td><td class="n">264</td></tr>
+      <tr><td class="n">§4.5</td><td>FI nominal de 1.7 MHz</td><td><span class="tag ok">válida</span></td><td>Cumple FI &lt; f<sub>c</sub> y FI &gt; señal de salida</td><td class="n">359</td></tr>
+    </tbody></table></div>
+  <h3>Error 1: la tabla de escalamiento</h3>
+  <p>El enunciado pide simular con frecuencias más bajas «manteniendo las proporciones», pero su tabla divide la portadora y la FI entre 100 y deja el audio y el FDM igual.</p>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Banco 10.1 · Tabla del enunciado frente a escala uniforme</span><span class="seg" id="escMode"><button data-v="tabla" class="on">Tabla del enunciado</button><button data-v="uniforme">Escala uniforme ÷100</button></span></div>
+    <svg id="escSvg" class="plot"></svg>
+    <div class="scroll"><table id="escTab"></table></div>
+    <div class="readout" id="escOut"></div>
+  </div>
+  <p>Con la tabla, la FM ocuparía 100 ± 265 kHz (Carson, diap. 326): cruzaría 0 Hz y se solaparía con su propio espejo de frecuencias negativas. Además, la FI de 17 kHz quedaría por debajo de la señal de salida (115 kHz), así que el receptor ya no cumpliría la definición de superheterodino de la diap. 359. La corrección mínima es escalar <em>todo</em> por K = 100: se conservan los 100 kHz y 17 kHz del profesor, y el audio pasa a 150 Hz y el multiplex a 1.2 kHz.</p>
+  <h3>Error 2: escalar no ahorra cálculo</h3>
+  <p>Dividir todas las frecuencias entre K equivale a estirar el tiempo K veces: un segundo de audio dura K segundos simulados, y la tasa de muestreo (Nyquist, diap. 397) también se divide entre K. El número de muestras queda igual:</p>
+  <div class="formula"><span class="eq">N = (K·T<sub>real</sub>)·(f<sub>s,nominal</sub>/K) = T<sub>real</sub>·f<sub>s,nominal</sub></span> &nbsp;→&nbsp; no depende de K</div>
+  <p>Se cumplió el escalamiento porque es obligatorio, pero el ahorro real vino de usar varias tasas de muestreo (capítulo 02). Por la misma razón, el audio real no se filtra a 150 Hz: son las mismas muestras con el tiempo estirado, y para escucharlo se reproduce a 48 kHz.</p>
+  <h3>Error 3: la regla «5 a 10 veces el ancho de banda»</h3>
+  <p>El teorema de muestreo (diap. 397) habla de la frecuencia más alta, no del ancho. La FM ocupa unos 530 kHz, pero está en 10 MHz, y el mezclador produce un producto suma (diap. 165) que llega a 20.65 MHz. Nyquist exige más de 41.3 MHz. Con la regla del enunciado (5–10 × 530 kHz = 2.6–5.3 MHz) ni siquiera se podría representar la portadora.</p>
+  <h3>Error 4: el prénfasis como remedio</h3>
+  <p>El prénfasis (diap. 384–387) es un par de filtros complementarios que mejora la relación señal a ruido. Con canal ideal no hay ruido: los dos filtros se cancelan y no cambian nada. Si la calidad es mala sin ruido, hay un error de diseño.</p>
+</section>
+
+<section id="diseno">
+  <h2><span class="num">Capítulo 11</span>El diseño numérico</h2>
+  <p class="sub">Todos los números del sistema, de dónde salen y su valor en la simulación.</p>
+  <p>La simulación usa K = 100: cada frecuencia simulada es la nominal dividida entre 100. La interfaz muestra siempre valores nominales.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Parámetro</th><th>Nominal</th><th>Simulado</th><th>Cálculo</th><th>Diap.</th></tr></thead>
+    <tbody>
+      <tr><td>Ancho de cada audio</td><td class="n">15 kHz</td><td class="n">150 Hz</td><td>Enunciado</td><td class="n">48</td></tr>
+      <tr><td>Subportadoras</td><td class="n">20 / 60 / 100 kHz</td><td class="n">200 / 600 / 1000 Hz</td><td>Guardas de 10 kHz</td><td class="n">264</td></tr>
+      <tr><td>Bandas de los canales</td><td class="n">5–35 / 45–75 / 85–115 kHz</td><td class="n">÷100</td><td>f<sub>k</sub> ± 15 kHz (DSB-SC: doble del mensaje)</td><td class="n">229</td></tr>
+      <tr><td>f<sub>m(máx)</sub> del multiplex</td><td class="n">115 kHz</td><td class="n">1.15 kHz</td><td>Borde del canal 3</td><td class="n">328</td></tr>
+      <tr><td>Desviación Δf = k<sub>f</sub></td><td class="n">150 kHz</td><td class="n">1.5 kHz</td><td>Compromiso SNR / ancho de banda</td><td class="n">310, 378</td></tr>
+      <tr><td>Relación de desviación</td><td class="n">1.30</td><td class="n">1.30</td><td>150 / 115</td><td class="n">328</td></tr>
+      <tr><td>Ancho de Carson</td><td class="n">530 kHz</td><td class="n">5.3 kHz</td><td>2(150 + 115)</td><td class="n">326</td></tr>
+      <tr><td>Ancho por Bessel</td><td class="n">690 kHz</td><td class="n">6.9 kHz</td><td>n = 3 → 2·3·115</td><td class="n">320–325</td></tr>
+      <tr><td>Portadora</td><td class="n">9–11 MHz (10)</td><td class="n">90–110 kHz</td><td>Enunciado + rango elegido</td><td class="n">—</td></tr>
+      <tr><td>FI</td><td class="n">1.7 MHz</td><td class="n">17 kHz</td><td>Enunciado</td><td class="n">359</td></tr>
+      <tr><td>LO (inyección inferior)</td><td class="n">f<sub>c</sub> − 1.7 = 8.3 MHz</td><td class="n">83 kHz</td><td>Automático</td><td class="n">358</td></tr>
+      <tr><td>Imagen</td><td class="n">f<sub>c</sub> − 3.4 = 6.6 MHz</td><td class="n">66 kHz</td><td>2·FI de la portadora</td><td class="n">361</td></tr>
+      <tr><td>Producto suma</td><td class="n">18.3 MHz</td><td class="n">183 kHz</td><td>f<sub>c</sub> + f<sub>LO</sub></td><td class="n">165</td></tr>
+      <tr><td>Paso de RF y FI</td><td class="n">±350 kHz</td><td class="n">±3.5 kHz</td><td>Cubre Bessel</td><td class="n">358</td></tr>
+      <tr><td>Muestreo audio / multiplex / FI / RF</td><td class="n">48 k / 480 k / 4.8 M / 48 MHz</td><td class="n">÷100</td><td>Nyquist por etapa</td><td class="n">397</td></tr>
+    </tbody></table></div>
+  <p>El archivo <code>params_sistema.m</code> calcula todo esto y verifica 18 condiciones antes de simular: bandas FDM dentro de 0–120 kHz y sin solaparse, FI mayor que f<sub>m(máx)</sub>, Nyquist en cada etapa, imagen dentro de la zona que rechaza el preselector, todos los filtros con al menos 60 dB, entre otras. Si una falla, se detiene y dice cuál.</p>
+</section>
+
+<section id="simulink">
+  <h2><span class="num">Capítulo 12</span>El modelo Simulink bloque por bloque</h2>
+  <p class="sub">Qué bloque implementa cada ecuación, y por qué se armó así.</p>
+  <p>El modelo <code>sistema_fdm_fm.slx</code> no se dibuja a mano: lo genera el script <code>construir_modelo.m</code>. Usa solo la biblioteca básica de Simulink, para que corra en MATLAB R2026a sin toolboxes. Ningún bloque tiene números escritos: todos leen sus parámetros de la estructura <code>P</code> (de <code>params_sistema.m</code>) y de <code>fuente</code> (de <code>generar_fuentes.m</code>).</p>
+  <div class="box puente"><div class="bh">Los bloques básicos que se usan</div>
+    <div class="scroll"><table><thead><tr><th>Bloque</th><th>Qué hace</th></tr></thead><tbody>
+      <tr><td>From Workspace</td><td>Entrega una a una las muestras de un vector guardado en MATLAB (los audios).</td></tr>
+      <tr><td>Discrete Filter</td><td>Filtro digital. Con denominador 1 es un FIR: y[n] = Σ h[k]·x[n−k].</td></tr>
+      <tr><td>Rate Transition</td><td>Conecta partes con distinta tasa de muestreo. Al subir de tasa repite la muestra; al bajar, toma 1 de cada M.</td></tr>
+      <tr><td>Pulse Generator</td><td>Tren de pulsos: 1 en una muestra de cada L, 0 en las demás. Multiplicado por la salida del Rate Transition, inserta ceros.</td></tr>
+      <tr><td>Sine Wave</td><td>Seno o coseno muestreado (subportadoras, LO). Coseno = seno con fase π/2.</td></tr>
+      <tr><td>Product, Add, Gain</td><td>Multiplicar (mezclar), sumar y escalar.</td></tr>
+      <tr><td>Discrete-Time Integrator</td><td>Suma acumulada: la integral del mensaje que pide la FM.</td></tr>
+      <tr><td>Digital Clock</td><td>Entrega el tiempo t de cada muestra, para la fase 2π f<sub>c</sub> t.</td></tr>
+      <tr><td>Trigonometric Function</td><td>cos para el modulador; atan2 para el demodulador.</td></tr>
+      <tr><td>Unit Delay</td><td>Retrasa una muestra: da z[n−1] al demodulador.</td></tr>
+      <tr><td>Random Number</td><td>Ruido gaussiano para el canal AWGN.</td></tr>
+      <tr><td>To Workspace</td><td>Guarda una señal en MATLAB para graficarla o compararla.</td></tr>
+    </tbody></table></div></div>
+  <div class="lab">
+    <div class="lab-h"><span class="t">Explorador del modelo</span><span class="q">Elija un subsistema y toque cada bloque</span></div>
+    <div class="seg" id="smSub" style="margin-bottom:6px"></div>
+    <div class="flow" id="smFlow"></div>
+    <div id="smInfo" class="infobox" aria-live="polite"></div>
+    <p class="small" style="margin-top:8px">Los nombres son aproximados a los del modelo generado; abra <code>sistema_fdm_fm.slx</code> para ver los exactos.</p>
+  </div>
+  <div class="box warn"><div class="bh">Un retardo que no estaba en ningún libro</div>
+    <p>Al comparar Simulink con la referencia en MATLAB apareció una diferencia de exactamente 10 muestras. El bloque <code>Rate Transition</code> de Simulink R2026a retrasa una muestra lenta al subir de tasa, incluso en modo de una sola tarea. Como es un retardo fijo, se midió y se incluyó en el cálculo de τ<sub>k</sub> (parámetro <code>rt_retardo = 1</code>). Es un ejemplo práctico de la diap. 182: todo lo que retrasa la señal cuenta para la fase del detector coherente.</p></div>
+</section>
+
+<section id="construccion">
+  <h2><span class="num">Capítulo 13</span>Cómo se construyó, paso a paso</h2>
+  <p class="sub">Etapas de la 0 a la 8. Cada una se verificó contra una referencia antes de pasar a la siguiente.</p>
+  <p>La estrategia fue construir dos versiones del mismo sistema: una <strong>referencia en MATLAB</strong> (<code>modelo_referencia.m</code>, con filtros causales) y el <strong>modelo en Simulink</strong>. En cada etapa se comparan las señales de las dos; si la diferencia es del orden de 10<sup>−10</sup>, el bloque está bien. Así un error se detecta en el bloque donde aparece, no al final.</p>
+  <div id="steps"></div>
+</section>
+
+<section id="uso">
+  <h2><span class="num">Capítulo 14</span>Archivos y cómo usarlos</h2>
+  <p class="sub">Solo hace falta MATLAB R2026a con Simulink.</p>
+  <ol>
+    <li>Abra MATLAB y vaya a la carpeta <code>proyecto_matlab</code>.</li>
+    <li>Escriba <code>main</code>. Se imprime la tabla de diseño, se genera el modelo si hace falta y se abre la radio.</li>
+    <li>Elija la portadora con la perilla y presione <strong>Sintonizar y simular</strong>. La primera vez tarda más porque compila.</li>
+    <li>Elija Audio 1, 2 o 3 y use <strong>Escuchar recuperado</strong> y <strong>Escuchar original</strong>.</li>
+  </ol>
+  <div class="scroll"><table>
+    <thead><tr><th>Archivo</th><th>Para qué sirve</th></tr></thead>
+    <tbody>
+      <tr><td class="n">main.m</td><td>Punto de entrada: tabla de diseño, modelo al día y radio.</td></tr>
+      <tr><td class="n">params_sistema.m</td><td>Parámetros, filtros, retardos y 18 comprobaciones. Recibe la portadora y opciones (ruido, duración, desintonía).</td></tr>
+      <tr><td class="n">disenar_fir_kaiser.m</td><td>Diseña filtros FIR por ventana de Kaiser y verifica su rechazo, sin toolboxes.</td></tr>
+      <tr><td class="n">construir_modelo.m</td><td>Genera <code>sistema_fdm_fm.slx</code> bloque por bloque.</td></tr>
+      <tr><td class="n">modelo_al_dia.m, version_modelo.m</td><td>Regeneran el <code>.slx</code> si es de una versión anterior.</td></tr>
+      <tr><td class="n">radio_fdm_fm.m</td><td>La interfaz tipo radio.</td></tr>
+      <tr><td class="n">generar_fuentes.m</td><td>Audios: tonos, ruido, demo o archivos WAV.</td></tr>
+      <tr><td class="n">modelo_referencia.m</td><td>La misma cadena en MATLAB, para verificar Simulink.</td></tr>
+      <tr><td class="n">comparar_senales.m</td><td>SDR entre audio original y recuperado, alineando retardo y ganancia.</td></tr>
+      <tr><td class="n">graficar_espectro.m, graficar_filtro.m</td><td>Espectros y respuestas de filtros con <code>fft</code>.</td></tr>
+      <tr><td class="n">prueba_etapa0.m, verificar_etapa2/3/5/8.m</td><td>Verificación de cada etapa.</td></tr>
+    </tbody></table></div>
+  <div class="box proy"><div class="bh">Audio real</div>
+    <p>Cree la carpeta <code>audios</code> con <code>audio1.wav</code>, <code>audio2.wav</code> y <code>audio3.wav</code>, idealmente a 48 kHz, y elija la fuente «audio». Simular audio real es lento: use pocos segundos.</p></div>
+</section>
+
+<section id="practica">
+  <h2><span class="num">Capítulo 15</span>Practique</h2>
+  <p class="sub">Preguntas de repaso de todo el proyecto y ejercicios de cálculo con solución.</p>
+  <h3>Repaso general</h3>
+  <div class="quiz" data-quiz="final"></div>
+  <div class="readout"><span class="pill acc" id="quizScore"></span></div>
+  <h3>Ejercicios</h3>
+  <div id="ejercicios"></div>
+</section>
+
+<section id="glosario">
+  <h2><span class="num">Capítulo 16</span>Glosario</h2>
+  <dl class="gl" id="gl"></dl>
+</section>
+
+</main>
+</div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in (attrs || {})) { if (k === 'text') e.textContent = attrs[k]; else e.setAttribute(k, attrs[k]); }
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function plot(svg, o) {
+  svg.innerHTML = '';
+  const W = o.W || 760, H = o.H || 260, ml = o.ml ?? 48, mr = o.mr ?? 16, mt = o.mt ?? 14, mb = o.mb ?? 40;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const X = v => ml + (v - o.x0) / (o.x1 - o.x0) * (W - ml - mr);
+  const Y = v => H - mb - (v - o.y0) / (o.y1 - o.y0) * (H - mt - mb);
+  const g = el('g', {}, svg);
+  (o.xt || []).forEach(t => {
+    el('line', { x1: X(t), x2: X(t), y1: mt, y2: H - mb, class: 'gridl' }, g);
+    el('text', { x: X(t), y: H - mb + 16, 'text-anchor': 'middle', class: 'tick', text: (o.xf || String)(t) }, g);
+  });
+  (o.yt || []).forEach(t => {
+    el('line', { x1: ml, x2: W - mr, y1: Y(t), y2: Y(t), class: 'gridl' }, g);
+    el('text', { x: ml - 6, y: Y(t) + 4, 'text-anchor': 'end', class: 'tick', text: (o.yf || String)(t) }, g);
+  });
+  el('line', { x1: ml, x2: W - mr, y1: H - mb, y2: H - mb, class: 'axisl' }, g);
+  if (o.xl) el('text', { x: (ml + W - mr) / 2, y: H - 6, 'text-anchor': 'middle', class: 'albl', text: o.xl }, g);
+  if (o.yl) { const cy = (mt + H - mb) / 2; el('text', { x: 13, y: cy, 'text-anchor': 'middle', class: 'albl', transform: `rotate(-90 13 ${cy})`, text: o.yl }, g); }
+  return { X, Y, W, H, ml, mr, mt, mb };
+}
+const path = pts => pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(2) + ' ' + p[1].toFixed(2)).join('');
+function ticks(a, b, step) { const r = []; for (let v = Math.ceil(a / step - 1e-9) * step; v <= b + 1e-9; v += step) r.push(+v.toFixed(10)); return r; }
+function niceStep(span) { const r = span / 5, p = Math.pow(10, Math.floor(Math.log10(r))), m = r / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p; }
+const fmt = (v, d = 1) => Number(v).toFixed(d);
+const pill = (cls, txt) => `<span class="pill ${cls}">${txt}</span>`;
+function bindRange(id, fmtFn, cb) {
+  const i = $('#' + id), o = $('#' + id + 'o');
+  const upd = () => { if (o) o.textContent = fmtFn(+i.value); cb(); };
+  i.addEventListener('input', upd);
+  return upd;
+}
+function setRange(id, v, fmtFn) { $('#' + id).value = v; const o = $('#' + id + 'o'); if (o) o.textContent = fmtFn(+v); }
+function seg(id, cb) {
+  const s = $('#' + id);
+  s.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    s.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    cb(b.dataset.v);
+  });
+}
+const segVal = id => $('#' + id + ' button.on').dataset.v;
+const CH = ['var(--c1)', 'var(--c2)', 'var(--c3)'], CHS = ['var(--c1s)', 'var(--c2s)', 'var(--c3s)'];
+function arrowDefs(svg, id) {
+  const defs = el('defs', {}, svg);
+  const mk = el('marker', { id, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' }, defs);
+  el('path', { d: 'M0 0L10 5L0 10z', style: 'fill:var(--muted)' }, mk);
+}
+
+/* índice activo */
+const links = $$('#toc a');
+const secs = links.map(a => document.querySelector(a.getAttribute('href')));
+function onScroll() {
+  let cur = 0;
+  secs.forEach((s, i) => { if (s && s.getBoundingClientRect().top < 140) cur = i; });
+  links.forEach((a, i) => a.classList.toggle('on', i === cur));
+}
+document.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+/* 01 mapa */
+const blocks = [
+  { id: 'aud', x: 20, y: 40, w: 96, t: 'Audios 1–3', row: 'TX', h: 'Tres audios en banda base', p: 'Cada uno se limita a 15 kHz con un filtro pasobajas. Pueden ser tonos, ruido, los sonidos demo o archivos WAV.', m: 'Capítulos 01 y 02 · generar_fuentes.m' },
+  { id: 'fdm', x: 140, y: 40, w: 120, t: 'FDM (DSB-SC)', row: 'TX', h: 'Multiplexación por división de frecuencia', p: 'Cada audio se multiplica por su subportadora (20, 60 y 100 kHz) y se suman. El resultado se divide entre 3 para que su pico nunca pase de 1.', m: 'Capítulos 04 y 05 · subsistema Transmisor_FDM' },
+  { id: 'fm', x: 284, y: 40, w: 128, t: 'Modulador FM', row: 'TX', h: 'Modulación de frecuencia', p: 'Se sube la tasa de muestreo hasta 48 MHz y la fase de la portadora avanza con la integral del multiplex. La frecuencia instantánea queda entre f_c − 150 kHz y f_c + 150 kHz.', m: 'Capítulo 06 · subsistema Modulador_FM' },
+  { id: 'ch', x: 436, y: 40, w: 104, t: 'Canal', row: 'TX', h: 'Canal ideal o AWGN', p: 'Primero el transmisor y el receptor se conectan directamente. Al final se suma ruido gaussiano con una (SNR)_C elegida por el equipo.', m: 'Capítulo 09 · subsistema Canal' },
+  { id: 'rf', x: 20, y: 190, w: 116, t: 'Sección de RF', row: 'RX', h: 'Preselector', p: 'Pasabanda centrado en la frecuencia sintonizada (±350 kHz). Rechaza la frecuencia imagen, 3.4 MHz más abajo, antes de que el mezclador la convierta a la FI.', m: 'Capítulo 08 · diap. 358 y 361' },
+  { id: 'mix', x: 160, y: 190, w: 110, t: 'Mezclador + LO', row: 'RX', h: 'Conversión de frecuencia', p: 'Multiplica por 2cos(2π f_LO t). Aparecen la diferencia (la FI, 1.7 MHz) y la suma (18.3 MHz). El LO sigue a la portadora: f_LO = f_c − 1.7 MHz.', m: 'Capítulo 08 · diap. 357 y 165' },
+  { id: 'fi', x: 294, y: 190, w: 110, t: 'Sección de FI', row: 'RX', h: 'Filtro de frecuencia intermedia', p: 'Un pasobajas quita el producto suma, se decima por 10 y un pasabanda deja solo 1.35–2.05 MHz. Como la FI es fija, este filtro no cambia al sintonizar.', m: 'Capítulo 08 · diap. 358–359' },
+  { id: 'dem', x: 428, y: 190, w: 116, t: 'Demodulador FM', row: 'RX', h: 'Demodulador en cuadratura', p: 'Baja la FI a cero en dos ramas (I y Q) y mide cuánto gira la fase entre muestras: eso es la frecuencia instantánea, que reproduce el multiplex.', m: 'Capítulo 07 · diap. 342 y 174' },
+  { id: 'dmx', x: 568, y: 190, w: 82, t: 'Demux', row: 'RX', h: 'Separación de los tres audios', p: 'Para cada canal: pasabanda, multiplicación por la subportadora con la fase compensada y pasobajas de 15 kHz.', m: 'Capítulos 04 y 05 · diap. 264 y 230' },
+  { id: 'sel', x: 674, y: 190, w: 70, t: 'Audio k', row: 'RX', h: 'Selector de audio', p: 'En la interfaz se elige cuál de los tres audios escuchar. Ocurre después del demultiplexor: no vuelve a simular ni toca el LO.', m: 'radio_fdm_fm.m' }
+];
+function showBlock(b) { $('#mapInfo').innerHTML = `<h4>${b.h}</h4><p>${b.p}</p><div class="meta">${b.m}</div>`; }
+function drawMap(sel) {
+  const s = $('#mapSvg'); s.innerHTML = '';
+  arrowDefs(s, 'arr');
+  el('text', { x: 20, y: 24, class: 'lblm', text: 'TRANSMISOR', style: 'letter-spacing:.1em' }, s);
+  el('text', { x: 20, y: 174, class: 'lblm', text: 'RECEPTOR SUPERHETERODINO', style: 'letter-spacing:.1em' }, s);
+  const h = 56, cx = b => b.x + b.w / 2;
+  for (let i = 0; i < blocks.length - 1; i++) {
+    const a = blocks[i], b = blocks[i + 1];
+    if (a.row === b.row) el('path', { d: `M${a.x + a.w} ${a.y + h / 2}H${b.x - 2}`, style: 'stroke:var(--muted);fill:none', 'marker-end': 'url(#arr)' }, s);
+  }
+  const ch = blocks[3], rf = blocks[4], mix = blocks[5];
+  el('path', { d: `M${ch.x + ch.w} ${ch.y + h / 2}H${ch.x + ch.w + 20}V150H${cx(rf)}V${rf.y - 2}`, style: 'stroke:var(--muted);fill:none', 'marker-end': 'url(#arr)' }, s);
+  el('circle', { cx: cx(mix), cy: 276, r: 11, style: 'fill:var(--panel);stroke:var(--muted)' }, s);
+  el('path', { d: `M${cx(mix) - 6} 276q3 -7 6 0t6 0`, style: 'stroke:var(--muted);fill:none' }, s);
+  el('path', { d: `M${cx(mix)} 265V${mix.y + h + 2}`, style: 'stroke:var(--muted);fill:none', 'marker-end': 'url(#arr)' }, s);
+  el('text', { x: cx(mix) + 16, y: 280, class: 'lblm', text: 'LO = f_c − 1.7 MHz' }, s);
+  blocks.forEach(b => {
+    const g = el('g', { tabindex: 0, role: 'button', 'aria-label': b.t, style: 'cursor:pointer' }, s);
+    const on = b.id === sel;
+    el('rect', { x: b.x, y: b.y, width: b.w, height: h, rx: 8, style: `fill:${on ? 'var(--accent-soft)' : 'var(--panel)'};stroke:${on ? 'var(--accent)' : 'var(--line)'};stroke-width:${on ? 2 : 1.2}` }, g);
+    el('text', { x: cx(b), y: b.y + h / 2 + 4, 'text-anchor': 'middle', class: 'lbl', text: b.t, style: 'font-weight:600' }, g);
+    const go = () => { drawMap(b.id); showBlock(b); };
+    g.addEventListener('click', go);
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  });
+}
+drawMap('aud'); showBlock(blocks[0]);
+
+/* 02 traslape */
+function drawAlias() {
+  const fs = 48, f = +$('#alf').value, fa = Math.abs(f - Math.round(f / fs) * fs), T = 0.5, svg = $('#alSvg');
+  const P = plot(svg, { W: 760, H: 230, x0: 0, x1: T, y0: -1.25, y1: 1.25, xt: ticks(0, T, 0.1), yt: [-1, 0, 1], xl: 'tiempo [ms]  ·  f_s = 48 kHz', ml: 36 });
+  const pts = []; for (let i = 0; i <= 1500; i++) { const t = i / 1500 * T; pts.push([P.X(t), P.Y(Math.cos(2 * Math.PI * f * t))]); }
+  el('path', { d: path(pts), style: 'stroke:var(--muted);fill:none;stroke-width:1;opacity:.7' }, svg);
+  const ap = []; for (let i = 0; i <= 600; i++) { const t = i / 600 * T; ap.push([P.X(t), P.Y(Math.cos(2 * Math.PI * fa * t))]); }
+  el('path', { d: path(ap), style: `stroke:${f > 24 ? 'var(--warn)' : 'var(--accent)'};fill:none;stroke-width:2;stroke-dasharray:${f > 24 ? '5 4' : '0'}` }, svg);
+  for (let n = 0; n / fs <= T; n++) { const t = n / fs; el('circle', { cx: P.X(t), cy: P.Y(Math.cos(2 * Math.PI * f * t)), r: 3.5, style: 'fill:var(--ink)' }, svg); }
+  $('#alOut').innerHTML = f <= 24
+    ? pill('ok', `f = ${fmt(f)} kHz < f_s/2 = 24 kHz`) + pill('acc', 'las muestras reconstruyen la señal original')
+    : pill('bad', `f = ${fmt(f)} kHz > 24 kHz`) + pill('bad', `las mismas muestras parecen un tono de ${fmt(fa)} kHz (traslape)`);
+}
+bindRange('alf', v => fmt(v) + ' kHz', drawAlias)();
+
+/* 02 interpolación */
+function drawInterp(step) {
+  const L = 4, Ns = 10, svg = $('#intSvg');
+  const xs = Array.from({ length: Ns }, (_, n) => Math.sin(2 * Math.PI * n / 9) + 0.35 * Math.sin(2 * Math.PI * n / 4.5 + 1));
+  const N = Ns * L, up = new Array(N).fill(0); xs.forEach((v, n) => up[n * L] = v);
+  const M = 24, h = [];
+  for (let k = -M; k <= M; k++) { const x = k / L, sinc = k === 0 ? 1 : Math.sin(Math.PI * x) / (Math.PI * x); h.push(sinc * (0.5 + 0.5 * Math.cos(Math.PI * k / (M + 1)))); }
+  const y = up.map((_, n) => { let s = 0; for (let k = -M; k <= M; k++) { const i = n - k; if (i >= 0 && i < N) s += h[k + M] * up[i]; } return s; });
+  const P = plot(svg, { W: 760, H: 220, x0: -1, x1: N, y0: -1.6, y1: 1.6, xt: [], yt: [-1, 0, 1], xl: 'índice de muestra a la tasa rápida', ml: 30 });
+  const stem = (n, v, c, r) => { el('line', { x1: P.X(n), x2: P.X(n), y1: P.Y(0), y2: P.Y(v), style: `stroke:${c};stroke-width:1.5` }, svg); el('circle', { cx: P.X(n), cy: P.Y(v), r, style: `fill:${c}` }, svg); };
+  if (step === 0) xs.forEach((v, n) => stem(n * L, v, 'var(--accent)', 5));
+  if (step === 1) up.forEach((v, n) => stem(n, v, n % L ? 'var(--muted)' : 'var(--accent)', n % L ? 2.5 : 5));
+  if (step === 2) y.forEach((v, n) => stem(n, v, n % L ? 'var(--c1)' : 'var(--accent)', n % L ? 3 : 5));
+  $('#intTxt').textContent = [
+    '10 muestras de una señal lenta. Queremos 4 veces más muestras por segundo.',
+    'Se insertan 3 ceros entre cada par de muestras. La tasa ya es 4 veces mayor, pero la señal tiene huecos: en frecuencia aparecen copias del espectro, como en la diap. 394.',
+    'El pasobajas elimina las copias y rellena los huecos (verde). Las muestras originales (azul) se conservan. El filtro tiene ganancia L = 4 para compensar los ceros.'
+  ][step];
+}
+seg('intStep', v => drawInterp(+v)); drawInterp(0);
+
+/* 02 cadena de tasas */
+(function drawRates() {
+  const s = $('#rateSvg'); s.innerHTML = '';
+  arrowDefs(s, 'arr2');
+  const lv = { a: 170, m: 125, f: 80, r: 35 }, names = { a: '48 kHz', m: '480 kHz', f: '4.8 MHz', r: '48 MHz' };
+  Object.keys(lv).forEach(k => { el('line', { x1: 86, x2: 744, y1: lv[k], y2: lv[k], class: 'gridl' }, s); el('text', { x: 8, y: lv[k] + 4, class: 'tick', text: names[k] }, s); });
+  const st = [['a', 'audio', 122], ['m', 'FDM', 206], ['f', '↑×10', 290], ['r', 'FM + canal', 374], ['r', 'mezclador', 458], ['f', 'FI + demod', 542], ['m', 'demux', 626], ['a', 'audios', 710]];
+  for (let i = 0; i < st.length - 1; i++) { const [l1, , x1] = st[i], [l2, , x2] = st[i + 1]; el('path', { d: `M${x1 + 34} ${lv[l1]}L${x2 - 36} ${lv[l2]}`, style: 'stroke:var(--muted);fill:none', 'marker-end': 'url(#arr2)' }, s); }
+  st.forEach(([l, t, x]) => {
+    el('rect', { x: x - 34, y: lv[l] - 13, width: 68, height: 26, rx: 6, style: `fill:var(--panel);stroke:${l === 'r' ? 'var(--accent)' : 'var(--line)'}` }, s);
+    el('text', { x, y: lv[l] + 4, 'text-anchor': 'middle', class: 'lbl', text: t, style: 'font-size:11px' }, s);
+  });
+  el('text', { x: 744, y: 200, 'text-anchor': 'end', class: 'lblm', text: 'Solo la parte de RF (borde azul) trabaja a 48 MHz' }, s);
+})();
+
+/* 03 Kaiser */
+function besselI0(x) { let s = 1, t = 1; for (let k = 1; k < 80; k++) { t *= (x / (2 * k)) * (x / (2 * k)); s += t; if (t < 1e-14 * s) break; } return s; }
+function drawKaiser() {
+  const fs = +$('#kzFs').value, fp = +$('#kzFp').value, fst = +$('#kzFst').value, A = +$('#kzA').value;
+  const out = $('#kzOut');
+  if (!(fs > 0 && fp > 0 && fst > fp && fst <= fs / 2 && A > 20)) { out.innerHTML = pill('bad', 'Revise los datos: debe cumplirse 0 < paso < rechazo ≤ f_s/2 y A > 20 dB'); return; }
+  const dw = 2 * Math.PI * (fst - fp) / fs;
+  let M = Math.ceil((A - 7.95) / (2.285 * dw)); if (M % 2) M++;
+  if (M > 4000) { out.innerHTML = pill('bad', `harían falta ${M + 1} coeficientes: transición demasiado estrecha para este banco`); return; }
+  const N = M + 1;
+  const beta = A > 50 ? 0.1102 * (A - 8.7) : 0.5842 * Math.pow(A - 21, 0.4) + 0.07886 * (A - 21);
+  const fc = (fp + fst) / 2 / fs;
+  const h = [];
+  for (let n = 0; n <= M; n++) { const m = n - M / 2; const hd = m === 0 ? 2 * fc : Math.sin(2 * Math.PI * fc * m) / (Math.PI * m); const w = besselI0(beta * Math.sqrt(Math.max(0, 1 - Math.pow(2 * n / M - 1, 2)))) / besselI0(beta); h.push(hd * w); }
+  const sum = h.reduce((a, b) => a + b, 0); for (let i = 0; i < h.length; i++) h[i] /= sum;
+  const G = 360, Hd = [];
+  for (let i = 0; i <= G; i++) {
+    const f = i / G * 0.5; let re = 0, im = 0;
+    for (let n = 0; n < N; n++) { re += h[n] * Math.cos(2 * Math.PI * f * n); im -= h[n] * Math.sin(2 * Math.PI * f * n); }
+    Hd.push([f * fs, 20 * Math.log10(Math.max(1e-9, Math.hypot(re, im)))]);
+  }
+  const sv = $('#kzH');
+  const P = plot(sv, { W: 380, H: 230, x0: 0, x1: fs / 2, y0: -100, y1: 5, xt: ticks(0, fs / 2, niceStep(fs / 2)), yt: [-100, -80, -60, -40, -20, 0], xl: 'frecuencia [kHz]', yl: '|H| [dB]', ml: 44 });
+  el('rect', { x: P.X(fp), y: P.mt, width: P.X(fst) - P.X(fp), height: P.Y(-100) - P.mt, style: 'fill:var(--accent-soft)' }, sv);
+  el('line', { x1: P.ml, x2: P.W - P.mr, y1: P.Y(-A), y2: P.Y(-A), style: 'stroke:var(--warn);stroke-dasharray:4 4' }, sv);
+  el('path', { d: path(Hd.map(p => [P.X(p[0]), P.Y(Math.max(-100, p[1]))])), style: 'stroke:var(--accent);fill:none;stroke-width:1.5' }, sv);
+  const si = $('#kzImp');
+  const Q = plot(si, { W: 380, H: 230, x0: 0, x1: N - 1, y0: Math.min(...h) * 1.2, y1: Math.max(...h) * 1.15, xt: [0, Math.round((N - 1) / 2), N - 1], yt: [], xl: 'coeficiente n', ml: 14 });
+  const step = Math.max(1, Math.floor(N / 150));
+  for (let n = 0; n < N; n += step) el('line', { x1: Q.X(n), x2: Q.X(n), y1: Q.Y(0), y2: Q.Y(h[n]), style: 'stroke:var(--c1);stroke-width:1.2' }, si);
+  el('line', { x1: Q.X((N - 1) / 2), x2: Q.X((N - 1) / 2), y1: Q.mt, y2: Q.H - Q.mb, style: 'stroke:var(--c3);stroke-dasharray:4 3' }, si);
+  el('text', { x: Q.X((N - 1) / 2) + 6, y: Q.mt + 12, class: 'lbl', style: 'fill:var(--c3)', text: 'centro = retardo' }, si);
+  const d = (N - 1) / 2;
+  out.innerHTML = pill('acc', `N = ${N} coeficientes`) + pill('acc', `β Kaiser = ${fmt(beta, 2)}`) + pill('acc', `retardo = ${d} muestras = ${fmt(d / fs * 1000, 1)} µs`) + pill('acc', 'simétrico → fase lineal');
+}
+['kzFs', 'kzFp', 'kzFst', 'kzA'].forEach(id => $('#' + id).addEventListener('input', drawKaiser));
+$$('#kzPre button').forEach(b => b.addEventListener('click', () => { const [fs, fp, fst, A] = b.dataset.p.split(',').map(Number); $('#kzFs').value = fs; $('#kzFp').value = fp; $('#kzFst').value = fst; $('#kzA').value = A; drawKaiser(); }));
+drawKaiser();
+
+/* 04 DSB con errores */
+function drawDSB() {
+  const ph = +$('#dsPh').value, df = +$('#dsDf').value, svg = $('#dsSvg'), T = 10;
+  const P = plot(svg, { W: 760, H: 220, x0: 0, x1: T, y0: -1.6, y1: 1.6, xt: ticks(0, T, 1), yt: [-1, 0, 1], xl: 'tiempo [ms]', ml: 36 });
+  const msg = t => Math.sin(2 * Math.PI * 0.6 * t) + 0.4 * Math.sin(2 * Math.PI * 1.7 * t + 0.5);
+  const a = [], b = [];
+  for (let i = 0; i <= 800; i++) { const t = i / 800 * T; const m = 0.75 * msg(t); a.push([P.X(t), P.Y(m)]); b.push([P.X(t), P.Y(m * Math.cos(2 * Math.PI * df * t / 1000 + ph * Math.PI / 180))]); }
+  el('path', { d: path(a), style: 'stroke:var(--muted);fill:none;stroke-width:3;opacity:.55' }, svg);
+  el('path', { d: path(b), style: 'stroke:var(--accent);fill:none;stroke-width:1.8' }, svg);
+  const g = Math.cos(ph * Math.PI / 180);
+  let out = pill('acc', `cos φ₀ = ${fmt(g, 2)}`);
+  if (df > 0) out += pill('bad', `batido: la ganancia oscila con ${fmt(df, 0)} Hz`);
+  else out += Math.abs(g) < 0.1 ? pill('bad', 'con 90° la salida desaparece') : g < 0 ? pill('bad', 'salida invertida') : g < 0.95 ? pill('bad', 'salida atenuada') : pill('ok', 'salida correcta');
+  $('#dsOut').innerHTML = out;
+}
+bindRange('dsPh', v => v + '°', drawDSB)();
+bindRange('dsDf', v => v + ' Hz', drawDSB)();
+
+/* 04 retardos */
+let tauReal = false;
+function drawTau() {
+  const t = +$('#tau').value, comp = $('#tauComp').checked, fk = [20, 60, 100];
+  const taus = tauReal ? [411.79, 226.37, 226.37] : [t, t, t];
+  const g = fk.map((f, k) => comp ? 1 : Math.cos(2 * Math.PI * f * 1e3 * taus[k] * 1e-6));
+  const svg = $('#tauSvg');
+  const P = plot(svg, { W: 760, H: 230, x0: 0, x1: 3, y0: -1.15, y1: 1.15, xt: [], yt: [-1, -0.5, 0, 0.5, 1], ml: 40, mb: 30 });
+  g.forEach((v, k) => {
+    const x0 = P.X(k + 0.25), x1 = P.X(k + 0.75);
+    el('rect', { x: x0, y: Math.min(P.Y(0), P.Y(v)), width: x1 - x0, height: Math.max(1, Math.abs(P.Y(v) - P.Y(0))), style: `fill:${CHS[k]};stroke:${CH[k]};stroke-width:1.5` }, svg);
+    el('text', { x: (x0 + x1) / 2, y: P.H - 10, 'text-anchor': 'middle', class: 'lbl', text: `canal ${k + 1} (${fk[k]} kHz)` }, svg);
+    el('text', { x: (x0 + x1) / 2, y: v >= 0 ? P.Y(v) - 6 : P.Y(v) + 16, 'text-anchor': 'middle', class: 'lbl', style: 'font-weight:600', text: (v >= 0 ? '+' : '') + fmt(v, 2) }, svg);
+  });
+  el('line', { x1: P.ml, x2: P.W - P.mr, y1: P.Y(1), y2: P.Y(1), style: 'stroke:var(--ok);stroke-dasharray:5 4' }, svg);
+  el('text', { x: P.W - P.mr, y: P.Y(1) - 4, 'text-anchor': 'end', class: 'lblm', text: 'ganancia ideal = 1' }, svg);
+  let out = tauReal ? pill('acc', 'τ₁ = 411.8 µs · τ₂ = τ₃ = 226.4 µs (filtros reales)') : pill('acc', `τ = ${t} µs`);
+  out += comp ? pill('ok', 'compensado: la subportadora local se genera ya retrasada') : g.some(v => v < 0.9) ? pill('bad', 'sin compensar: canales atenuados o invertidos') : pill('ok', 'desfase pequeño');
+  $('#tauOut').innerHTML = out;
+}
+bindRange('tau', v => v + ' µs', () => { tauReal = false; drawTau(); })();
+$('#tauComp').addEventListener('change', drawTau);
+$('#tauReal').addEventListener('click', () => { tauReal = true; $('#tauComp').checked = false; drawTau(); });
+
+/* 05 FDM */
+const khz = v => v + ' kHz';
+function drawFDM() {
+  const fk = [+$('#f1').value, +$('#f2').value, +$('#f3').value], Wa = +$('#fw').value, mod = $('#fmod').value, svg = $('#fdmSvg');
+  const P = plot(svg, { W: 760, H: 250, x0: 0, x1: 150, y0: 0, y1: 1.25, xt: ticks(0, 150, 10), yt: [], xl: 'frecuencia [kHz]', ml: 16 });
+  el('rect', { x: P.X(120), y: P.mt, width: P.X(150) - P.X(120), height: P.Y(0) - P.mt, style: 'fill:var(--warn-soft)' }, svg);
+  el('line', { x1: P.X(120), x2: P.X(120), y1: P.mt, y2: P.Y(0), style: 'stroke:var(--warn);stroke-dasharray:4 4' }, svg);
+  el('text', { x: P.X(120) + 6, y: P.mt + 14, class: 'lblm', text: 'fuera de los 120 kHz' }, svg);
+  const bands = fk.map((f, k) => mod === 'dsb' ? [f - Wa, f + Wa, k] : [f, f + Wa, k]);
+  bands.forEach(([lo, hi, k]) => {
+    const f = fk[k], pts = mod === 'dsb' ? [[lo, 0], [f, 1], [hi, 0]] : [[f, 0], [f, 1], [hi, 0]];
+    el('path', { d: path(pts.map(p => [P.X(p[0]), P.Y(p[1])])) + 'Z', style: `fill:${CHS[k]};stroke:${CH[k]};stroke-width:1.5` }, svg);
+    el('line', { x1: P.X(f), x2: P.X(f), y1: P.Y(0), y2: P.Y(1.12), style: `stroke:${CH[k]};stroke-dasharray:2 3` }, svg);
+    el('text', { x: P.X(f), y: P.Y(1.16), 'text-anchor': 'middle', class: 'lbl', text: `canal ${k + 1}` }, svg);
+  });
+  const s = [...bands].sort((a, b) => a[0] - b[0]);
+  let out = '', ok = true;
+  s.forEach(b => { if (b[0] < 0.3) { ok = false; out += pill('bad', `canal ${b[2] + 1} toca 0 Hz`); } if (b[1] > 120) { ok = false; out += pill('bad', `canal ${b[2] + 1} pasa de 120 kHz`); } });
+  for (let i = 1; i < s.length; i++) {
+    const g = s[i][0] - s[i - 1][1];
+    if (g < 0) { ok = false; out += pill('bad', `canales ${s[i - 1][2] + 1} y ${s[i][2] + 1} se solapan ${fmt(-g, 0)} kHz`); }
+    else out += pill(g >= 1 ? 'ok' : 'bad', `guarda ${s[i - 1][2] + 1}–${s[i][2] + 1}: ${fmt(g, 0)} kHz`);
+  }
+  const occ = bands.reduce((a, b) => a + (b[1] - b[0]), 0);
+  out += pill('acc', `ocupación ${fmt(occ, 0)} de 120 kHz`) + pill('acc', `f_m(máx) = ${fmt(Math.max(...bands.map(b => b[1])), 0)} kHz`);
+  out += ok ? pill('ok', 'plan válido') : pill('bad', 'plan no válido');
+  $('#fdmOut').innerHTML = out;
+}
+['f1', 'f2', 'f3', 'fw'].forEach(id => bindRange(id, khz, drawFDM));
+$('#fmod').addEventListener('change', drawFDM);
+function setFDM(a, b, c, w, m) { [['f1', a], ['f2', b], ['f3', c], ['fw', w]].forEach(([id, v]) => setRange(id, v, khz)); $('#fmod').value = m; drawFDM(); }
+$('#fdmReset').addEventListener('click', () => setFDM(20, 60, 100, 15, 'dsb'));
+$('#fdmCurso').addEventListener('click', () => setFDM(20, 25, 30, 4, 'ssb'));
+setFDM(20, 60, 100, 15, 'dsb');
+
+let actx = null;
+function playDemo(k) {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const fs = actx.sampleRate, N = Math.round(1.5 * fs), buf = actx.createBuffer(1, N, fs), x = buf.getChannelData(0);
+    const notas = [523.25, 659.25, 783.99, 1046.5]; let ph = 0;
+    for (let n = 0; n < N; n++) {
+      const t = n / fs; let v;
+      if (k === 1) { ph += 2 * Math.PI * notas[Math.floor(t / 0.1) % 4] / fs; v = Math.sin(ph); }
+      else if (k === 2) { ph += 2 * Math.PI * (1500 + 900 * Math.sin(2 * Math.PI * 3 * t)) / fs; v = Math.sin(ph); }
+      else v = ((t % 0.15) < 0.05 ? 1 : 0) * Math.sin(2 * Math.PI * 3000 * t);
+      x[n] = 0.25 * v * Math.min(1, t / 0.01, (1.5 - t) / 0.02);
+    }
+    const src = actx.createBufferSource(); src.buffer = buf; src.connect(actx.destination); src.start();
+  } catch (e) { /* sin audio */ }
+}
+$$('[data-snd]').forEach(b => b.addEventListener('click', () => playDemo(+b.dataset.snd)));
+
+/* 06 Bessel (método de Miller) */
+function besselJ(nmax, x) {
+  if (x === 0) return Array.from({ length: nmax + 1 }, (_, n) => n === 0 ? 1 : 0);
+  const big = Math.max(nmax, x), M = 2 * Math.floor((big + 15 + Math.sqrt(40 * big)) / 2);
+  const j = new Array(M + 2).fill(0); j[M] = 1e-30;
+  for (let n = M; n >= 1; n--) { j[n - 1] = (2 * n / x) * j[n] - j[n + 1]; if (Math.abs(j[n - 1]) > 1e250) for (let i = n - 1; i <= M + 1; i++) j[i] /= 1e250; }
+  let s = j[0]; for (let n = 2; n <= M; n += 2) s += 2 * j[n];
+  return j.slice(0, nmax + 1).map(v => v / s);
+}
+function drawBessel() {
+  const m = +$('#bsM').value, J = besselJ(14, m);
+  let nsig = 0; J.forEach((v, n) => { if (n > 0 && Math.abs(v) >= 0.01) nsig = n; });
+  const cols = 10;
+  let html = '<thead><tr><th>m</th>' + Array.from({ length: cols + 1 }, (_, n) => `<th>J<sub>${n}</sub></th>`).join('') + '</tr></thead><tbody><tr><td class="n">' + fmt(m, 2) + '</td>';
+  for (let n = 0; n <= cols; n++) { const v = J[n], sig = Math.abs(v) >= 0.01; html += `<td class="n" style="${sig ? 'color:var(--accent);font-weight:600' : 'color:var(--muted)'}">${Math.abs(v) < 0.005 ? '—' : fmt(v, 2)}</td>`; }
+  html += '</tr></tbody>';
+  $('#bsTab').innerHTML = html;
+  const pw = J.reduce((a, v, n) => a + (n ? 2 : 1) * v * v, 0);
+  $('#bsOut').innerHTML = pill('acc', `bandas laterales significativas: n = ${nsig}`) + pill('acc', `B (Bessel) = 2·${nsig}·f_m`) + pill('acc', `J₀² + 2ΣJₙ² = ${fmt(100 * pw, 1)} % (potencia conservada)`) + (m < 1 ? pill('acc', 'm < 1: FM de banda angosta') : m > 10 ? pill('acc', 'm > 10: índice alto') : pill('acc', 'índice medio'));
+}
+bindRange('bsM', v => fmt(v, 2), drawBessel)();
+
+/* 06 explorador FM */
+function drawFM() {
+  const D = +$('#fmD').value, fm = +$('#fmM').value, beta = D / fm, svgT = $('#fmTime');
+  const P = plot(svgT, { W: 760, H: 210, x0: 0, x1: 2, y0: -1.3, y1: 1.3, xt: [0, 0.5, 1, 1.5, 2], yt: [-1, 0, 1], xl: 'tiempo [periodos del tono]', ml: 36, mb: 36, mt: 24 });
+  const fcv = Math.max(10, beta + 5), ms = [], ss = [];
+  for (let i = 0; i <= 1600; i++) { const t = i / 800; ms.push([P.X(t), P.Y(Math.cos(2 * Math.PI * t))]); ss.push([P.X(t), P.Y(Math.cos(2 * Math.PI * fcv * t + beta * Math.sin(2 * Math.PI * t)))]); }
+  el('path', { d: path(ss), style: 'stroke:var(--accent);fill:none;stroke-width:1' }, svgT);
+  el('path', { d: path(ms), style: 'stroke:var(--c2);fill:none;stroke-width:2.2' }, svgT);
+  el('text', { x: P.W - 18, y: 14, 'text-anchor': 'end', class: 'lblm', text: 'naranja: mensaje · azul: portadora FM (frecuencia ilustrativa)' }, svgT);
+  const N = Math.ceil(beta + 12), J = besselJ(N, beta);
+  let nsig = 0; J.forEach((v, n) => { if (n > 0 && Math.abs(v) >= 0.01) nsig = n; });
+  const Bc = 2 * (D + fm), Bb = 2 * nsig * fm, span = Math.max(Bc, Bb) * 0.65 + fm, svgS = $('#fmSpec');
+  const Q = plot(svgS, { W: 760, H: 270, x0: -span, x1: span, y0: 0, y1: 1.1, xt: ticks(-span, span, niceStep(span)), yt: [0, 0.5, 1], xl: 'f − f_c [kHz]', ml: 36, mt: 52 });
+  let pc = 0;
+  for (let n = -N; n <= N; n++) {
+    const f = n * fm; const a = Math.abs(J[Math.abs(n)]);
+    if (Math.abs(f) <= Bc / 2 + 1e-9) pc += a * a;
+    if (Math.abs(f) > span) continue;
+    el('line', { x1: Q.X(f), x2: Q.X(f), y1: Q.Y(0), y2: Q.Y(a), style: `stroke:${a >= 0.01 ? 'var(--accent)' : 'var(--muted)'};stroke-width:${a >= 0.01 ? 3 : 1.5}` }, svgS);
+  }
+  const br = (B, y, c, t) => { el('path', { d: `M${Q.X(-B / 2)} ${y + 6}V${y}H${Q.X(B / 2)}V${y + 6}`, style: `stroke:${c};fill:none;stroke-width:2` }, svgS); el('text', { x: Q.X(0), y: y - 4, 'text-anchor': 'middle', class: 'lbl', text: t, style: `fill:${c};font-weight:600` }, svgS); };
+  br(Bc, 20, 'var(--c2)', `Carson ${fmt(Bc, 0)} kHz`);
+  br(Bb, 42, 'var(--c3)', `Bessel ${fmt(Bb, 0)} kHz`);
+  $('#fmOut').innerHTML = pill('acc', `m = Δf/f_m = ${fmt(beta, 2)}`) + pill('acc', `bandas significativas n = ${nsig}`) + pill('acc', `Carson ${fmt(Bc, 0)} kHz`) + pill('acc', `Bessel ${fmt(Bb, 0)} kHz`) +
+    pill(Bb > Bc ? 'bad' : 'ok', Bb > Bc ? 'Carson subestima el ancho' : 'Carson cubre las bandas significativas') + pill('acc', `potencia dentro de Carson ${fmt(100 * Math.min(pc, 1), 1)} %`);
+}
+bindRange('fmD', khz, drawFM); bindRange('fmM', khz, drawFM);
+const setFM = (d, m) => { setRange('fmD', d, khz); setRange('fmM', m, khz); drawFM(); };
+$('#fmCurso').addEventListener('click', () => setFM(10, 10));
+$('#fmProy').addEventListener('click', () => setFM(150, 115));
+setFM(150, 115);
+
+/* 07 fasor I/Q */
+function drawIQ() {
+  const d = +$('#iqD').value, fs = 4800, svg = $('#iqSvg');
+  svg.innerHTML = ''; svg.setAttribute('viewBox', '0 0 760 300');
+  arrowDefs(svg, 'arr3');
+  const cx = 160, cy = 150, R = 110;
+  el('circle', { cx, cy, r: R, style: 'fill:none;stroke:var(--line)' }, svg);
+  el('line', { x1: cx - R - 14, x2: cx + R + 14, y1: cy, y2: cy, class: 'gridl' }, svg);
+  el('line', { x1: cx, x2: cx, y1: cy - R - 14, y2: cy + R + 14, class: 'gridl' }, svg);
+  el('text', { x: cx + R + 16, y: cy + 4, class: 'lblm', text: 'I' }, svg);
+  el('text', { x: cx + 4, y: cy - R - 16, class: 'lblm', text: 'Q' }, svg);
+  const dth = 2 * Math.PI * d / fs;
+  for (let n = 0; n < 8; n++) {
+    const th = 0.3 + n * dth, x = cx + R * Math.cos(th), y = cy - R * Math.sin(th);
+    const last = n === 7;
+    if (last || n === 0) el('line', { x1: cx, y1: cy, x2: x, y2: y, style: `stroke:${last ? 'var(--accent)' : 'var(--muted)'};stroke-width:${last ? 2 : 1.2}`, 'marker-end': 'url(#arr3)' }, svg);
+    el('circle', { cx: x, cy: y, r: last ? 5 : 3.5, style: `fill:${last ? 'var(--accent)' : 'var(--c1)'}` }, svg);
+  }
+  const deg = dth * 180 / Math.PI;
+  const lines = [
+    `Δθ por muestra = 360°·(${d} kHz)/(${fs} kHz) = ${fmt(deg, 2)}°`,
+    `f_i − f_FI = f_s·Δθ/360° = ${d} kHz`,
+    d === 0 ? 'Sin desviación: z no gira (portadora pura).' : d > 0 ? 'Gira en sentido antihorario: frecuencia por encima de la FI.' : 'Gira en sentido horario: frecuencia por debajo de la FI.',
+    `Mensaje recuperado: m_n = (f_i − f_FI)/Δf = ${fmt(d / 150, 2)}`
+  ];
+  lines.forEach((t, i) => el('text', { x: 330, y: 90 + i * 30, class: 'lbl', text: t, style: 'font-size:14px' }, svg));
+  $('#iqOut').innerHTML = pill('acc', `${fmt(deg, 2)}° por muestra`) + (Math.abs(d) > 150 ? pill('bad', 'más allá de Δf = 150 kHz: no ocurre en el proyecto') : pill('ok', 'dentro de ±Δf'));
+}
+bindRange('iqD', v => (v > 0 ? '+' : '') + v + ' kHz', drawIQ)();
+
+/* 08 calculadora */
+function calcSH() {
+  const rf = +$('#ccRF').value, fi = +$('#ccFI').value, inj = $('#ccInj').value;
+  const lo = inj === 'sup' ? rf + fi : rf - fi, im = inj === 'sup' ? rf + 2 * fi : rf - 2 * fi;
+  $('#ccOut').innerHTML = pill('acc', `f_LO = ${fmt(lo, 2)} MHz`) + pill('acc', `|f_RF − f_LO| = ${fmt(Math.abs(rf - lo), 2)} MHz = FI`) + pill('acc', `imagen = ${fmt(im, 2)} MHz`) + pill('acc', `|imagen − f_LO| = ${fmt(Math.abs(im - lo), 2)} MHz (también la FI)`) + pill('acc', `producto suma = ${fmt(rf + lo, 2)} MHz`);
+}
+['ccRF', 'ccFI'].forEach(id => $('#' + id).addEventListener('input', calcSH)); $('#ccInj').addEventListener('change', calcSH);
+$('#ccCurso').addEventListener('click', () => { $('#ccRF').value = 100; $('#ccFI').value = 10.7; $('#ccInj').value = 'sup'; calcSH(); });
+$('#ccProy').addEventListener('click', () => { $('#ccRF').value = 10; $('#ccFI').value = 1.7; $('#ccInj').value = 'inf'; calcSH(); });
+calcSH();
+
+/* 08 superheterodino */
+const FI = 1.7;
+function bump(svg, P, fc, half, h, c, cs, label) {
+  const pts = [[fc - half, 0], [fc - half * 0.35, h * 0.75], [fc, h], [fc + half * 0.35, h * 0.75], [fc + half, 0]];
+  el('path', { d: path(pts.map(p => [P.X(p[0]), P.Y(p[1])])) + 'Z', style: `fill:${cs};stroke:${c};stroke-width:1.5` }, svg);
+  if (label) el('text', { x: P.X(fc), y: P.Y(h) - 6, 'text-anchor': 'middle', class: 'lbl', text: label, style: `fill:${c};font-weight:600` }, svg);
+}
+function vline(svg, P, f, c, t, dash, y1) {
+  el('line', { x1: P.X(f), x2: P.X(f), y1: P.Y(0), y2: P.Y(y1), style: `stroke:${c};stroke-dasharray:${dash};stroke-width:1.5` }, svg);
+  if (t) el('text', { x: P.X(f) + 4, y: P.Y(y1) + 12, class: 'lblm', text: t }, svg);
+}
+function drawSH() {
+  const fc = +$('#shFc').value, det = +$('#shDet').value / 1000, inj = segVal('shInj'), pre = $('#shPre').checked, intr = $('#shImg').checked;
+  const frx = fc + det, fLO = inj === 'inf' ? frx - FI : frx + FI, fim = inj === 'inf' ? frx - 2 * FI : frx + 2 * FI, half = 0.265;
+  const s1 = $('#shRF');
+  const P = plot(s1, { W: 760, H: 200, x0: 4, x1: 16, y0: 0, y1: 1.3, xt: ticks(4, 16, 1), yt: [], xl: 'frecuencia [MHz]', ml: 16, mt: 10 });
+  if (pre) { el('rect', { x: P.X(frx - 0.35), y: P.Y(1.3), width: P.X(frx + 0.35) - P.X(frx - 0.35), height: P.Y(0) - P.Y(1.3), style: 'fill:var(--accent-soft)' }, s1); el('text', { x: P.X(frx), y: P.Y(1.3) + 12, 'text-anchor': 'middle', class: 'lblm', text: 'preselector' }, s1); }
+  bump(s1, P, fc, half, 0.85, 'var(--accent)', 'var(--accent-soft)', 'emisora');
+  if (intr) bump(s1, P, fim, half, 0.6, 'var(--warn)', 'var(--warn-soft)', 'intrusa');
+  vline(s1, P, fLO, 'var(--c2)', `LO ${fmt(fLO, 2)}`, '6 4', 1.0);
+  vline(s1, P, fim, 'var(--c3)', `imagen ${fmt(fim, 2)}`, '2 3', 0.45);
+  const s2 = $('#shMix');
+  const Q = plot(s2, { W: 760, H: 200, x0: 0, x1: 26, y0: 0, y1: 1.3, xt: ticks(0, 26, 2), yt: [], xl: 'frecuencia [MHz]', ml: 16, mt: 10 });
+  el('rect', { x: Q.X(1.35), y: Q.Y(1.3), width: Q.X(2.05) - Q.X(1.35), height: Q.Y(0) - Q.Y(1.3), style: 'fill:var(--ok-soft)' }, s2);
+  el('text', { x: Q.X(1.7) + 2, y: Q.Y(1.3) + 12, class: 'lblm', text: 'filtro FI' }, s2);
+  const dif = Math.abs(fc - fLO), sum = fc + fLO;
+  bump(s2, Q, dif, half, 0.85, 'var(--accent)', 'var(--accent-soft)', `diferencia ${fmt(dif, 2)}`);
+  bump(s2, Q, sum, half, 0.85, 'var(--c2)', 'var(--c2s)', `suma ${fmt(sum, 1)}`);
+  if (intr) bump(s2, Q, Math.abs(fim - fLO), half, pre ? 0.03 : 0.6, 'var(--warn)', 'var(--warn-soft)', pre ? 'intrusa (−60 dB)' : 'intrusa en la FI');
+  const ov = Math.max(0, Math.min(dif + half, 2.05) - Math.max(dif - half, 1.35)) / (2 * half);
+  let out = pill('acc', `f_LO = ${fmt(fLO, 2)} MHz`) + pill('acc', `|f_c − f_LO| = ${fmt(dif, 2)} MHz`) + pill('acc', `imagen ${fmt(fim, 2)} MHz`) + pill('acc', `suma ${fmt(sum, 1)} MHz`);
+  out += ov > 0.95 ? pill('ok', 'la emisora cae dentro del filtro FI: se recupera') : ov > 0.3 ? pill('bad', 'la emisora queda cortada por el filtro FI: audio distorsionado') : pill('bad', 'la emisora queda fuera del filtro FI: solo ruido');
+  if (inj === 'sup') out += pill('acc', 'inyección superior: espectro invertido en la FI');
+  if (intr) out += pre ? pill('ok', 'el preselector bloquea la intrusa') : pill('bad', 'sin preselector la intrusa también cae en 1.7 MHz');
+  $('#shOut').innerHTML = out;
+}
+bindRange('shFc', v => fmt(v) + ' MHz', drawSH); bindRange('shDet', v => (v > 0 ? '+' : '') + v + ' kHz', drawSH);
+seg('shInj', drawSH); ['shPre', 'shImg'].forEach(id => $('#' + id).addEventListener('change', drawSH));
+$('#shFco').textContent = '10.0 MHz'; $('#shDeto').textContent = '0 kHz'; drawSH();
+
+/* 09 ruido */
+const MED = { s: [40, 35, 30, 25, 20, 18, 16, 14, 12, 10],
+  c: [[41.9, 37.0, 32.0, 27.0, 21.9, 17.5, 11.9, 4.1, 1.2, 0.4], [31.2, 26.3, 21.3, 16.3, 11.5, 9.6, 6.6, 2.7, 0.8, 0.2], [27.7, 22.7, 17.7, 12.8, 8.2, 6.4, 4.4, 2.1, 0.8, 0.3]] };
+const OFF = [2.4, -8.0, -11.8];
+function drawNoise() {
+  const D = +$('#nzD').value, sr = +$('#nzS').value, svg = $('#nzSvg');
+  const P = plot(svg, { W: 760, H: 300, x0: 10, x1: 40, y0: -5, y1: 50, xt: ticks(10, 40, 5), yt: [0, 10, 20, 30, 40, 50], xl: '(SNR)_C [dB]', yl: 'SDR del audio [dB]', ml: 46 });
+  const BT = 2 * (D + 115), thr = 11 + 10 * Math.log10(BT / 120);
+  el('rect', { x: P.X(10), y: P.mt, width: Math.max(0, P.X(Math.min(thr, 40)) - P.X(10)), height: P.Y(-5) - P.mt, style: 'fill:var(--warn-soft)' }, svg);
+  el('text', { x: P.X(Math.min(thr, 40)) - 4, y: P.mt + 14, 'text-anchor': 'end', class: 'lblm', text: `umbral ≈ ${fmt(thr, 1)} dB` }, svg);
+  const dg = 20 * Math.log10(D / 150);
+  [0, 1, 2].forEach(k => {
+    el('path', { d: path([[10, 10 + OFF[k] + dg], [40, 40 + OFF[k] + dg]].map(p => [P.X(p[0]), P.Y(Math.max(-5, Math.min(50, p[1])))])), style: `stroke:${CH[k]};stroke-dasharray:6 4;fill:none;stroke-width:1.6` }, svg);
+    if (D === 150) {
+      el('path', { d: path(MED.s.map((s, i) => [P.X(s), P.Y(MED.c[k][i])])), style: `stroke:${CH[k]};fill:none;stroke-width:1.6` }, svg);
+      MED.s.forEach((s, i) => el('circle', { cx: P.X(s), cy: P.Y(MED.c[k][i]), r: 4, style: `fill:${CH[k]}` }, svg));
+    }
+  });
+  el('line', { x1: P.X(sr), x2: P.X(sr), y1: P.mt, y2: P.Y(-5), style: 'stroke:var(--ink);stroke-dasharray:2 3' }, svg);
+  let out = OFF.map((o, k) => pill('acc', `canal ${k + 1}: teoría ${fmt(sr + o + dg, 1)} dB`)).join('');
+  const i = MED.s.indexOf(sr);
+  if (D === 150 && i >= 0) out += pill('acc', `medido: ${MED.c.map(c => fmt(c[i], 1)).join(' / ')} dB`);
+  out += pill('acc', `B_T Carson = ${fmt(BT, 0)} kHz`) + pill('acc', `CNR en B_T = ${fmt(sr - 10 * Math.log10(BT / 120), 1)} dB`);
+  out += sr < thr ? pill('bad', 'por debajo del umbral: la teoría ya no vale') : pill('ok', 'por encima del umbral');
+  if (D !== 150) out += pill('acc', 'puntos medidos solo para Δf = 150 kHz');
+  $('#nzOut').innerHTML = out;
+}
+bindRange('nzD', khz, drawNoise)(); bindRange('nzS', v => v + ' dB', drawNoise)();
+
+/* 10 escalamiento */
+function drawEsc(mode) {
+  const svg = $('#escSvg'), tabla = mode === 'tabla', fc = 100, fi = 17, half = tabla ? 265 : 2.65, fm = tabla ? 115 : 1.15;
+  const x0 = tabla ? -200 : 0, x1 = tabla ? 400 : 120;
+  const P = plot(svg, { W: 760, H: 230, x0, x1, y0: 0, y1: 1.3, xt: ticks(x0, x1, tabla ? 50 : 10), yt: [], xl: 'frecuencia simulada [kHz]', ml: 16, mt: 10 });
+  el('line', { x1: P.X(0), x2: P.X(0), y1: P.Y(0), y2: P.Y(1.3), style: 'stroke:var(--ink);stroke-width:1.5' }, svg);
+  el('text', { x: P.X(0) + 4, y: P.Y(1.3) + 12, class: 'lblm', text: '0 Hz' }, svg);
+  if (tabla) { el('rect', { x: P.X(-200), y: P.Y(1.3), width: P.X(0) - P.X(-200), height: P.Y(0) - P.Y(1.3), style: 'fill:var(--warn-soft)' }, svg); el('text', { x: P.X(-100), y: P.Y(1.3) + 28, 'text-anchor': 'middle', class: 'lbl', text: 'frecuencias negativas: la señal se pliega', style: 'fill:var(--warn)' }, svg); }
+  bump(svg, P, fc, half, 0.9, 'var(--accent)', 'var(--accent-soft)', `FM: ${fc} ± ${fmt(half, tabla ? 0 : 2)} kHz`);
+  el('line', { x1: P.X(fi), x2: P.X(fi), y1: P.Y(0), y2: P.Y(0.5), style: 'stroke:var(--c3);stroke-width:2' }, svg);
+  el('text', { x: P.X(fi) + 4, y: P.Y(0.5), class: 'lbl', style: 'fill:var(--c3)', text: 'FI 17 kHz' }, svg);
+  el('line', { x1: P.X(fm), x2: P.X(fm), y1: P.Y(0), y2: P.Y(0.35), style: 'stroke:var(--c2);stroke-width:2' }, svg);
+  el('text', { x: P.X(fm) + 4, y: P.Y(0.35), class: 'lbl', style: 'fill:var(--c2)', text: `señal de salida ${fmt(fm, tabla ? 0 : 2)} kHz` }, svg);
+  const rows = tabla ? [['Audio', '15 kHz', '15 kHz', '×1'], ['Multiplex', '120 kHz', '120 kHz', '×1'], ['Portadora', '10 MHz', '100 kHz', '÷100'], ['FI', '1.7 MHz', '17 kHz', '÷100']]
+    : [['Audio', '15 kHz', '150 Hz', '÷100'], ['Multiplex', '120 kHz', '1.2 kHz', '÷100'], ['Portadora', '10 MHz', '100 kHz', '÷100'], ['FI', '1.7 MHz', '17 kHz', '÷100']];
+  $('#escTab').innerHTML = '<thead><tr><th>Parámetro</th><th>Nominal</th><th>Simulado</th><th>Factor</th></tr></thead><tbody>' + rows.map(r => `<tr><td>${r[0]}</td><td class="n">${r[1]}</td><td class="n">${r[2]}</td><td class="n">${r[3]}</td></tr>`).join('') + '</tbody>';
+  $('#escOut').innerHTML = tabla ? pill('bad', 'B_FDM / f_c = 1.2 (nominal 0.012)') + pill('bad', 'FI 17 kHz < señal de salida 115 kHz: no es superheterodino (diap. 359)') + pill('bad', 'la FM cruza 0 Hz')
+    : pill('ok', 'B_FDM / f_c = 0.012 (igual que el nominal)') + pill('ok', 'FI 17 kHz > señal de salida 1.15 kHz') + pill('ok', 'la FM queda lejos de 0 Hz');
+}
+seg('escMode', drawEsc); drawEsc('tabla');
+
+/* 12 explorador Simulink */
+const SUBS = {
+  'Fuentes': { d: 'Tres bloques From Workspace entregan los audios a 48 kHz nominales.', b: [
+    ['Audio 1–3', 'From Workspace', 'Entrega las muestras de cada audio con tiempo de muestreo 1/f_s del audio. Los tiempos se marcan un cuarto de muestra antes para que, por redondeo, no tome la muestra anterior.', 'x_k[n]', '48, 391']] },
+  'Transmisor FDM': { d: 'Subsistema Transmisor_FDM: una rama DSB-SC por canal, suma y normalización.', b: [
+    ['LPF audio 15 kHz', 'Discrete Filter', 'Pasobajas FIR de 15 kHz: limita el audio y actúa como filtro antitraslape.', 'y[n] = Σ h[k]·x[n−k]', '400, 181'],
+    ['Cambio de tasa', 'Rate Transition', 'Pasa de 48 kHz a 480 kHz repitiendo cada muestra. Retrasa una muestra lenta (medido).', '—', '—'],
+    ['Tren de pulsos', 'Pulse Generator', '1 en una de cada 10 muestras, 0 en las demás.', 'p[n] = 1 si n mod 10 = 0', '—'],
+    ['Inserción de ceros', 'Product', 'Multiplica la muestra repetida por el tren de pulsos: deja la muestra y 9 ceros.', 'u[n] = x_rep[n]·p[n]', '394'],
+    ['Filtro interpolador', 'Discrete Filter', 'Pasobajas con ganancia 10: elimina las copias espectrales y rellena los ceros.', '—', '394'],
+    ['Subportadora', 'Sine Wave', 'cos(2π f_k t) con f_k = 20, 60 o 100 kHz (seno con fase π/2).', 'cos(2π f_k t)', '225'],
+    ['Modulador DSB', 'Product', 'Multiplica el audio por su subportadora: DSB-SC.', 'x_k(t)·cos(2π f_k t)', '225–229'],
+    ['Suma FDM', 'Add', 'Suma los tres canales: el multiplex m(t).', 'm = Σ x_k cos(2π f_k t)', '264'],
+    ['Normalización', 'Gain', 'Divide entre 3 para que |m_n| ≤ 1.', 'm_n = m/3', '311']] },
+  'Modulador FM': { d: 'Subsistema Modulador_FM: interpolación ×100 en dos etapas y la ecuación de FM.', b: [
+    ['Interpolación ×10 (a)', 'Rate Transition + Pulse Generator + Product + Discrete Filter', 'De 480 kHz a 4.8 MHz.', '—', '394'],
+    ['Interpolación ×10 (b)', 'Rate Transition + Pulse Generator + Product + Discrete Filter', 'De 4.8 MHz a 48 MHz.', '—', '394'],
+    ['Integrador', 'Discrete-Time Integrator', 'Euler hacia atrás: suma acumulada de m_n por el periodo de muestreo. Es la integral de la FM.', '∫ m_n(τ) dτ', '309'],
+    ['Ganancia 2π·k_f', 'Gain', 'Multiplica por 2π·k_f, con k_f = Δf = 150 kHz.', '2π k_f ∫ m_n', '310'],
+    ['Reloj', 'Digital Clock', 'Entrega t en cada muestra.', 't', '—'],
+    ['Ganancia 2π·f_c', 'Gain', 'Fase de la portadora sin modular.', '2π f_c t', '309'],
+    ['Fase total', 'Add', 'Suma las dos fases.', 'θ(t)', '309'],
+    ['cos', 'Trigonometric Function', 'Coseno de la fase total.', 'cos θ(t)', '309'],
+    ['Amplitud A_c', 'Gain', 'Amplitud de la portadora.', 's(t) = A_c cos θ(t)', '331']] },
+  'Canal': { d: 'Subsistema Canal: suma de ruido gaussiano. Con σ = 0 el canal es ideal.', b: [
+    ['Ruido gaussiano', 'Random Number', 'Ruido gaussiano de varianza 1 a la tasa de RF.', 'n[n] ~ N(0, 1)', '365'],
+    ['σ', 'Gain', 'Escala el ruido según la (SNR)_C pedida: de ella se obtiene N_0 y de N_0 la varianza por muestra.', 'σ·n', '366, 377'],
+    ['Suma de ruido', 'Add', 'Señal recibida.', 'r = s + σ·n', '365']] },
+  'Receptor': { d: 'Subsistema Receptor_Superheterodino, en el orden del esquema de la diap. 358.', b: [
+    ['Sección de RF', 'Discrete Filter', 'Preselector: pasabanda centrado en la sintonía (±350 kHz). Rechaza la imagen 60 dB.', '—', '358, 361'],
+    ['Oscilador local', 'Sine Wave', '2cos(2π f_LO t), f_LO = f_c − 1.7 MHz.', '2cos(2π f_LO t)', '357'],
+    ['Mezclador', 'Product', 'Produce la diferencia (FI) y la suma.', 'r·2cos(2π f_LO t)', '165, 357'],
+    ['LPF antitraslape', 'Discrete Filter', 'Pasobajas a 48 MHz: quita el producto suma y evita el traslape al decimar.', '—', '400'],
+    ['Decimación ÷10', 'Rate Transition', 'Baja de 48 MHz a 4.8 MHz tomando 1 de cada 10 muestras.', '—', '397'],
+    ['Sección de FI', 'Discrete Filter', 'Pasabanda 1.35–2.05 MHz: el filtro selectivo de FI.', '—', '358'],
+    ['Demodulador FM', 'Subsistema', 'Demodulador en cuadratura (ver la pestaña siguiente).', 'f_i[n]', '342, 174'],
+    ['Escala 1/k_f', 'Gain', 'Convierte la desviación de frecuencia en m_n.', '(f_i − f_FI)/k_f', '310'],
+    ['Filtro posdetección', 'Discrete Filter', 'Pasobajas de 120 kHz: deja solo la banda del multiplex.', '—', '376'],
+    ['Decimación ÷10', 'Rate Transition', 'Baja a 480 kHz.', '—', '397'],
+    ['×3', 'Gain', 'Deshace la normalización.', 'm̂ = 3·m̂_n', '—']] },
+  'Demodulador FM': { d: 'Subsistema Demodulador_FM: mide cuánto gira la fase entre muestras.', b: [
+    ['cos y −sen de FI', 'Sine Wave', 'cos(2π f_FI t) y −sen(2π f_FI t).', '—', '174'],
+    ['Mezcla I / Q', 'Product', 'Llevan la FI a 0 Hz en dos ramas: en fase y en cuadratura.', 'FI·cos, −FI·sen', '174, 230'],
+    ['LPF I / Q', 'Discrete Filter', 'Quitan el término en 2·f_FI.', 'I[n], Q[n]', '230'],
+    ['Retardo I / Q', 'Unit Delay', 'Dan la muestra anterior.', 'I[n−1], Q[n−1]', '—'],
+    ['Productos cruzados', 'Product', 'Los cuatro productos para z[n]·z*[n−1].', '—', '—'],
+    ['Re / Im', 'Add', 'Parte real e imaginaria de z[n]·z*[n−1].', 'Re = I·I₁ + Q·Q₁, Im = Q·I₁ − I·Q₁', '—'],
+    ['atan2', 'Trigonometric Function', 'Ángulo girado entre muestras.', 'Δθ = atan2(Im, Re)', '—'],
+    ['f_s/2π', 'Gain', 'Convierte el ángulo en frecuencia.', 'f_i = (f_s/2π)·Δθ', '342']] },
+  'Demultiplexor': { d: 'Subsistema Demultiplexor_FDM: el receptor FDM de la diap. 264, una rama por canal.', b: [
+    ['BPF del canal', 'Discrete Filter', 'Pasabanda del canal k (canal 1: 5–35 kHz).', '—', '264'],
+    ['Subportadora RX', 'Sine Wave', '2cos(2π f_k (t − τ_k)): subportadora con el retardo compensado.', 'fase = π/2 − 2π f_k τ_k', '237–238'],
+    ['Detección coherente', 'Product', 'Multiplica por la subportadora local.', '½x + ½x cos 2ω t → x', '230'],
+    ['LPF 15 kHz', 'Discrete Filter', 'Quita el término en 2f_k.', '—', '230'],
+    ['Decimación ÷10', 'Rate Transition', 'Baja a 48 kHz: el audio recuperado.', '—', '397']] }
+};
+let smCur = 'Fuentes', smBlk = 0;
+$('#smSub').innerHTML = Object.keys(SUBS).map((k, i) => `<button data-v="${k}"${i === 0 ? ' class="on"' : ''}>${k}</button>`).join('');
+function drawSM() {
+  const S = SUBS[smCur];
+  $('#smFlow').innerHTML = S.b.map((b, i) => `${i ? '<span class="ar">→</span>' : ''}<button class="blk${i === smBlk ? ' on' : ''}" data-i="${i}">${b[0]}</button>`).join('');
+  const b = S.b[smBlk];
+  $('#smInfo').innerHTML = `<p class="small" style="margin-bottom:8px">${S.d}</p><h4>${b[0]}</h4><p><strong>Bloque:</strong> ${b[1]}</p><p>${b[2]}</p><div class="meta">ecuación: ${b[3]} &nbsp;·&nbsp; diapositivas: ${b[4]}</div>`;
+  $$('#smFlow .blk').forEach(x => x.addEventListener('click', () => { smBlk = +x.dataset.i; drawSM(); }));
+}
+seg('smSub', v => { smCur = v; smBlk = 0; drawSM(); }); drawSM();
+
+/* 13 construcción */
+const steps = [
+  { k: 'Etapa 0', s: 'Diagnóstico, diseño y parámetros', b: `<p><strong>Objetivo:</strong> antes de construir nada, auditar el enunciado, corregir sus errores y fijar todos los números (capítulos 10 y 11). Con eso se escribió <code>params_sistema.m</code>, que concentra los parámetros, diseña los filtros y hace las comprobaciones.</p><p><strong>Decisión clave:</strong> no depender de ninguna toolbox. Un integrante no tenía DSP System Toolbox ni Signal Processing Toolbox, así que los filtros se diseñan con una función propia y los espectros se calculan con <code>fft</code>.</p><pre>&gt;&gt; prueba_etapa0</pre><p><strong>Resultado:</strong> la referencia en MATLAB recupera los tres audios con SDR ≈ 60 dB para 9, 10 y 11 MHz.</p>` },
+  { k: 'Etapa 1–2', s: 'Fuentes de audio y transmisor FDM', b: `<p><strong>Qué se construyó:</strong> bloques From Workspace para los audios y el subsistema <code>Transmisor_FDM</code> con tres ramas DSB-SC (capítulos 04–05).</p><pre>&gt;&gt; verificar_etapa2</pre><p><strong>Problema 1:</strong> From Workspace a veces tomaba la muestra anterior por redondeo del tiempo. <strong>Solución:</strong> marcar los tiempos un cuarto de muestra antes.</p><p><strong>Problema 2:</strong> el diagnóstico bloque por bloque mostró un retraso de exactamente 10 muestras: el Rate Transition retrasa una muestra lenta al subir de tasa. <strong>Solución:</strong> modelar ese retardo (<code>rt_retardo = 1</code>).</p><p><strong>Resultado:</strong> Simulink y la referencia coinciden; bandas en 5–35 / 45–75 / 85–115 kHz.</p>` },
+  { k: 'Etapa 3', s: 'Interpolación ×100 y modulador FM', b: `<p><strong>Qué se construyó:</strong> el subsistema <code>Modulador_FM</code> (capítulo 06).</p><pre>&gt;&gt; verificar_etapa3</pre><p><strong>Problema:</strong> unos 20 s de simulación para solo 0.05 s de audio. <strong>Soluciones:</strong> interpolación en dos etapas ×10 en vez de un filtro muy largo a 48 MHz, y el modo acelerado de Simulink, que compila el modelo: unas 4 veces más rápido, con el mismo resultado.</p><p><strong>Resultado:</strong> coincide con la referencia; ancho medido 148 kHz al 99 % frente a Carson 530 y Bessel 690 kHz.</p>` },
+  { k: 'Etapa 4–6', s: 'Canal, superheterodino y demultiplexor', b: `<p><strong>Qué se construyó:</strong> los subsistemas <code>Canal</code>, <code>Receptor_Superheterodino</code> con su <code>Demodulador_FM</code>, y <code>Demultiplexor_FDM</code> (capítulos 07–08). La sección de FI también se partió en dos: pasobajas a 48 MHz, decimación y pasabanda a 4.8 MHz.</p><pre>&gt;&gt; verificar_etapa5</pre><p><strong>Resultado:</strong> diferencia frente a la referencia de 5·10⁻¹⁰ en la FI y 1.2·10⁻¹⁰ en el multiplex. SDR de 60.3 / 59.4 / 57.1 dB en canal ideal. La decimación con Rate Transition no añade retardo.</p>` },
+  { k: 'Etapa 7', s: 'Interfaz tipo radio', b: `<p><strong>Qué se construyó:</strong> <code>radio_fdm_fm.m</code> y <code>main.m</code>. La perilla recalcula LO, imagen y preselector; el selector de audio actúa después del demux; hay AWGN, desintonía y fuente demo.</p><pre>&gt;&gt; main</pre><p><strong>Problema:</strong> la interfaz falló con «Unrecognized field name sim_r» porque usaba un <code>.slx</code> viejo. <strong>Solución:</strong> el modelo guarda un número de versión y <code>modelo_al_dia.m</code> lo regenera si no coincide.</p><p><strong>Resultado:</strong> 10 MHz → LO 8.3 MHz, SDR 69 dB; 11 MHz → LO 9.3 MHz, SDR 69 dB; desintonía de 600 kHz → SDR 0.9 dB.</p>` },
+  { k: 'Etapa 8', s: 'Evaluación con AWGN', b: `<p><strong>Qué se hizo:</strong> barrido de (SNR)_C de 40 a 10 dB en Simulink comparado con la teoría (capítulo 09), y prueba con y sin preselector.</p><pre>&gt;&gt; verificar_etapa8</pre><p><strong>Resultado:</strong> por encima del umbral, Simulink queda a 0.4–0.8 dB de la teoría. Umbral con CNR ≈ 11 dB en el ancho de Carson. Diferencia entre canales de 10.7 y 14.3 dB (teoría 10.4 y 14.2). Sin preselector se pierden 3.0 / 2.7 / 2.6 dB.</p>` }
+];
+$('#steps').innerHTML = steps.map((s, i) => `<details class="step"${i === 0 ? ' open' : ''}><summary><span class="k">${s.k}</span><span class="s">${s.s}</span><span class="st tag ok">verificada</span></summary><div class="body">${s.b}</div></details>`).join('');
+
+/* cuestionarios */
+const QZ = {
+  muestreo: [
+    { q: 'Una señal tiene componentes hasta 20.65 MHz. ¿Cuál es la frecuencia de muestreo mínima según el teorema de muestreo?', o: ['20.65 MHz', '41.3 MHz', '5 veces el ancho de banda'], a: 1, e: 'f_s > 2·f_máx = 41.3 MHz (diap. 397). Por eso la parte de RF usa 48 MHz.' },
+    { q: '¿Para qué sirve el filtro pasobajas antes de bajar la tasa de muestreo?', o: ['Para amplificar la señal', 'Para evitar el traslape (aliasing)', 'Para compensar el retardo'], a: 1, e: 'Es el filtro antitraslape de la diap. 400: elimina lo que, al decimar, se doblaría sobre la banda útil.' },
+    { q: 'Al insertar ceros para subir la tasa, ¿qué aparece en el espectro?', o: ['Copias del espectro original', 'Ruido blanco', 'Nada, el espectro no cambia'], a: 0, e: 'Aparecen copias periódicas (diap. 394); el filtro pasobajas de interpolación las elimina.' }],
+  filtros: [
+    { q: 'Según la diap. 181, ¿qué condiciones evitan la distorsión?', o: ['Magnitud constante y fase lineal', 'Fase constante y magnitud lineal', 'Ganancia mayor que 1'], a: 0, e: '|H| = k y θ = −ω·t_d: todo se escala igual y llega con el mismo retardo.' },
+    { q: 'Un FIR simétrico de 351 coeficientes trabaja a 480 kHz. ¿Cuánto retrasa la señal?', o: ['351 muestras', '175 muestras ≈ 365 µs', 'No retrasa porque es de fase lineal'], a: 1, e: 'Retardo = (N−1)/2 = 175 muestras = 175/480 000 s ≈ 365 µs. Fase lineal significa retardo constante, no retardo cero.' }],
+  dsb: [
+    { q: '¿Cuál es el ancho de banda de una señal DSB-SC si el mensaje ocupa 15 kHz?', o: ['15 kHz', '30 kHz', '7.5 kHz'], a: 1, e: 'Aparecen las dos bandas laterales: el doble del mensaje (diap. 229).' },
+    { q: 'En detección coherente, un error de fase de 90° hace que la salida…', o: ['se duplique', 'se invierta', 'desaparezca'], a: 2, e: 'e_o = ½f(t)·cos φ₀ y cos 90° = 0 (diap. 238).' },
+    { q: 'Una subportadora de 60 kHz llega con 226 µs de retardo y no se compensa. ¿Qué ganancia tiene el canal?', o: ['≈ 1', '≈ −0.87', '≈ 0'], a: 1, e: 'cos(2π·60 000·226·10⁻⁶) ≈ −0.87: el audio sale invertido y atenuado.' }],
+  fdm: [
+    { q: 'En el ejemplo FDMA del curso, ¿por qué se puede usar SSB con un filtro?', o: ['Porque la voz telefónica empieza en 300 Hz y deja un hueco junto a la portadora', 'Porque SSB no necesita filtros', 'Porque las portadoras están muy separadas'], a: 0, e: 'El hueco de 0–300 Hz permite cortar una banda lateral. El audio real llega casi a 0 Hz y no deja ese hueco.' },
+    { q: '¿Cuál es la frecuencia moduladora máxima del multiplex del proyecto?', o: ['15 kHz', '115 kHz', '120 kHz'], a: 1, e: 'El canal 3 va de 85 a 115 kHz: f_m(máx) = 115 kHz.' }],
+  fm: [
+    { q: 'Con Δf = 10 kHz y f_m = 10 kHz (diap. 327), ¿qué da Carson y qué da Bessel?', o: ['40 kHz y 60 kHz', '20 kHz y 40 kHz', '60 kHz y 40 kHz'], a: 0, e: 'Carson: 2(10+10) = 40 kHz. Con m = 1 hay 3 bandas significativas: 2·3·10 = 60 kHz.' },
+    { q: '¿Qué pasa con la potencia total de una onda FM al modularla?', o: ['Aumenta con el índice', 'Se mantiene igual que la portadora sin modular', 'Disminuye'], a: 1, e: 'Solo se reparte entre portadora y bandas laterales (diap. 334): J₀² + 2ΣJₙ² = 1.' },
+    { q: '¿Qué es la relación de desviación (DR)?', o: ['Δf dividido entre f_m(máx): el índice del peor caso', 'La potencia de la portadora sobre la de las bandas', 'f_c dividido entre f_m'], a: 0, e: 'DR = Δf_máx/f_m(máx) (diap. 328). En el proyecto: 150/115 = 1.30.' }],
+  demod: [
+    { q: '¿Por qué los discriminadores con circuito sintonizado necesitan un limitador?', o: ['Porque también responden a la amplitud', 'Para subir la frecuencia', 'Para quitar la portadora'], a: 0, e: 'Convierten FM en AM y detectan la envolvente: cualquier variación de amplitud (ruido) aparecería a la salida (diap. 348, 375).' },
+    { q: 'En el demodulador en cuadratura, si z gira 11.25° por muestra a 4.8 MHz, ¿cuánto se desvía la frecuencia?', o: ['150 kHz', '11.25 kHz', '4.8 MHz'], a: 0, e: 'f = f_s·Δθ/360° = 4.8 MHz·11.25/360 = 150 kHz.' }],
+  superhet: [
+    { q: 'Con f_RF = 100 MHz, FI = 10.7 MHz e inyección superior, ¿dónde está la imagen?', o: ['89.3 MHz', '121.4 MHz', '110.7 MHz'], a: 1, e: 'f_LO = 110.7 MHz; la imagen está a 2·FI de la señal: 100 + 21.4 = 121.4 MHz (diap. 361).' },
+    { q: '¿Qué filtro rechaza la frecuencia imagen?', o: ['El filtro de FI', 'La sección de RF (preselector), antes del mezclador', 'El filtro de audio'], a: 1, e: 'Una vez convertida a la FI, la imagen ya no se puede separar: hay que eliminarla antes del mezclador.' },
+    { q: 'Según la diap. 359, ¿cuándo un receptor heterodino es superheterodino?', o: ['Cuando la FI es mayor que la portadora', 'Cuando la FI es menor que la portadora y mayor que la señal de salida', 'Cuando tiene dos mezcladores'], a: 1, e: 'En el proyecto: 1.7 MHz es menor que 9–11 MHz y mayor que 115 kHz.' }],
+  ruido: [
+    { q: '¿Cómo crece la densidad del ruido a la salida de un discriminador FM?', o: ['Constante', 'Con f', 'Con f²'], a: 2, e: 'S_No(f) = N₀f²/A_c² (diap. 385). Por eso el canal de 100 kHz tiene más ruido que el de 20 kHz.' },
+    { q: 'Según la figura de mérito de Haykin, duplicar Δf mejora la SNR de salida en…', o: ['3 dB', '6 dB', '0 dB'], a: 1, e: 'La figura de mérito es proporcional a D² (diap. 378): (2)² = 4 = 6 dB.' },
+    { q: '¿Qué es el efecto umbral?', o: ['Por debajo de cierta SNR la FM colapsa de golpe', 'El receptor captura la señal más fuerte', 'La SNR crece sin límite'], a: 0, e: 'Diap. 381–382. En el proyecto aparece con CNR ≈ 11 dB en el ancho de Carson.' }],
+  final: [
+    { q: '¿Qué selecciona la perilla de sintonía de la radio?', o: ['Cuál de los tres audios se escucha', 'La portadora RF, y con ella el LO', 'La desviación de frecuencia'], a: 1, e: 'La perilla elige la portadora; el LO se calcula como f_c − 1.7 MHz. El audio se elige después del demultiplexor.' },
+    { q: 'Con f_c = 9.5 MHz e inyección inferior, ¿cuánto vale el LO?', o: ['7.8 MHz', '11.2 MHz', '9.5 MHz'], a: 0, e: 'f_LO = 9.5 − 1.7 = 7.8 MHz.' },
+    { q: '¿Por qué la tabla de escalamiento del enunciado no funciona?', o: ['La portadora simulada es demasiado alta', 'Escala RF ÷100 pero deja audio y FDM igual', 'K = 100 no es entero'], a: 1, e: 'Las proporciones cambian 100 veces: la FM cruzaría 0 Hz y la FI quedaría por debajo de la señal de salida.' },
+    { q: '¿Para qué sirve el preselector si solo hay una emisora?', o: ['Para nada', 'Para elegir el audio', 'Para que el ruido de la banda imagen no llegue a la FI'], a: 2, e: 'Sin preselector, el ruido en la imagen también se convierte a 1.7 MHz: se midió una pérdida de unos 3 dB.' },
+    { q: 'Al dividir todas las frecuencias entre K, el número de muestras por segundo de audio real…', o: ['se divide entre K', 'no cambia', 'se multiplica por K'], a: 1, e: 'El tiempo se estira K veces y la tasa baja K veces: N = T_real·f_s,nominal.' },
+    { q: '¿Por qué no se usó prénfasis con canal ideal?', o: ['Porque solo actúa sobre el ruido', 'Porque la toolbox no lo tiene', 'Porque ensancha la FM'], a: 0, e: 'Es un par de filtros complementarios: sin ruido se cancelan (diap. 384–387).' }]
+};
+let total = 0, correct = 0, answered = 0;
+$$('[data-quiz]').forEach(box => {
+  const list = QZ[box.dataset.quiz] || [];
+  const isFinal = box.dataset.quiz === 'final';
+  if (isFinal) total = list.length;
+  box.innerHTML = list.map((q, i) => `<div class="q" data-i="${i}"><p><strong>${i + 1}.</strong> ${q.q}</p>${q.o.map((o, j) => `<div class="opt" role="button" tabindex="0" data-j="${j}">${String.fromCharCode(97 + j)}) ${o}</div>`).join('')}<div class="fb" aria-live="polite"></div></div>`).join('');
+  box.querySelectorAll('.q').forEach(qd => {
+    const q = list[+qd.dataset.i];
+    const pick = opt => {
+      if (qd.dataset.done) return;
+      qd.dataset.done = 1;
+      const j = +opt.dataset.j, ok = j === q.a;
+      if (isFinal) { answered++; if (ok) correct++; $('#quizScore').textContent = `${correct} de ${answered} correctas (de ${total})`; }
+      qd.querySelectorAll('.opt').forEach(o => { const jj = +o.dataset.j; if (jj === q.a) o.classList.add('right'); else if (jj === j) o.classList.add('wrong'); });
+      qd.querySelector('.fb').innerHTML = (ok ? '<b style="color:var(--ok)">Correcto.</b> ' : '<b style="color:var(--warn)">No exactamente.</b> ') + q.e;
+    };
+    qd.querySelectorAll('.opt').forEach(o => { o.addEventListener('click', () => pick(o)); o.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(o); } }); });
+  });
+});
+$('#quizScore').textContent = `0 de 0 correctas (de ${total})`;
+
+/* ejercicios */
+const ejercicios = [
+  { q: 'Calcule el LO, la frecuencia imagen y el producto suma para f_c = 10.5 MHz con inyección inferior.', s: 'f_LO = 10.5 − 1.7 = <b>8.8 MHz</b>. Imagen = f_c − 2·FI = 10.5 − 3.4 = <b>7.1 MHz</b>. Suma = 10.5 + 8.8 = <b>19.3 MHz</b>.' },
+  { q: 'Repita con inyección superior. ¿Qué frecuencia de muestreo mínima haría falta para el producto suma?', s: 'f_LO = <b>12.2 MHz</b>; imagen = <b>13.9 MHz</b>; suma = 22.7 MHz. Sumando la mitad del ancho de la señal (0.35 MHz) llega a 23.05 MHz, así que f_s &gt; <b>46.1 MHz</b>. Con inyección inferior y f_c = 10.5 MHz el producto suma llega a 19.65 MHz y bastan 39.3 MHz.' },
+  { q: 'Use la tabla de Bessel (banco 6.1) para m = 2. ¿Cuántas bandas laterales son significativas y cuál es el ancho de banda si f_m = 15 kHz? Compare con Carson.', s: 'Con m = 2 son significativas J₁ a J₄ (J₄ ≈ 0.03): n = 4 → B = 2·4·15 = <b>120 kHz</b>. Δf = m·f_m = 30 kHz → Carson = 2(30 + 15) = <b>90 kHz</b>. Carson vuelve a quedar corto.' },
+  { q: 'Si la desviación fuera de 75 kHz, ¿cuál sería la relación de desviación y el ancho de Carson? ¿Cuánto cambiaría la SNR de salida según la teoría?', s: 'DR = 75/115 = <b>0.65</b>. Carson = 2(75 + 115) = <b>380 kHz</b>. La figura de mérito es ∝ Δf²: (75/150)² = 1/4 → <b>−6 dB</b>.' },
+  { q: 'Un audio de 2 s reales, con K = 100 y f_s,RF nominal = 48 MHz. ¿Cuántos segundos simulados y cuántas muestras de RF son?', s: 'Tiempo simulado = 100·2 = <b>200 s</b>. Tasa simulada = 480 kHz. Muestras = 200·480 000 = <b>96 millones</b>, igual que 2 s × 48 MHz sin escalar.' },
+  { q: 'Un filtro de 177 coeficientes a 480 kHz está en el camino del canal 1 (20 kHz). ¿Qué retardo introduce y qué ganancia tendría el canal si solo existiera ese retardo y no se compensara?', s: 'Retardo = 88 muestras / 480 000 = <b>183.3 µs</b>. Fase = 2π·20 000·183.3·10⁻⁶ = 2π·3.67 → lo que cuenta es el resto, 0.67 vuelta ≈ <b>240°</b>. Ganancia = cos 240° = <b>−0.5</b>. Por eso se suma todo el retardo de la cadena y se compensa.' },
+  { q: 'Con (SNR)_C = 25 dB, ¿cuál es la CNR en el ancho de Carson? ¿Está por encima del umbral?', s: 'CNR = (SNR)_C − 10·log₁₀(B_T/W) = 25 − 10·log₁₀(530/120) = 25 − 6.45 = <b>18.55 dB</b>, por encima de ~11 dB: el sistema funciona bien.' }
+];
+$('#ejercicios').innerHTML = ejercicios.map((e, i) => `<p><strong>Ejercicio ${i + 1}.</strong> ${e.q}</p><details class="sol"><summary>Ver solución</summary><p>${e.s}</p></details>`).join('');
+
+/* glosario */
+const gl = [
+  ['AWGN', 'Ruido aditivo, blanco y gaussiano: misma potencia en todas las frecuencias; se suma a la señal (diap. 365).'],
+  ['Banda base / pasobanda', 'La señal original sin trasladar (el audio) / la señal ya modulada en alta frecuencia (diap. 48–49).'],
+  ['Bessel (funciones)', 'Dan la amplitud J_n(m) de cada banda lateral de FM; son significativas si J_n ≥ 0.01 (diap. 315–321).'],
+  ['Carson (regla de)', 'B = 2(Δf + f_m). Abarca cerca del 98 % de la potencia (diap. 326).'],
+  ['Decimación', 'Bajar la tasa de muestreo tomando 1 de cada M muestras, después de un filtro antitraslape.'],
+  ['Desviación Δf', 'Lo más que se aleja la frecuencia instantánea de la portadora: Δf = K₁·V_m (diap. 310). Aquí, 150 kHz.'],
+  ['Detección coherente', 'Recuperar DSB-SC multiplicando por una copia de la portadora con la misma frecuencia y fase (diap. 231).'],
+  ['DR', 'Relación de desviación: Δf_máx / f_m(máx), el índice del peor caso (diap. 328).'],
+  ['DSB-SC', 'Doble banda lateral con portadora suprimida: φ(t) = f(t)·cos ω_c t (diap. 225).'],
+  ['FDM', 'Multiplexación por división de frecuencia: varias señales comparten un medio en frecuencias distintas (diap. 264).'],
+  ['Fase lineal', 'Fase que decrece proporcional a ω: todas las frecuencias se retrasan lo mismo y no hay distorsión de fase (diap. 181).'],
+  ['FI', 'Frecuencia intermedia fija del superheterodino (diap. 359). Aquí, 1.7 MHz.'],
+  ['Figura de mérito', '(SNR)_O / (SNR)_C. En FM vale 3k_f²P/W², proporcional a D² (diap. 366, 377).'],
+  ['FIR', 'Filtro de respuesta impulsional finita. Si sus coeficientes son simétricos tiene fase lineal.'],
+  ['Imagen', 'Frecuencia que con el mismo LO también cae en la FI; está a 2·FI de la deseada (diap. 361).'],
+  ['Índice de modulación', 'm = Δf/f_m para un tono (diap. 310). Haykin lo llama β.'],
+  ['Interpolación', 'Subir la tasa de muestreo insertando ceros y filtrando.'],
+  ['K', 'Factor de escala de la simulación: frecuencia simulada = nominal/100.'],
+  ['Limitador', 'Recorta la onda FM para que su amplitud sea constante antes del discriminador (diap. 375).'],
+  ['LO', 'Oscilador local del receptor (diap. 357–358).'],
+  ['Multiplex', 'La señal FDM con los tres canales. Es el mensaje que modula la FM.'],
+  ['Nyquist', 'f_s > 2·f_máx para muestrear sin traslape (diap. 397).'],
+  ['PLL', 'Lazo de seguimiento de fase: un VCO que se engancha a la señal de entrada (diap. 249–254).'],
+  ['Preselector', 'Pasabanda de la sección de RF, antes del mezclador. Rechaza la imagen (diap. 358).'],
+  ['Prénfasis / deénfasis', 'Par de filtros que refuerza los agudos en TX y los atenúa en RX para reducir el ruido (diap. 384–387).'],
+  ['Rate Transition', 'Bloque de Simulink que conecta partes con distinta tasa. Aquí retrasa una muestra lenta al subir de tasa.'],
+  ['SDR', 'Relación señal a distorsión: potencia del audio original sobre la del error del recuperado.'],
+  ['(SNR)_C', 'Relación señal a ruido del canal: A_c²/(2·W·N₀) (diap. 377).'],
+  ['Superheterodino', 'Receptor cuya FI es menor que la portadora y mayor que la señal de salida (diap. 359).'],
+  ['Traslape (aliasing)', 'Una frecuencia alta que, por muestrear poco, aparece como otra más baja (diap. 398).'],
+  ['Umbral FM', 'Nivel de SNR por debajo del cual la FM colapsa de golpe (diap. 381).']
+];
+$('#gl').innerHTML = gl.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join('');
+})();
+</script>
