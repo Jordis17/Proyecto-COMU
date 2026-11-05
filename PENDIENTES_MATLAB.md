@@ -55,6 +55,7 @@ El diagrama se ordena solo con el «Auto Arrange» de Simulink. Revisar que se v
 ## 5. `preparar_entrega` (al final, < 1 min)
 
 - [ ] Crea la carpeta `entrega_FDM_FM` (dos niveles arriba de `03_codigo_matlab`) y `entrega_FDM_FM.zip`. Lleva 8 `.m` (main, params_sistema, disenar_fir_kaiser, generar_fuentes, radio_fdm_fm, graficas_sistema, graficar_espectro, comparar_senales), el `.slx` y los WAV. No se entregan `construir_modelo.m`, `modelo_al_dia.m`, `analisis_awgn.m` ni `probar_audio_real.m`.
+- [ ] También crea `entrega_FDM_FM_respaldo.zip` (10 `.m`, la versión anterior). Ese **no se manda**: es un respaldo.
 - [ ] Si ordenan el diagrama del `.slx` a mano, háganlo **después** de cualquier cambio en `construir_modelo.m`. Si ese archivo cambia luego, el `.slx` se vuelve a generar y se pierde el orden manual.
 - [ ] Todas las líneas deben salir `[OK]`, sin `[FALLA]`.
 - [ ] Si avisa que faltan audios, copiar los WAV a `audios/` y volver a correrlo.

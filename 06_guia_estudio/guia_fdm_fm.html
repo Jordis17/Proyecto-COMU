@@ -688,23 +688,28 @@ dl.gl dd{margin:0}
     <li>Elija Audio 1, 2 o 3 y use <strong>Escuchar recuperado</strong> y <strong>Escuchar original</strong>.</li>
   </ol>
   <div class="scroll"><table>
-    <thead><tr><th>Archivo</th><th>Para qué sirve</th></tr></thead>
+    <thead><tr><th>Archivo</th><th>Se entrega</th><th>Para qué sirve</th></tr></thead>
     <tbody>
-      <tr><td class="n">main.m</td><td>Punto de entrada: tabla de diseño, modelo al día y radio.</td></tr>
-      <tr><td class="n">params_sistema.m</td><td>Parámetros, filtros, retardos y 9 comprobaciones. Recibe la portadora y opciones (ruido, duración, desintonía, prénfasis).</td></tr>
-      <tr><td class="n">disenar_fir_kaiser.m</td><td>Diseña filtros FIR por ventana de Kaiser y verifica su rechazo, sin toolboxes.</td></tr>
-      <tr><td class="n">construir_modelo.m</td><td>Genera <code>sistema_fdm_fm.slx</code> bloque por bloque.</td></tr>
-      <tr><td class="n">modelo_al_dia.m</td><td>Regenera el <code>.slx</code> si no existe o si <code>construir_modelo.m</code> cambió.</td></tr>
-      <tr><td class="n">radio_fdm_fm.m</td><td>La interfaz tipo radio.</td></tr>
-      <tr><td class="n">generar_fuentes.m</td><td>Audios: tonos, ruido, demo o archivos WAV.</td></tr>
-      <tr><td class="n">graficas_sistema.m</td><td>Gráficas de cada etapa con canal ideal: audios, multiplex, FM con Carson, receptor y audios recuperados.</td></tr>
-      <tr><td class="n">analisis_awgn.m</td><td>Barrido de ruido frente a la teoría, sin y con prénfasis.</td></tr>
-      <tr><td class="n">probar_audio_real.m</td><td>Pasa tres WAV reales por el sistema y guarda los recuperados.</td></tr>
-      <tr><td class="n">comparar_senales.m</td><td>SDR entre audio original y recuperado, alineando retardo y ganancia.</td></tr>
-      <tr><td class="n">graficar_espectro.m</td><td>Espectros con <code>fft</code> (Welch propio).</td></tr>
-      <tr><td class="n">preparar_entrega.m</td><td>Arma la carpeta y el .zip de entrega (solo para el equipo).</td></tr>
-      <tr><td class="n">verificacion/</td><td>Pruebas internas: <code>modelo_referencia.m</code>, <code>graficar_filtro.m</code>, <code>prueba_etapa0.m</code>, <code>verificar_etapa2/3/5/8.m</code>.</td></tr>
+      <tr><td class="n">sistema_fdm_fm.slx</td><td><span class="tag ok">entrega</span></td><td>El modelo Simulink.</td></tr>
+      <tr><td class="n">main.m</td><td><span class="tag ok">entrega</span></td><td>Punto de entrada: tabla de diseño y radio.</td></tr>
+      <tr><td class="n">params_sistema.m</td><td><span class="tag ok">entrega</span></td><td>Parámetros, filtros, retardos y 9 comprobaciones. Recibe la portadora y opciones (ruido, duración, desintonía, prénfasis).</td></tr>
+      <tr><td class="n">disenar_fir_kaiser.m</td><td><span class="tag ok">entrega</span></td><td>Diseña filtros FIR por ventana de Kaiser y verifica su rechazo, sin toolboxes.</td></tr>
+      <tr><td class="n">generar_fuentes.m</td><td><span class="tag ok">entrega</span></td><td>Audios: tonos, ruido, demo o archivos WAV.</td></tr>
+      <tr><td class="n">radio_fdm_fm.m</td><td><span class="tag ok">entrega</span></td><td>La interfaz tipo radio.</td></tr>
+      <tr><td class="n">graficas_sistema.m</td><td><span class="tag ok">entrega</span></td><td>Gráficas de cada etapa con canal ideal: audios, multiplex, FM con Carson, receptor y audios recuperados.</td></tr>
+      <tr><td class="n">graficar_espectro.m</td><td><span class="tag ok">entrega</span></td><td>Espectros con <code>fft</code> (Welch propio).</td></tr>
+      <tr><td class="n">comparar_senales.m</td><td><span class="tag ok">entrega</span></td><td>SDR entre audio original y recuperado, alineando retardo y ganancia.</td></tr>
+      <tr><td class="n">audios/audio1..3.wav</td><td><span class="tag ok">entrega</span></td><td>Los tres audios reales.</td></tr>
+      <tr><td class="n">analisis_awgn.m</td><td><span class="tag dec">respaldo</span></td><td>Barrido de ruido frente a la teoría, sin y con prénfasis. Sus resultados se muestran en el video.</td></tr>
+      <tr><td class="n">probar_audio_real.m</td><td><span class="tag dec">respaldo</span></td><td>Pasa tres WAV reales por el sistema y guarda los recuperados, que se usan en el video.</td></tr>
+      <tr><td class="n">construir_modelo.m</td><td><span class="tag err">equipo</span></td><td>Genera <code>sistema_fdm_fm.slx</code> bloque por bloque, con los nombres del curso. Se manda el <code>.slx</code> ya hecho.</td></tr>
+      <tr><td class="n">modelo_al_dia.m</td><td><span class="tag err">equipo</span></td><td>Regenera el <code>.slx</code> si no existe o si <code>construir_modelo.m</code> cambió. Sin él, los demás archivos usan el <code>.slx</code> tal cual.</td></tr>
+      <tr><td class="n">preparar_entrega.m</td><td><span class="tag err">equipo</span></td><td>Arma la entrega y el respaldo (ver abajo).</td></tr>
+      <tr><td class="n">verificacion/</td><td><span class="tag err">equipo</span></td><td>Pruebas internas: <code>modelo_referencia.m</code>, <code>graficar_filtro.m</code>, <code>prueba_etapa0.m</code>, <code>verificar_etapa2/3/5/8.m</code>.</td></tr>
     </tbody></table></div>
+  <div class="box proy"><div class="bh">Qué se entrega</div>
+    <p>El video y <code>entrega_FDM_FM.zip</code>: el modelo <code>.slx</code>, los <strong>8 archivos .m</strong> marcados como «entrega», los tres WAV y un <code>LEEME.txt</code> para el profesor. Con eso la radio cubre todo lo que pide el enunciado.</p>
+    <p>Desde <code>03_codigo_matlab</code>, <code>preparar_entrega</code> arma la carpeta, comprueba que funcione sola y crea el <code>.zip</code>. Además crea <code>entrega_FDM_FM_respaldo.zip</code>, la versión anterior con 10 archivos .m (los 8 más los dos marcados como «respaldo»). El respaldo <strong>no se manda</strong>: queda guardado por si el profesor pide los scripts que generaron los resultados del video.</p></div>
   <div class="box proy"><div class="bh">Audio real</div>
     <p>Ponga en la carpeta <code>audios</code> los archivos <code>audio1.wav</code>, <code>audio2.wav</code> y <code>audio3.wav</code>, idealmente a 48 kHz y con sonido desde el inicio. En la radio, elija la fuente «audio» (pocos segundos, porque cada segundo tarda unos 4–5 minutos). Para escucharlos con calma, <code>probar_audio_real</code> simula 2 s una sola vez y guarda <code>recuperado1..3.wav</code>.</p></div>
 </section>

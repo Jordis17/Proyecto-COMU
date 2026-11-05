@@ -105,7 +105,7 @@ verificar_etapa8     % barrido AWGN y prueba sin preselector
 
 ### Archivos de `03_codigo_matlab/`
 
-Se entregan 8 `.m` (los marcados con ✔), el `.slx` y los audios; el resto queda para el equipo.
+Se entregan 8 `.m` (los marcados con ✔), el `.slx` y los audios; el resto queda para el equipo. `preparar_entrega` crea además `entrega_FDM_FM_respaldo.zip`, la versión anterior con 10 `.m` (incluye `analisis_awgn.m` y `probar_audio_real.m`), que **no se manda** y queda como respaldo.
 
 | Archivo | Función |
 |---|---|

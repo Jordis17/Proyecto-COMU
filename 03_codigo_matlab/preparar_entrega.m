@@ -8,7 +8,10 @@
 %      se muestran en el video), preparar_entrega.m y la carpeta verificacion/.
 %   3) Revisa que la carpeta funcione sola: que cada función se encuentre dentro de ella
 %      y que params_sistema y el modelo carguen sin errores.
-%   4) Crea entrega_FDM_FM.zip al lado de la carpeta.
+%   4) Crea entrega_FDM_FM.zip al lado de la carpeta. Es lo que se manda.
+%   5) Crea también entrega_FDM_FM_respaldo.zip: la entrega anterior, con 10 .m (los 8 más
+%      analisis_awgn.m y probar_audio_real.m). NO se manda; queda guardada por si el
+%      profesor pide los scripts que generaron los resultados del video.
 %   No simula (eso se prueba aparte con main / graficas_sistema).
 
 clear; clc;
@@ -95,6 +98,24 @@ d = dir(zipfile);
 
 fprintf('\nCarpeta: %s\n', destino);
 fprintf('ZIP:     %s (%.1f MB)\n', zipfile, d.bytes/1e6);
+%% 5) respaldo: la entrega anterior con 10 .m (no se manda)
+respaldo = [destino '_respaldo'];
+if exist(respaldo, 'dir'), rmdir(respaldo, 's'); end
+copyfile(destino, respaldo);
+extra = {'analisis_awgn.m', 'probar_audio_real.m'};
+for i = 1:numel(extra)
+    copyfile(fullfile(origen, extra{i}), respaldo);
+end
+fid = fopen(fullfile(respaldo, 'LEEME.txt'), 'a', 'n', 'UTF-8');
+fprintf(fid, ['\nScripts adicionales (generan los resultados del video):\n' ...
+    '  analisis_awgn      canal AWGN, sin y con prénfasis/deénfasis (~8-10 min)\n' ...
+    '  probar_audio_real  pasa audios/audio1..3.wav por el sistema (~9 min para 2 s)\n']);
+fclose(fid);
+zip_resp = [respaldo '.zip'];
+[raiz_r, carpeta_r] = fileparts(respaldo);
+zip(zip_resp, carpeta_r, raiz_r);
+fprintf('Respaldo: %s (10 .m, NO se manda)\n', zip_resp);
+
 if ~isempty(faltan)
     fprintf('AVISO: faltan los audios %s en audios/. El modo ''audio'' no funcionará.\n', strjoin(faltan, ', '));
 end
