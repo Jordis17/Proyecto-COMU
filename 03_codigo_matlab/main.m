@@ -12,13 +12,10 @@
 %     sistema_fdm_fm.slx    el modelo Simulink
 %     generar_fuentes.m     audios de prueba: 'demo', 'tonos', 'ruido' o 'audio' (WAV)
 %     radio_fdm_fm.m        interfaz tipo radio
-%     graficas_sistema.m    gráficas de cada etapa con canal ideal (evidencia para el informe)
-%     analisis_awgn.m       canal AWGN, sin y con prénfasis/deénfasis
-%     probar_audio_real.m   pasa 3 WAV reales por el sistema y guarda los recuperados
+%     graficas_sistema.m    gráficas de cada etapa con canal ideal
 %     graficar_espectro.m   espectro sin toolboxes (Welch)
 %     comparar_senales.m    SDR entre el audio original y el recuperado
-%     preparar_entrega.m    (solo para el equipo) arma la carpeta y el .zip de entrega
-%     audios/audio1..3.wav  (opcional) audios reales a 48 kHz para el modo 'audio'
+%     audios/audio1..3.wav  audios reales a 48 kHz para el modo 'audio'
 
 clc;
 carpeta = fileparts(mfilename('fullpath'));

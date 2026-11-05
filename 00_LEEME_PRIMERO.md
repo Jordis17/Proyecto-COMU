@@ -103,22 +103,24 @@ verificar_etapa5     % cadena completa, canal ideal
 verificar_etapa8     % barrido AWGN y prueba sin preselector
 ```
 
-### Archivos de la entrega (`03_codigo_matlab/`)
+### Archivos de `03_codigo_matlab/`
+
+Se entregan 8 `.m` (los marcados con ✔), el `.slx` y los audios; el resto queda para el equipo.
 
 | Archivo | Función |
 |---|---|
-| `main.m` | Punto de entrada: imprime el diseño y abre la radio |
-| `params_sistema.m` | Todos los parámetros, filtros, retardos τ_k y σ del ruido; 9 comprobaciones del diseño. Opciones: `imprimir`, `snr_c_dB`, `T_real`, `desintonia`, `enfasis` (false), `f0_enfasis` (30 kHz), `log_rf_max` |
-| `disenar_fir_kaiser.m` | Diseño FIR LP/BP por ventana de Kaiser; sube el orden hasta cumplir el rechazo |
+| ✔ `main.m` | Punto de entrada: imprime el diseño y abre la radio |
+| ✔ `params_sistema.m` | Todos los parámetros, filtros, retardos τ_k y σ del ruido; 9 comprobaciones del diseño. Opciones: `imprimir`, `snr_c_dB`, `T_real`, `desintonia`, `enfasis` (false), `f0_enfasis` (30 kHz), `log_rf_max` |
+| ✔ `disenar_fir_kaiser.m` | Diseño FIR LP/BP por ventana de Kaiser; sube el orden hasta cumplir el rechazo |
 | `construir_modelo.m` | **(No se entrega.)** Genera `sistema_fdm_fm.slx` por código (subsistemas Transmisor FDM, Modulador FM, Canal, Receptor superheterodino, Demultiplexor FDM) y pone los nombres de bloques y señales (sección 5) |
 | `modelo_al_dia.m` | **(No se entrega.)** Regenera el `.slx` si no existe o si `construir_modelo.m` es más nuevo. Los scripts de la entrega lo usan solo si existe; sin él, usan el `.slx` tal cual |
-| `generar_fuentes.m` | Fuentes: `demo`, `tonos`, `ruido`, `audio` (WAV en la carpeta `audios/`, que hay que crear) |
-| `radio_fdm_fm.m` | GUI: perilla de portadora, LO automático, selector de audio, AWGN, prénfasis, desintonía |
-| `graficas_sistema.m` | Figuras de cada etapa: audios, multiplex, FM con Carson, receptor, audios recuperados |
-| `analisis_awgn.m` | Barrido AWGN frente a la teoría, sin y con prénfasis. Guarda CSV, MAT y PNG |
-| `probar_audio_real.m` | Pasa `audios/audio1..3.wav` por el sistema y guarda `recuperado1..3.wav` (ver `audios/LEEME.txt`) |
-| `graficar_espectro.m` | Espectro sin toolbox (Welch propio) |
-| `comparar_senales.m` | SDR alineando retardo (fraccionario) y ganancia |
+| ✔ `generar_fuentes.m` | Fuentes: `demo`, `tonos`, `ruido`, `audio` (WAV en la carpeta `audios/`, que hay que crear) |
+| ✔ `radio_fdm_fm.m` | GUI: perilla de portadora, LO automático, selector de audio, AWGN, prénfasis, desintonía |
+| ✔ `graficas_sistema.m` | Figuras de cada etapa: audios, multiplex, FM con Carson, receptor, audios recuperados |
+| `analisis_awgn.m` | **(No se entrega; resultados en el video.)** Barrido AWGN frente a la teoría, sin y con prénfasis. Guarda CSV, MAT y PNG |
+| `probar_audio_real.m` | **(No se entrega; los WAV recuperados se usan en el video.)** Pasa `audios/audio1..3.wav` por el sistema y guarda `recuperado1..3.wav` (ver `audios/LEEME.txt`) |
+| ✔ `graficar_espectro.m` | Espectro sin toolbox (Welch propio) |
+| ✔ `comparar_senales.m` | SDR alineando retardo (fraccionario) y ganancia |
 
 En `verificacion/` quedan `modelo_referencia.m` (la misma cadena en MATLAB puro), `graficar_filtro.m`, `prueba_etapa0.m` y `verificar_etapa2/3/5/8.m`.
 
