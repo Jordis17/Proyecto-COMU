@@ -1,10 +1,11 @@
 # Pendiente de correr en MATLAB
 
-Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, scripts nuevos) se escribieron sin poder ejecutar MATLAB. Hay que correr esto en orden, desde `03_codigo_matlab/`. Si algo falla, guardar el mensaje de error **completo** (con archivo y línea).
+Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, nombres de bloques y señales, scripts nuevos) se escribieron sin poder ejecutar MATLAB. Hay que correr esto en orden, desde `03_codigo_matlab/`. Si algo falla, guardar el mensaje de error **completo** (con archivo y línea).
 
 ## 1. `main` (1–2 min)
 
 - La primera vez imprime «Generando sistema_fdm_fm.slx...». Es normal: el modelo cambió y se regenera solo.
+- [ ] No debe aparecer ningún «Aviso: no se pudo renombrar…» ni «Aviso: no se pudo ordenar el diagrama…». Si aparece, copiar el mensaje completo.
 - La tabla debe terminar con **9 líneas `[OK]`** y decir «Prénfasis/deénfasis apagado».
 - Valores que no deberían cambiar respecto de antes:
   - tau = 411.79 / 226.37 / 226.37 µs
@@ -14,7 +15,19 @@ Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, script
   - [ ] lo mismo con la casilla de prénfasis encendida → SDR casi igual
   - [ ] el mensaje de estado muestra la desviación usada (debe ser ≤ 100 %)
 
-- [ ] Abrir `sistema_fdm_fm.slx` y revisar el diagrama (nivel principal y cada subsistema). Se ordena solo con el «Auto Arrange» de Simulink, las señales principales llevan nombre con la notación del curso (x1(t)–x3(t), m(t) multiplex, s(t) señal FM, x(t) = s(t) + w(t), m(t) recuperado, audio k recuperado) y los bloques tienen nombres en español (Sección de RF, Oscilador local, Sección de FI, Filtro posdetección, Detector coherente…). Si al generar el modelo aparece algún «Aviso: no se pudo renombrar…», copiar el mensaje. Si algún subsistema queda confuso, sobre todo «Demodulador FM», que tiene líneas cruzadas, avisar cuál y cómo se ve (una captura sirve).
+### Revisar el modelo (`sistema_fdm_fm.slx`)
+
+El diagrama se ordena solo con el «Auto Arrange» de Simulink. Revisar que se vea así:
+
+- [ ] **Nivel principal:** Audio 1–3 → «Transmisor FDM» → «Modulador FM» → «Canal» → «Receptor superheterodino» → «Demultiplexor FDM» → «Guardar audio 1–3». Las líneas llevan los nombres: x1(t) audio 1 (y 2, 3), m(t) multiplex, s(t) señal FM, x(t) = s(t) + w(t), m(t) recuperado, audio 1 recuperado (y 2, 3).
+- [ ] **Transmisor FDM:** tres bloques «Canal k DSB-SC» → «Suma de los 3 canales» → «Normalización (dividir entre 3)» → «Filtro de preénfasis».
+- [ ] **Dentro de «Canal k DSB-SC»:** Pasabajos 15 kHz → Subir tasa 1 a 10 → Inserción de ceros (con Tren de pulsos) → Filtro interpolador → Modulador DSB-SC (con Subportadora cos(2 pi fk t)).
+- [ ] **Modulador FM:** Subir tasa (a) y (b) → Integrador → 2 pi kf → Fase total (con Reloj t → 2 pi fc) → cos → Amplitud Ac.
+- [ ] **Canal:** Ruido blanco gaussiano → Nivel de ruido → Suma de ruido w(t).
+- [ ] **Receptor superheterodino:** Sección de RF (preselector) → Mezclador (con Oscilador local) → Filtro antitraslape → Bajar tasa 10 a 1 (FI) → Sección de FI → Demodulador FM → Dividir entre kf → Filtro posdetección → Bajar tasa 10 a 1 (multiplex) → Multiplicar por 3 → Filtro de deénfasis.
+- [ ] **Demodulador FM:** Mezcla en fase (I) y en cuadratura (Q) → Pasabajos I y Q → Muestra anterior → productos «I por I anterior», etc. → Parte real / Parte imaginaria → Ángulo girado (atan2) → Convertir a frecuencia. Es el que más probablemente quede con líneas cruzadas.
+- [ ] **Demultiplexor FDM:** por canal, Canal k pasabanda → Canal k detector coherente (con Canal k oscilador local) → Canal k pasabajos 15 kHz → Canal k bajar tasa 10 a 1.
+- Si algún subsistema queda confuso, avisar cuál y mandar una captura.
 
 ## 2. `graficas_sistema` (~1 min)
 
@@ -27,7 +40,7 @@ Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, script
 
 - Parte A, canal ideal:
   - [ ] las dos filas (sin y con prénfasis) dan casi el mismo SDR
-  - [ ] el pico de m_n es ≤ 1
+  - [ ] el «pico de m(t) al modulador» es ≤ 1
 - Parte B, AWGN:
   - [ ] la columna «sin» debería parecerse a la tabla anterior (por ejemplo, a 30 dB: 32.0 / 21.3 / 17.7)
   - [ ] la línea «Diferencia con prénfasis» debería dar cerca de **−6 / −1 / +2 dB**
@@ -54,4 +67,6 @@ Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, script
 | Error en el bloque «Filtro de deénfasis» con el prénfasis apagado | Simulink no acepta el denominador `[1 0]`. Avisar y se cambia. |
 | SDR con canal ideal mucho menor que antes | Se coló un cambio en los retardos τ_k. Comparar con la tabla de `params_sistema`. |
 | «Falla de diseño: ...» al iniciar | Alguna de las 9 comprobaciones falló. Copiar el texto completo. |
+| «Aviso: no se pudo renombrar…» | Simulink no aceptó algún nombre nuevo. El modelo funciona igual, pero ese bloque conserva su nombre interno. Copiar el aviso. |
+| Error al compilar en modo acelerado que menciona un nombre con tilde (por ejemplo «Sección de FI») | La compilación no acepta tildes en los nombres. Avisar y se cambian por nombres sin tilde. Mientras tanto, la GUI cae sola a modo normal (más lento). |
 | Error de memoria en `probar_audio_real` | Bajar `T_real` a 1 s. |

@@ -2,7 +2,7 @@
 %   Ejecutar desde esta carpeta:  >> analisis_awgn
 %
 %   A) Canal ideal: con el prénfasis encendido el SDR debe ser igual (~60 dB), porque el
-%      deénfasis lo deshace exactamente. El pico de m_n debe seguir <= 1.
+%      deénfasis lo deshace exactamente. El pico de m(t) al modulador debe seguir <= 1.
 %   B) Barrido de (SNR)_C (definición del curso: Ac^2 / (2 W N0), W = 120 kHz), con el mismo
 %      ruido en las dos corridas. Para cada canal se compara el SDR medido con la teoría:
 %        (SNR)_k = (SNR)_C * W * Df^2 * Px / [18 * Wa * (f_k^2 + Wa^2/3)]
@@ -43,7 +43,7 @@ for e = 0:1
     out = sim(mdl);
     pico(e+1) = max(abs(out.sim_m_n(:)));
     SDR_ideal(e+1,:) = medir_sdr(out, fuente, P);
-    fprintf('   prénfasis %-3s: SDR = %5.1f / %5.1f / %5.1f dB, pico de m_n = %.2f\n', ...
+    fprintf('   prénfasis %-3s: SDR = %5.1f / %5.1f / %5.1f dB, pico de m(t) al modulador = %.2f\n', ...
         ternario(e, 'sí', 'no'), SDR_ideal(e+1,:), pico(e+1));
 end
 fprintf('   (Las dos filas deben ser casi iguales y el pico debe ser <= 1.)\n\n');
