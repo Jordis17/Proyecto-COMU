@@ -27,6 +27,17 @@ function P = params_sistema(fc_nom_Hz, opciones)
     f0_enf_nom = obtener(opciones, 'f0_enfasis', 30e3);
     log_rf_max = obtener(opciones, 'log_rf_max', inf);
 
+    % Carpeta donde Simulink compila el modelo (modo acelerado): en la carpeta temporal de
+    % cada computadora y no junto al proyecto. Así no se sincroniza por OneDrive ni choca
+    % entre computadoras con versiones distintas de MATLAB.
+    try
+        cache = fullfile(tempdir, ['sistema_fdm_fm_' version('-release')]);
+        if ~strcmp(Simulink.fileGenControl('get', 'CacheFolder'), cache)
+            Simulink.fileGenControl('set', 'CacheFolder', cache, 'CodeGenFolder', cache, 'createDir', true);
+        end
+    catch
+    end
+
     %% ---------------- Escalamiento ----------------
     % La tabla del enunciado divide la portadora y la FI por 100 pero no el audio ni el FDM,
     % y así se pierden las proporciones. Aquí se divide TODO por el mismo K.

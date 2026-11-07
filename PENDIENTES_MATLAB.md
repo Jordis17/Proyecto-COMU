@@ -71,3 +71,5 @@ El diagrama se ordena solo con el «Auto Arrange» de Simulink. Revisar que se v
 | «Aviso: no se pudo renombrar…» | Simulink no aceptó algún nombre nuevo. El modelo funciona igual, pero ese bloque conserva su nombre interno. Copiar el aviso. |
 | Error al compilar en modo acelerado que menciona un nombre con tilde (por ejemplo «Sección de FI») | La compilación no acepta tildes en los nombres. Avisar y se cambian por nombres sin tilde. Mientras tanto, la GUI cae sola a modo normal (más lento). |
 | Error de memoria en `probar_audio_real` | Bajar `T_real` a 1 s. |
+| «The file containing block diagram 'sistema_fdm_fm' has been changed on disk» | Se bajó un `.slx` nuevo con el viejo abierto. Correr `close_system('sistema_fdm_fm', 0)` y repetir. |
+| «Code generation folder … slprj was created for a different release» | Carpeta temporal de otra versión de MATLAB (sincronizada por OneDrive). Borrar `slprj` y `sistema_fdm_fm.slxc`. Desde ahora Simulink usa la carpeta temporal de cada computadora. |
