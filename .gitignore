@@ -1,0 +1,10 @@
+# Archivos temporales de Simulink (se regeneran al simular)
+slprj/
+*.slxc
+*.autosave
+*.asv
+# Resultados y archivos generados
+03_codigo_matlab/resultados_awgn.*
+03_codigo_matlab/fig_awgn.png
+03_codigo_matlab/audios/original*.wav
+03_codigo_matlab/audios/recuperado*.wav

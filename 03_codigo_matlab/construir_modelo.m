@@ -553,11 +553,20 @@ function ordenar_diagrama(mdl)
 % (el mismo comando "Auto Arrange" del menú Format). Si la versión no lo tiene, se deja igual.
     sistemas = [{mdl}; find_system(mdl, 'LookUnderMasks', 'all', 'BlockType', 'SubSystem')];
     for i = numel(sistemas):-1:1          % de adentro hacia afuera
+        % el demultiplexor ya está armado con los canales en orden 1, 2, 3 (el auto-ordenado los cambia)
+        if endsWith(sistemas{i}, '/Demultiplexor FDM'), continue; end
         try
             Simulink.BlockDiagram.arrangeSystem(sistemas{i});
         catch err
             if i == 1, fprintf('Aviso: no se pudo ordenar el diagrama (%s).\n', err.message); end
         end
+    end
+    % el auto-ordenado agranda la ganancia «Multiplicar por 3»: se deja de tamaño normal
+    try
+        b = [mdl '/Receptor superheterodino/Multiplicar por 3'];
+        p = get_param(b, 'Position');  c = (p(2) + p(4)) / 2;
+        set_param(b, 'Position', [p(1), c - 15, p(1) + 50, c + 15]);
+    catch
     end
 end
 

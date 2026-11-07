@@ -62,6 +62,7 @@ function fuente = generar_fuentes(P, modo, carpeta_audios)
                 [x, fs_arch] = audioread(archivo);
                 x = mean(x, 2).';                              % a mono
                 x = a_48kHz(x, fs_arch, P);
+                x = quitar_silencio_inicial(x, P.fs_audio_real);
                 n = min(Na, numel(x));
                 X(k, 1:n) = x(1:n);                            % se recorta a la duración pedida
             end
@@ -87,6 +88,14 @@ function fuente = generar_fuentes(P, modo, carpeta_audios)
     fuente.Na = Na;
     fuente.T_stop = (Na * P.L1 - 1) / P.fs_m;   % cubre las Na muestras de audio
     fuente.modo = lower(modo);
+end
+
+function x = quitar_silencio_inicial(x, fs)
+% Quita el silencio del inicio de una grabación: empieza 10 ms antes de la primera muestra
+% que pasa del 5 % del pico. Así la radio, que usa solo los primeros segundos, oye el sonido.
+    i0 = find(abs(x) > 0.05 * max(abs(x)), 1);
+    if isempty(i0), return; end
+    x = x(max(1, i0 - round(0.01 * fs)):end);
 end
 
 function y = a_48kHz(x, fs_arch, P)
