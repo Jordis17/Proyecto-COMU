@@ -8,6 +8,7 @@
 %     4) Receptor: salida del mezclador (FI y producto suma), FI filtrada y multiplex
 %        recuperado frente al transmitido (enunciado §4.5).
 %     5) Audios originales frente a recuperados, con su SDR (enunciado §6).
+%   Las figuras se guardan solas en PNG en la carpeta 'figuras' (fig1_audios.png, ...).
 %   Cambie fc_nom (de 9 a 11 MHz) o modo ('ruido', 'tonos', 'demo', 'audio').
 %   Tarda alrededor de 1 minuto (0.05 s de audio real).
 
@@ -135,3 +136,18 @@ end
 xlabel('tiempo real [ms]');
 subplot(3,1,1); legend('original', 'recuperado');
 set_param(mdl, 'SimulationMode', 'normal');
+
+%% guardar las figuras en PNG
+if ~exist('figuras', 'dir'), mkdir('figuras'); end
+nombres = {'fig1_audios', 'fig2_multiplex', 'fig3_senal_fm', 'fig4_receptor', 'fig5_audios_recuperados'};
+for k = 1:numel(nombres)
+    f = findobj('Type', 'figure', '-regexp', 'Name', sprintf('^%d\\.', k));
+    if isempty(f), continue; end
+    set(f(1), 'Position', [100 100 1100 650]);
+    try
+        exportgraphics(f(1), fullfile('figuras', [nombres{k} '.png']), 'Resolution', 150);
+    catch
+        saveas(f(1), fullfile('figuras', [nombres{k} '.png']));
+    end
+end
+fprintf('Figuras guardadas en la carpeta figuras (fig1 a fig5, PNG).\n');

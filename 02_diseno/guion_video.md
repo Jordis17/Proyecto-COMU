@@ -156,7 +156,7 @@ Las partes están repartidas entre los dos, pero cada uno debería poder explica
 ## Antes de grabar
 
 - [ ] Completar los [PENDIENTE] con los resultados de `analisis_awgn` y `probar_audio_real`.
-- [ ] Exportar las figuras de `graficas_sistema` y `analisis_awgn`.
+- [ ] Tener a mano las figuras: `graficas_sistema` las guarda en `03_codigo_matlab/figuras/` y `analisis_awgn` guarda `fig_awgn.png`.
 - [ ] Grabar la demostración de la GUI por separado (cada simulación tarda), o tener ya simulado lo que se va a mostrar.
 - [ ] Ensayar con cronómetro: si se pasa de 10 min, recortar primero 3c (inyección inferior) y 4a (detalle del retardo).
 - [ ] Cada uno ensaya también las escenas del otro.
