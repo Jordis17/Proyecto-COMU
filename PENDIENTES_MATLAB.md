@@ -5,12 +5,13 @@ Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, nombre
 
 ## 0. Esta es la VERSIÓN AGRUPADA (rama `claude/version-agrupada`)
 
-- [ ] En GitHub Desktop, cambiar a la rama `claude/version-agrupada` (Current branch). La versión anterior sigue intacta en `claude/affectionate-bardeen-qmc9v9`.
-- [ ] En esta rama no hay `.slx`: al correr `main` se genera el modelo agrupado («No existe sistema_fdm_fm.slx: se genera…»).
-- [ ] No debe aparecer ningún «Aviso: no se pudo agrupar…» ni «Aviso: no se pudo renombrar…». Si aparece, copiar el mensaje.
-- [ ] Abrir el modelo y comparar cada nivel con `02_diseno/correspondencia_curso_modelo.md`. Por ejemplo, el receptor debe verse: Sección de RF → Mezclador (con Oscilador local) → Sección de FI → Demodulador FM → Filtro posdetección → Filtro de deénfasis.
-- [ ] Correr `graficas_sistema`: los SDR deben salir **iguales** a los de la otra versión (60.3 / 59.4 / 57.1 dB). Agrupar no cambia los cálculos.
-- [ ] Si les gusta, ordenen a mano lo que haga falta y suban el `.slx`. Si no, vuelvan a la otra rama.
+- [x] En GitHub Desktop, cambiar a la rama `claude/version-agrupada` (Current branch). La versión anterior sigue intacta en `claude/affectionate-bardeen-qmc9v9`.
+- [x] En esta rama no hay `.slx`: al correr `main` se genera el modelo agrupado («No existe sistema_fdm_fm.slx: se genera…»).
+- [x] No debe aparecer ningún «Aviso: no se pudo agrupar…» ni «Aviso: no se pudo renombrar…». Si aparece, copiar el mensaje.
+- [x] Abrir el modelo y comparar cada nivel con `02_diseno/correspondencia_curso_modelo.md`. Por ejemplo, el receptor debe verse: Sección de RF → Mezclador (con Oscilador local) → Sección de FI → Demodulador FM → Filtro posdetección → Filtro de deénfasis.
+- [x] Correr `graficas_sistema`: los SDR deben salir **iguales** a los de la otra versión (60.3 / 59.4 / 57.1 dB). Agrupar no cambia los cálculos.
+- [x] Si les gusta, ordenen a mano lo que haga falta y suban el `.slx`. Si no, vuelvan a la otra rama.
+- **Hecho:** todos los grupos se crearon sin avisos; diagramas revisados (`Diagramas nuevos.pdf`); SDR 60.3 / 59.4 / 57.1 dB, igual que la versión anterior. ✔
 
 ## 1. `main` (1–2 min)
 
