@@ -137,8 +137,8 @@ Se recalculan los parámetros: LO, imagen y coeficientes del preselector. La GUI
 **37. ¿Qué significan los nombres de las señales del modelo?**
 Usamos la notación del curso (diap. 309, 365 y 384): m(t) es el mensaje que entra al modulador, que aquí es el multiplex; s(t) es la señal FM; w(t) es el ruido del canal, y x(t) = s(t) + w(t) es lo que llega al receptor. Los audios son x1(t), x2(t) y x3(t), como en el esquema de FDM (diap. 264).
 
-**38. ¿Para qué sirven los bloques «Subir tasa» y «Bajar tasa»?**
-Cada parte del sistema trabaja a la frecuencia de muestreo que necesita: 48 kHz el audio, 480 kHz el multiplex, 4.8 MHz la FI y 48 MHz la RF. «Subir tasa» (con el tren de pulsos, la inserción de ceros y el filtro interpolador) pasa a una tasa 10 veces mayor; «Bajar tasa» toma 1 de cada 10 muestras, después de un filtro que evita el traslape. Si todo fuera a 48 MHz, la simulación sería muchísimo más lenta.
+**38. ¿Para qué sirven los bloques «Subir tasa» y «Bajar tasa»?** *(están dentro de «Interpolación», «Sección de FI», «Filtro posdetección» y «Canal k pasabajos 15 kHz»)*
+Cada parte del sistema trabaja a la frecuencia de muestreo que necesita: 48 kHz el audio, 480 kHz el multiplex, 4.8 MHz la FI y 48 MHz la RF. «Subir tasa» (con el tren de pulsos, la inserción de ceros y el filtro interpolador) pasa a una tasa 10 veces mayor; «Bajar tasa» toma 1 de cada 10 muestras, después de un filtro que evita el traslape. Si todo fuera a 48 MHz, la simulación sería muchísimo más lenta. Como no son parte del sistema de comunicaciones sino de la simulación, los agrupamos adentro de los bloques del curso, para que cada diagrama se vea como el de la presentación.
 
 ---
 

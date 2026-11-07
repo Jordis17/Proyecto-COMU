@@ -38,7 +38,8 @@ Reglas de trabajo (vienen de las instrucciones del proyecto, archivo `07_instruc
 | `02_diseno/diseno_final.md` | **Documento principal**: resumen corto del diseño, resultados y propuesta del video |
 | `02_diseno/01_diagnostico_y_diseno_FDM_FM.md` | Detalle completo: diagnóstico de errores, cálculos y estado de las etapas 0–8 |
 | `02_diseno/prenfasis_deenfasis.md` | Detalle del prénfasis/deénfasis |
-| `02_diseno/correspondencia_curso_modelo.md` | (Versión agrupada) Qué bloque del modelo corresponde a cada bloque de los esquemas del curso, y por qué existen los bloques extra |
+| `02_diseno/explicacion_diagramas.md` | Explicación de cada diagrama del modelo (orden de `Diagramas nuevos.pdf`): qué hace cada bloque y por qué está |
+| `02_diseno/correspondencia_curso_modelo.md` | Qué bloque del modelo corresponde a cada bloque de los esquemas del curso, y por qué existen los bloques extra |
 | `02_diseno/guion_video.md` | Guion del video (~10 min, repartido entre Jordi y Abner) |
 | `02_diseno/preguntas_profesor.md` | 38 preguntas probables del profesor con respuesta corta |
 | `PENDIENTES_MATLAB.md` | Lista de lo que hay que correr en MATLAB y qué debe salir |

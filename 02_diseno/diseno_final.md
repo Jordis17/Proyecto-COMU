@@ -154,7 +154,7 @@ Las señales principales llevan nombre con la notación del curso:
 | m(t) recuperado | Multiplex a la salida del receptor | — |
 | audio 1, 2, 3 recuperado | Salidas del demultiplexor | — |
 
-Los bloques llevan nombres en español con los términos del curso. Dentro del receptor: «Sección de RF (preselector)», «Oscilador local», «Mezclador», «Filtro antitraslape», «Sección de FI», «Demodulador FM», «Filtro posdetección» y «Filtro de deénfasis». En el demultiplexor, cada canal tiene «pasabanda», «oscilador local», «detector coherente» y «pasabajos 15 kHz».
+Los bloques llevan nombres en español con los términos del curso, y cada nivel tiene los mismos bloques que los esquemas de la presentación. Dentro del receptor: «Sección de RF (preselector)», «Oscilador local», «Mezclador», «Sección de FI», «Demodulador FM», «Filtro posdetección» y «Filtro de deénfasis». En el demultiplexor, cada canal tiene «pasabanda», «oscilador local», «detector coherente» y «pasabajos 15 kHz». Los bloques que solo existen por la simulación digital (cambios de tasa, filtro antitraslape, escalas) están agrupados un nivel más adentro. La correspondencia con el curso está en `correspondencia_curso_modelo.md` y la explicación de cada diagrama en `explicacion_diagramas.md`.
 
 Ningún bloque tiene números escritos a mano: todos leen la estructura `P` de `params_sistema.m`. Ese archivo también revisa el diseño antes de simular: bandas dentro de 120 kHz, Nyquist, imagen rechazada, producto suma fuera de la FI y filtros de 60 dB.
 

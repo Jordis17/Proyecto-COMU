@@ -664,7 +664,7 @@ dl.gl dd{margin:0}
     <div class="seg" id="smSub" style="margin-bottom:6px"></div>
     <div class="flow" id="smFlow"></div>
     <div id="smInfo" class="infobox" aria-live="polite"></div>
-    <p class="small" style="margin-top:8px">Los nombres de los bloques son los mismos del modelo (en los de cada canal, k = 1, 2 o 3). Las señales principales llevan nombre con la notación del curso: x1(t)–x3(t), m(t) multiplex, s(t) señal FM, x(t) = s(t) + w(t), m(t) recuperado y audio k recuperado (diap. 309, 365, 384).</p>
+    <p class="small" style="margin-top:8px">Los nombres de los bloques son los mismos del modelo (en los de cada canal, k = 1, 2 o 3). Los marcados como «Subsistema» agrupan bloques: la explicación de cada diagrama, uno por uno, está en <code>02_diseno/explicacion_diagramas.md</code>. Las señales principales llevan nombre con la notación del curso: x1(t)–x3(t), m(t) multiplex, s(t) señal FM, x(t) = s(t) + w(t), m(t) recuperado y audio k recuperado (diap. 309, 365, 384).</p>
   </div>
   <div class="box warn"><div class="bh">Un retardo que no estaba en ningún libro</div>
     <p>Al comparar Simulink con la referencia en MATLAB apareció una diferencia de exactamente 10 muestras. El bloque <code>Rate Transition</code> de Simulink R2026a retrasa una muestra lenta al subir de tasa, incluso en modo de una sola tarea. Como es un retardo fijo, se midió y se incluyó en el cálculo de τ<sub>k</sub> (<code>P.rt_retardo = 1</code> en <code>params_sistema.m</code>). Es un ejemplo práctico de la diap. 182: todo lo que retrasa la señal cuenta para la fase del detector coherente.</p></div>
@@ -1238,60 +1238,45 @@ seg('escMode', drawEsc); drawEsc('tabla');
 /* 12 explorador Simulink */
 const SUBS = {
   'Fuentes': { d: 'Tres bloques From Workspace entregan los audios a 48 kHz nominales.', b: [
-    ['Audio 1–3', 'From Workspace', 'Entrega las muestras de cada audio con tiempo de muestreo 1/f_s del audio. Los tiempos se marcan un cuarto de muestra antes para que, por redondeo, no tome la muestra anterior.', 'x_k[n]', '48, 391']] },
-  'Transmisor FDM': { d: 'Subsistema «Transmisor FDM»: una rama DSB-SC por canal («Canal k DSB-SC»), suma, normalización y preénfasis.', b: [
-    ['Pasabajos 15 kHz', 'Discrete Filter', 'Pasobajas FIR de 15 kHz: limita el audio y actúa como filtro antitraslape.', 'y[n] = Σ h[k]·x[n−k]', '400, 181'],
-    ['Subir tasa 1 a 10', 'Rate Transition', 'Pasa de 48 kHz a 480 kHz repitiendo cada muestra. Retrasa una muestra lenta (medido).', '—', '—'],
-    ['Tren de pulsos', 'Pulse Generator', '1 en una de cada 10 muestras, 0 en las demás.', 'p[n] = 1 si n mod 10 = 0', '—'],
-    ['Inserción de ceros', 'Product', 'Multiplica la muestra repetida por el tren de pulsos: deja la muestra y 9 ceros.', 'u[n] = x_rep[n]·p[n]', '394'],
-    ['Filtro interpolador', 'Discrete Filter', 'Pasobajas con ganancia 10: elimina las copias espectrales y rellena los ceros.', '—', '394'],
-    ['Subportadora cos(2 pi fk t)', 'Sine Wave', 'cos(2π f_k t) con f_k = 20, 60 o 100 kHz (seno con fase π/2).', 'cos(2π f_k t)', '225'],
-    ['Modulador DSB-SC', 'Product', 'Multiplica el audio por su subportadora: DSB-SC.', 'x_k(t)·cos(2π f_k t)', '225–229'],
-    ['Suma de los 3 canales', 'Add', 'Suma los tres canales: el multiplex m(t).', 'm = Σ x_k cos(2π f_k t)', '264'],
-    ['Normalización (dividir entre 3)', 'Gain', 'Divide entre 3 para que |m_n| ≤ 1.', 'm_n = m/3', '311'],
-    ['Filtro de preénfasis', 'Discrete Filter', 'Realza las frecuencias altas del multiplex antes del modulador. Con la casilla apagada es un cable (a = 0, g = 1).', 'y[n] = g·(x[n] − a·x[n−1])', '384']] },
-  'Modulador FM': { d: 'Subsistema «Modulador FM»: sube la tasa ×100 en dos etapas y aplica la ecuación de FM. Entrada m(t), salida s(t).', b: [
-    ['Subir tasa 1 a 10 (a)', 'Rate Transition + Pulse Generator + Product + Discrete Filter', 'De 480 kHz a 4.8 MHz. En el modelo son cuatro bloques: subir tasa, tren de pulsos, inserción de ceros y filtro interpolador.', '—', '394'],
-    ['Subir tasa 1 a 10 (b)', 'Rate Transition + Pulse Generator + Product + Discrete Filter', 'De 4.8 MHz a 48 MHz.', '—', '394'],
-    ['Integrador', 'Discrete-Time Integrator', 'Euler hacia atrás: suma acumulada de m_n por el periodo de muestreo. Es la integral de la FM.', '∫ m_n(τ) dτ', '309'],
-    ['2 pi kf', 'Gain', 'Multiplica por 2π·k_f, con k_f = Δf = 150 kHz.', '2π k_f ∫ m_n', '310'],
-    ['Reloj t', 'Digital Clock', 'Entrega t en cada muestra.', 't', '—'],
-    ['2 pi fc', 'Gain', 'Fase de la portadora sin modular.', '2π f_c t', '309'],
+    ['Audio 1–3', 'From Workspace', 'Entrega las muestras de cada audio. Los tiempos se marcan un cuarto de muestra antes para que, por redondeo, no tome la muestra anterior.', 'x_k(t)', '264']] },
+  'Transmisor FDM': { d: 'Subsistema «Transmisor FDM»: un «Canal k DSB-SC» por audio, suma, normalización y preénfasis. Dentro de cada canal: Pasabajos 15 kHz → Interpolación (x10) → Modulador DSB-SC ← Subportadora.', b: [
+    ['Pasabajos 15 kHz', 'Discrete Filter', 'Limita cada audio a 15 kHz para que no invada el canal vecino.', 'FIR, 63 coeficientes', '400'],
+    ['Interpolación (x10)', 'Subsistema (de simulación)', 'Pasa de 48 a 480 kHz. Adentro: subir tasa, tren de pulsos, inserción de ceros y filtro interpolador.', '—', '391–397'],
+    ['Subportadora cos(2 pi fk t)', 'Sine Wave', 'Subportadora del canal: 20, 60 o 100 kHz.', 'cos(2π f_k t)', '225'],
+    ['Modulador DSB-SC', 'Product', 'Multiplica el audio por su subportadora.', 'x_k(t)·cos(2π f_k t)', '225–229'],
+    ['Suma de los 3 canales', 'Add', 'El multiplex.', 'm = Σ x_k cos(2π f_k t)', '264'],
+    ['Normalización (dividir entre 3)', 'Gain', 'Para que |m| ≤ 1 y la desviación no pase de 150 kHz.', 'm/3', '310'],
+    ['Filtro de preénfasis', 'Discrete Filter', 'Realza las frecuencias altas antes del modulador. Con la casilla apagada es un cable.', 'y[n] = g·(x[n] − a·x[n−1])', '384']] },
+  'Modulador FM': { d: 'Subsistema «Modulador FM»: la ecuación s(t) = A_c cos[2π f_c t + 2π k_f ∫ m dτ].', b: [
+    ['Interpolación (x100)', 'Subsistema (de simulación)', 'Pasa m(t) de 480 kHz a 48 MHz en dos etapas de ×10, para poder representar la portadora de 10 MHz.', '—', '391–397'],
+    ['Integrador', 'Discrete-Time Integrator', 'Suma acumulada de m(t).', '∫ m(τ) dτ', '309'],
+    ['2 pi kf', 'Gain', 'Sensibilidad de frecuencia, k_f = Δf = 150 kHz.', '2π k_f ∫ m', '310'],
+    ['Fase de la portadora', 'Subsistema', 'Reloj t → 2 pi fc. f_c se lee de la perilla de la radio.', '2π f_c t', '309'],
     ['Fase total', 'Add', 'Suma las dos fases.', 'θ(t)', '309'],
     ['cos', 'Trigonometric Function', 'Coseno de la fase total.', 'cos θ(t)', '309'],
     ['Amplitud Ac', 'Gain', 'Amplitud de la portadora.', 's(t) = A_c cos θ(t)', '331']] },
-  'Canal': { d: 'Subsistema «Canal»: suma ruido blanco gaussiano w(t) a s(t). Con nivel de ruido 0 el canal es ideal.', b: [
-    ['Ruido blanco gaussiano', 'Random Number', 'Ruido gaussiano de varianza 1 a la tasa de RF.', 'n[n] ~ N(0, 1)', '365'],
-    ['Nivel de ruido', 'Gain', 'Escala el ruido según la (SNR)_C pedida: de ella se obtiene N_0 y de N_0 la varianza por muestra.', 'σ·n', '366, 377'],
+  'Canal': { d: 'Subsistema «Canal»: x(t) = s(t) + w(t). Con nivel de ruido 0 el canal es ideal.', b: [
+    ['Ruido blanco gaussiano', 'Random Number', 'Ruido gaussiano de varianza 1 a la tasa de RF.', 'n ~ N(0, 1)', '365'],
+    ['Nivel de ruido', 'Gain', 'σ calculada a partir de la (SNR)_C pedida.', 'σ² = N₀·f_s/2', '366, 377'],
     ['Suma de ruido w(t)', 'Add', 'Señal recibida.', 'x(t) = s(t) + w(t)', '365']] },
-  'Receptor': { d: 'Subsistema «Receptor superheterodino», en el orden del esquema de la diap. 358. Entrada x(t), salida m(t) recuperado.', b: [
-    ['Sección de RF (preselector)', 'Discrete Filter', 'Preselector: pasabanda centrado en la sintonía (±350 kHz). Rechaza la imagen 60 dB.', '—', '358, 361'],
-    ['Oscilador local', 'Sine Wave', '2cos(2π f_LO t), f_LO = f_c − 1.7 MHz.', '2cos(2π f_LO t)', '357'],
-    ['Mezclador', 'Product', 'Produce la diferencia (FI) y la suma.', 'r·2cos(2π f_LO t)', '165, 357'],
-    ['Filtro antitraslape', 'Discrete Filter', 'Pasobajas a 48 MHz: quita el producto suma y evita el traslape al decimar.', '—', '400'],
-    ['Bajar tasa 10 a 1 (FI)', 'Rate Transition', 'Baja de 48 MHz a 4.8 MHz tomando 1 de cada 10 muestras.', '—', '397'],
-    ['Sección de FI', 'Discrete Filter', 'Pasabanda 1.35–2.05 MHz: el filtro selectivo de FI.', '—', '358'],
-    ['Demodulador FM', 'Subsistema', 'Demodulador en cuadratura (ver la pestaña siguiente).', 'f_i[n]', '342, 174'],
-    ['Dividir entre kf', 'Gain', 'Convierte la desviación de frecuencia en m_n.', '(f_i − f_FI)/k_f', '310'],
-    ['Filtro posdetección', 'Discrete Filter', 'Pasobajas de 120 kHz: deja solo la banda del multiplex.', '—', '376'],
-    ['Bajar tasa 10 a 1 (multiplex)', 'Rate Transition', 'Baja a 480 kHz.', '—', '397'],
-    ['Multiplicar por 3', 'Gain', 'Deshace la normalización.', 'm̂ = 3·m̂_n', '—'],
-    ['Filtro de deénfasis', 'Discrete Filter', 'Inverso exacto del prénfasis: devuelve el multiplex a su forma y baja el ruido de alta frecuencia. Con la casilla apagada es un cable.', 'y[n] = x[n]/g + a·y[n−1]', '384']] },
+  'Receptor': { d: 'Subsistema «Receptor superheterodino»: el esquema de la diap. 358.', b: [
+    ['Sección de RF (preselector)', 'Discrete Filter', 'Pasabanda en la sintonía (±350 kHz). Rechaza la imagen 60 dB.', '—', '358, 361'],
+    ['Oscilador local', 'Sine Wave', 'f_LO = f_c − 1.7 MHz, calculado solo.', '2cos(2π f_LO t)', '357'],
+    ['Mezclador', 'Product', 'Produce la diferencia (FI) y la suma.', 'x·2cos(2π f_LO t)', '165, 357'],
+    ['Sección de FI', 'Subsistema', 'Adentro: filtro antitraslape → bajar tasa 10 a 1 (de simulación) → pasabanda de FI, 1.35–2.05 MHz (el filtro de FI del curso).', '—', '358, 400'],
+    ['Demodulador FM', 'Subsistema', 'Calcula la frecuencia instantánea (ver la pestaña siguiente).', 'f_i = (1/2π)·dφ/dt', '342'],
+    ['Filtro posdetección', 'Subsistema', 'Adentro: dividir entre kf → pasabajos 120 kHz (el filtro posdetección del curso) → bajar tasa → multiplicar por 3.', '—', '376'],
+    ['Filtro de deénfasis', 'Discrete Filter', 'Inverso exacto del preénfasis. Con la casilla apagada es un cable.', 'y[n] = x[n]/g + a·y[n−1]', '384']] },
   'Demodulador FM': { d: 'Subsistema «Demodulador FM» (dentro del receptor): mide cuánto gira la fase entre muestras.', b: [
-    ['cos(2 pi fFI t) y -sen(2 pi fFI t)', 'Sine Wave', 'cos(2π f_FI t) y −sen(2π f_FI t).', '—', '174'],
-    ['Mezcla en fase (I) y en cuadratura (Q)', 'Product', 'Llevan la FI a 0 Hz en dos ramas: en fase y en cuadratura.', 'FI·cos, −FI·sen', '174, 230'],
-    ['Pasabajos I y Q', 'Discrete Filter', 'Quitan el término en 2·f_FI.', 'I[n], Q[n]', '230'],
-    ['Muestra anterior de I y de Q', 'Unit Delay', 'Dan la muestra anterior.', 'I[n−1], Q[n−1]', '—'],
-    ['I por I anterior, Q por Q anterior, …', 'Product', 'Los cuatro productos para z[n]·z*[n−1].', '—', '—'],
-    ['Parte real y parte imaginaria', 'Add', 'Parte real e imaginaria de z[n]·z*[n−1].', 'Re = I·I₁ + Q·Q₁, Im = Q·I₁ − I·Q₁', '—'],
-    ['Ángulo girado (atan2)', 'Trigonometric Function', 'Ángulo girado entre muestras.', 'Δθ = atan2(Im, Re)', '—'],
-    ['Convertir a frecuencia', 'Gain', 'Convierte el ángulo en frecuencia.', 'f_i = (f_s/2π)·Δθ', '342']] },
-  'Demultiplexor': { d: 'Subsistema «Demultiplexor FDM»: el receptor FDM de la diap. 264, una rama por canal. Salidas: audio 1, 2 y 3 recuperados.', b: [
-    ['Canal k pasabanda', 'Discrete Filter', 'Pasabanda del canal k (canal 1: 5–35 kHz).', '—', '264'],
-    ['Canal k oscilador local', 'Sine Wave', '2cos(2π f_k (t − τ_k)): subportadora con el retardo compensado.', 'fase = π/2 − 2π f_k τ_k', '237–238'],
-    ['Canal k detector coherente', 'Product', 'Multiplica por la subportadora local.', '½x + ½x cos 2ω t → x', '230'],
-    ['Canal k pasabajos 15 kHz', 'Discrete Filter', 'Quita el término en 2f_k.', '—', '230'],
-    ['Canal k bajar tasa 10 a 1', 'Rate Transition', 'Baja a 48 kHz: el audio recuperado.', '—', '397']] }
+    ['Rama en fase (I)', 'Subsistema', 'Adentro: FI × cos(2π f_FI t) → pasabajos. Baja la FI a 0 Hz.', 'I[n]', '174, 230'],
+    ['Rama en cuadratura (Q)', 'Subsistema', 'Adentro: FI × −sen(2π f_FI t) → pasabajos.', 'Q[n]', '174, 230'],
+    ['Giro de fase entre muestras', 'Subsistema', 'Adentro: muestras anteriores, cuatro productos, parte real e imaginaria y atan2.', 'Δφ = ángulo de z[n]·z*[n−1]', '—'],
+    ['Convertir a frecuencia', 'Gain', 'Pasa el ángulo a frecuencia.', 'f_i = (f_s/2π)·Δφ', '342']] },
+  'Demultiplexor': { d: 'Subsistema «Demultiplexor FDM»: el receptor FDM de la diap. 264, una rama por canal.', b: [
+    ['Canal k pasabanda', 'Discrete Filter', 'Deja pasar solo la banda del canal k.', '—', '264'],
+    ['Canal k oscilador local', 'Sine Wave', 'Subportadora con el retardo de los filtros compensado.', '2cos(2π f_k (t − τ_k))', '237–238'],
+    ['Canal k detector coherente', 'Product', 'Multiplica por la subportadora local.', '½x + ½x cos 2ωt → x', '230'],
+    ['Canal k pasabajos 15 kHz', 'Subsistema', 'Adentro: pasabajos 15 kHz (quita 2f_k) → bajar tasa 10 a 1 (de simulación, a 48 kHz).', '—', '230, 400']] }
 };
 let smCur = 'Fuentes', smBlk = 0;
 $('#smSub').innerHTML = Object.keys(SUBS).map((k, i) => `<button data-v="${k}"${i === 0 ? ' class="on"' : ''}>${k}</button>`).join('');
