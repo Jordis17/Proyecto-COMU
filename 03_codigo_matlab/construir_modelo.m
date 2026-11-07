@@ -103,6 +103,7 @@ function construir_modelo(nombre)
 
     set_param(mdl, 'Description', 'Sistema FDM + FM + receptor superheterodino');
     nombres_del_curso(mdl);
+    agrupar_como_el_curso(mdl);
     ordenar_diagrama(mdl);
     save_system(mdl, fullfile(pwd, [mdl '.slx']));
     try
@@ -548,6 +549,81 @@ function nombres_del_curso(mdl)
     end
 end
 
+function agrupar_como_el_curso(mdl)
+% Mete en subsistemas los bloques que solo existen por la simulación digital (cambios de tasa,
+% escalas, detalles del demodulador). Así cada diagrama que se abre tiene los mismos bloques
+% que los esquemas de la presentación del curso, y el detalle queda un nivel más adentro.
+% Agrupar no cambia ningún cálculo: son subsistemas virtuales (solo agrupan visualmente).
+    tx = [mdl '/Transmisor FDM'];  fm = [mdl '/Modulador FM'];
+    rx = [mdl '/Receptor superheterodino'];  dem = [rx '/Demodulador FM'];  dm = [mdl '/Demultiplexor FDM'];
+    for k = 1:3
+        r = sprintf('%s/Canal %d DSB-SC', tx, k);
+        agrupar(r, {'Subir tasa 1 a 10', 'Tren de pulsos', 'Inserción de ceros', 'Filtro interpolador'}, ...
+            'Interpolación (x10)', {}, {});
+        c = sprintf('Canal %d ', k);
+        renombrar([dm '/' c 'pasabajos 15 kHz'], 'Pasabajos 15 kHz');
+        agrupar(dm, {'Pasabajos 15 kHz', [c 'bajar tasa 10 a 1']}, [c 'pasabajos 15 kHz'], {}, {});
+        renombrar([dm '/' c 'pasabajos 15 kHz/' c 'bajar tasa 10 a 1'], 'Bajar tasa 10 a 1');
+    end
+    e = {'Subir tasa 1 a 10', 'Tren de pulsos', 'Inserción de ceros', 'Filtro interpolador'};
+    agrupar(fm, [strcat(e, ' (a)'), strcat(e, ' (b)')], 'Interpolación (x100)', {'m(t)'}, {'m(t) a tasa RF'});
+    agrupar(fm, {'Reloj t', '2 pi fc'}, 'Fase de la portadora', {}, {'2 pi fc t'});
+    renombrar([rx '/Sección de FI'], 'Pasabanda de FI');
+    agrupar(rx, {'Filtro antitraslape', 'Bajar tasa 10 a 1 (FI)', 'Pasabanda de FI'}, 'Sección de FI', ...
+        {'salida del mezclador'}, {'señal de FI'});
+    renombrar([rx '/Filtro posdetección'], 'Pasabajos 120 kHz');
+    agrupar(rx, {'Dividir entre kf', 'Pasabajos 120 kHz', 'Bajar tasa 10 a 1 (multiplex)', 'Multiplicar por 3'}, ...
+        'Filtro posdetección', {'frecuencia instantánea'}, {'m(t) recuperado'});
+    agrupar(dem, {'cos(2 pi fFI t)', 'Mezcla en fase (I)', 'Pasabajos I'}, 'Rama en fase (I)', {'señal de FI'}, {'I'});
+    agrupar(dem, {'-sen(2 pi fFI t)', 'Mezcla en cuadratura (Q)', 'Pasabajos Q'}, 'Rama en cuadratura (Q)', {'señal de FI'}, {'Q'});
+    agrupar(dem, {'Muestra anterior de I', 'Muestra anterior de Q', 'I por I anterior', 'Q por Q anterior', ...
+        'Q por I anterior', 'I por Q anterior', 'Parte real', 'Parte imaginaria', 'Ángulo girado (atan2)'}, ...
+        'Giro de fase entre muestras', 'por_origen', {'giro de fase'});
+end
+
+function agrupar(sys, nombres, nombre_nuevo, nombres_in, nombres_out)
+% Crea un subsistema con los bloques 'nombres' de 'sys' y le pone 'nombre_nuevo'.
+% nombres_in / nombres_out: nombres de sus puertos (vacío = 'entrada' / 'salida').
+% Con nombres_in = 'por_origen', cada entrada se llama como la salida del bloque que la alimenta.
+    try
+        h = zeros(1, numel(nombres));
+        for i = 1:numel(nombres), h(i) = get_param([sys '/' nombres{i}], 'Handle'); end
+        antes = find_system(sys, 'SearchDepth', 1, 'BlockType', 'SubSystem');
+        Simulink.BlockDiagram.createSubsystem(h);
+        nuevo = setdiff(find_system(sys, 'SearchDepth', 1, 'BlockType', 'SubSystem'), antes);
+        set_param(nuevo{1}, 'Name', nombre_nuevo);
+        s = [sys '/' nombre_nuevo];
+        ins  = find_system(s, 'SearchDepth', 1, 'BlockType', 'Inport');
+        outs = find_system(s, 'SearchDepth', 1, 'BlockType', 'Outport');
+        if ischar(nombres_in) && strcmp(nombres_in, 'por_origen')
+            pc = get_param(s, 'PortConnectivity');
+            for i = 1:numel(ins)
+                np = str2double(get_param(ins{i}, 'Port'));
+                src = pc(np).SrcBlock;  ps = pc(np).SrcPort + 1;
+                o = find_system(src, 'SearchDepth', 1, 'BlockType', 'Outport', 'Port', num2str(ps));
+                try, if ~isempty(o), set_param(ins{i}, 'Name', get_param(o, 'Name')); end, catch, end
+            end
+        else
+            poner_nombres(ins, nombres_in, 'entrada');
+        end
+        poner_nombres(outs, nombres_out, 'salida');
+    catch err
+        fprintf('Aviso: no se pudo agrupar «%s» (%s). El modelo funciona igual.\n', nombre_nuevo, err.message);
+    end
+end
+
+function poner_nombres(puertos, nombres, defecto)
+    for i = 1:numel(puertos)
+        np = str2double(get_param(puertos{i}, 'Port'));
+        if np <= numel(nombres), n = nombres{np}; elseif numel(puertos) == 1, n = defecto; else, n = sprintf('%s %d', defecto, np); end
+        try, set_param(puertos{i}, 'Name', n); catch, end
+    end
+end
+
+function renombrar(bloque, nuevo)
+    try, set_param(bloque, 'Name', nuevo); catch, end
+end
+
 function ordenar_diagrama(mdl)
 % Ordena el diagrama principal y cada subsistema con el auto-ordenado de Simulink
 % (el mismo comando "Auto Arrange" del menú Format). Si la versión no lo tiene, se deja igual.
@@ -563,7 +639,7 @@ function ordenar_diagrama(mdl)
     end
     % el auto-ordenado agranda la ganancia «Multiplicar por 3»: se deja de tamaño normal
     try
-        b = [mdl '/Receptor superheterodino/Multiplicar por 3'];
+        b = [mdl '/Receptor superheterodino/Filtro posdetección/Multiplicar por 3'];
         p = get_param(b, 'Position');  c = (p(2) + p(4)) / 2;
         set_param(b, 'Position', [p(1), c - 15, p(1) + 50, c + 15]);
     catch
