@@ -1,7 +1,7 @@
 %PREPARAR_ENTREGA  Copia los archivos de la entrega a una carpeta aparte y la comprime.
 %   Ejecutar desde esta carpeta:  >> preparar_entrega
 %
-%   1) Genera sistema_fdm_fm.slx si falta o está desactualizado.
+%   1) Usa el sistema_fdm_fm.slx de esta carpeta (el ordenado a mano); solo lo genera si falta.
 %   2) Crea ../../entrega_FDM_FM con los 8 .m de la entrega, el .slx, los WAV de audios/
 %      y un LEEME.txt para el profesor. No se copian: construir_modelo.m y modelo_al_dia.m
 %      (se manda el .slx ya hecho), analisis_awgn.m y probar_audio_real.m (sus resultados
