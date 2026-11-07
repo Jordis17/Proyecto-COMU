@@ -88,7 +88,7 @@ yl = ylim;  plot(umbral*[1 1], yl, 'k:', 'HandleVisibility', 'off');
 text(umbral, yl(2) - 3, ' umbral FM');
 grid on; xlabel('(SNR)_C [dB]'); ylabel('SDR del audio recuperado [dB]');
 legend({'c1 sin prénfasis', 'c1 con prénfasis', 'c2 sin', 'c2 con', 'c3 sin', 'c3 con'}, ...
-    'Location', 'northwest');
+    'Location', 'southeast');
 title(sprintf('Canal AWGN (punteado: teoría sin prénfasis; f_0 = %.0f kHz)', P.vista.f0_enf_kHz));
 saveas(gcf, 'fig_awgn.png');
 set_param(mdl, 'SimulationMode', 'normal');
