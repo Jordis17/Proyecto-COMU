@@ -39,12 +39,13 @@ El diagrama se ordena solo con el «Auto Arrange» de Simulink. Revisar que se v
 ## 3. `analisis_awgn` (~8–10 min)
 
 - Parte A, canal ideal:
-  - [ ] las dos filas (sin y con prénfasis) dan casi el mismo SDR
-  - [ ] el «pico de m(t) al modulador» es ≤ 1
+  - [x] las dos filas (sin y con prénfasis) dan casi el mismo SDR
+  - [x] el «pico de m(t) al modulador» es ≤ 1
 - Parte B, AWGN:
-  - [ ] la columna «sin» debería parecerse a la tabla anterior (por ejemplo, a 30 dB: 32.0 / 21.3 / 17.7)
-  - [ ] la línea «Diferencia con prénfasis» debería dar cerca de **−6 / −1 / +2 dB**
+  - [x] la columna «sin» debería parecerse a la tabla anterior (por ejemplo, a 30 dB: 32.0 / 21.3 / 17.7)
+  - [x] la línea «Diferencia con prénfasis» debería dar cerca de **−6 / −1 / +2 dB**
 - Pasar a la conversación: la salida de consola, `resultados_awgn.csv` y `fig_awgn.png`.
+- **Hecho (resultados_awgn.csv):** canal ideal 60.3 / 59.7 / 60.0 dB con y sin prénfasis; pico 0.57 sin y 0.49 con; diferencia con prénfasis −5.7 / −1.1 / +2.0 dB. ✔
 
 ## 4. `probar_audio_real` (cuando haya WAV; ~9 min para 2 s)
 

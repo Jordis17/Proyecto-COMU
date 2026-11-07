@@ -39,8 +39,11 @@ Comparamos con la misma desviación pico. El prénfasis no reduce el ruido total
 |---|---|---|---|
 | Mejora teórica (`P.enf.mejora_dB`) | −5.8 dB | −1.3 dB | +2.0 dB |
 | Simulación rápida en Python, (SNR)_C de 20 a 40 dB | −5.7 dB | −1.2 dB | +1.8 dB |
+| **Simulink** (`analisis_awgn`), (SNR)_C de 20 a 40 dB | **−5.7 dB** | **−1.1 dB** | **+2.0 dB** |
 
-Los resultados de Python salen de `04_verificacion_python/verificar_enfasis_bb.py`, una FM en banda base equivalente con los mismos filtros. **Falta medirlo en Simulink** con `analisis_awgn.m`.
+Los resultados de Python salen de `04_verificacion_python/verificar_enfasis_bb.py`. Los de Simulink, de `analisis_awgn.m` (`resultados_awgn.csv`). La diferencia entre el canal 1 y el canal 3 baja de 14.3 a 6.5 dB, y con canal ideal el SDR no cambia (60.3 / 59.7 / 60.0 dB).
+
+Nota: con el preénfasis, el pico de m(t) al modulador fue 0.49, frente a 0.57 sin él. La regla de g es conservadora y deja un poco de desviación sin usar; aun así, el resultado coincide con la teoría.
 
 Con f₀ más bajo el canal 3 mejora un poco más, pero el canal 1 pierde mucho más. La mejora del canal 3 casi no pasa de +2.4 dB. Por eso escogimos 30 kHz como compromiso.
 

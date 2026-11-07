@@ -69,7 +69,7 @@ Tres audios de 15 kHz → **FDM** (DSB-SC) en ≤ 120 kHz → **FM** con portado
 | Filtros | FIR Kaiser propios (`disenar_fir_kaiser.m`), 60 dB | **Sin toolboxes**: Abner no tiene DSP ni Signal Processing Toolbox |
 | Simulink | Solo bloques básicos; solver discreto paso fijo; `EnableMultiTasking` off; modo acelerado | Portabilidad y velocidad (4.3×) |
 | Ruido | (SNR)_C de Haykin = A_c²/(2·W·N₀), W = 120 kHz | Definición del curso (diap. 377) |
-| Prénfasis/deénfasis | Filtros de 1.er orden sobre el multiplex (antes del modulador / después del demodulador), f₀ = 30 kHz, misma desviación pico; on/off en la GUI | Curso diap. 384–387; reparte la SNR: canal 3 ≈ +2 dB, canal 1 ≈ −6 dB (teoría y Python; falta Simulink) |
+| Prénfasis/deénfasis | Filtros de 1.er orden sobre el multiplex (antes del modulador / después del demodulador), f₀ = 30 kHz, misma desviación pico; on/off en la GUI | Curso diap. 384–387; reparte la SNR: canal 3 +2.0 dB, canal 1 −5.7 dB (medido en Simulink, igual a la teoría) |
 
 ### Errores del enunciado detectados (resumen; detalle en el documento de diseño)
 
@@ -175,7 +175,8 @@ Barrido AWGN (`verificar_etapa8`, SDR en dB, canales 1/2/3):
 
 - Etapas 0–8 **completas y verificadas** en MATLAB R2026a (ver documento de diseño).
 - Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, nombres de bloques, scripts nuevos) **todavía no se han corrido en MATLAB**: seguir `PENDIENTES_MATLAB.md`.
-- El guion del video y las preguntas probables están en `02_diseno/`; faltan los datos marcados [PENDIENTE] (prénfasis medido en Simulink y audio real).
+- Prénfasis/deénfasis **medido en Simulink**: −5.7 / −1.1 / +2.0 dB (teoría −5.8 / −1.3 / +2.0); con canal ideal no cambia el SDR.
+- El guion del video y las preguntas probables están en `02_diseno/`; falta solo el dato de audio real ([PENDIENTE] en el guion).
 - Faltan los tres audios reales (`03_codigo_matlab/audios/audio1..3.wav`).
 
 ### Sugerencia de orden para la revisión

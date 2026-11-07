@@ -107,7 +107,7 @@ Porque no hace falta: sin ruido el SDR ya es de unos 60 dB. Además, el prénfas
 Antes del modulador FM y después del demodulador, como en la diap. 384. El mensaje que entra al modulador es el multiplex, así que se filtra el multiplex completo. Es un filtro de primer orden que sube las frecuencias altas; el deénfasis es su inverso exacto. En el modelo son el «Filtro de preénfasis» (al final del transmisor) y el «Filtro de deénfasis» (después del filtro posdetección).
 
 **29. ¿Por qué el prénfasis empeora el canal 1?**
-Mantenemos la misma desviación pico para no cambiar el ancho de banda. Si se suben los canales altos, hay que bajar un poco el total, y el canal 1 queda con menos señal. El prénfasis no quita ruido en total: lo reparte. El canal 3 mejora unos 2 dB y el canal 1 pierde unos 6 dB, pero el canal 1 tenía SNR de sobra y el 3 era el que limitaba.
+Mantenemos la misma desviación pico para no cambiar el ancho de banda. Si se suben los canales altos, hay que bajar un poco el total, y el canal 1 queda con menos señal. El prénfasis no quita ruido en total: lo reparte. En Simulink medimos −5.7 / −1.1 / +2.0 dB en los canales 1 / 2 / 3 (la teoría da −5.8 / −1.3 / +2.0). El canal 1 tenía SNR de sobra y el 3 era el que limitaba; la diferencia entre ellos bajó de 14.3 a 6.5 dB.
 
 **30. ¿Por qué no usaron el prénfasis de 75 µs de la radio FM?**
 En la FM comercial el audio principal está en banda base, donde el ruido crece dentro del propio audio. En nuestro canal 3 el ruido depende sobre todo de la posición de la subportadora, así que dentro del audio es casi plano y un prénfasis por audio casi no ayudaría.

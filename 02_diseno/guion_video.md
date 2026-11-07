@@ -134,7 +134,7 @@ Las partes están repartidas entre los dos, pero cada uno debería poder explica
 >
 > Aquí entra el prénfasis. Como dice el curso, va antes del modulador FM y el deénfasis va después del demodulador. En el modelo son el «Filtro de preénfasis», al final del transmisor, y el «Filtro de deénfasis», después del filtro posdetección. Filtramos el multiplex completo con un filtro de primer orden que sube las frecuencias altas, y en el receptor aplicamos el filtro inverso. Sin ruido, los dos filtros se cancelan y no cambia nada. En la radio se activan con una casilla.
 >
-> Con ruido, el canal 3 mejora unos [PENDIENTE: +2] dB y el canal 1 pierde unos [PENDIENTE: 6] dB. Es decir, el prénfasis no quita ruido en total: lo reparte. Y eso nos sirve, porque el canal 3 era el que limitaba la calidad, y el canal 1 tenía calidad de sobra. La diferencia entre canales baja de 14 a unos [PENDIENTE: 6] dB.
+> Con ruido, el canal 3 mejora unos 2 dB y el canal 1 pierde unos 6 dB, justo lo que predice la teoría. Es decir, el prénfasis no quita ruido en total: lo reparte. Y eso nos sirve, porque el canal 3 era el que limitaba la calidad, y el canal 1 tenía calidad de sobra. La diferencia entre canales baja de 14 a unos 6.5 dB.
 
 ---
 

@@ -131,7 +131,7 @@ El enunciado dice «si la calidad es baja, considerar prénfasis/deénfasis». *
 
 Por eso se implementa con AWGN. Se coloca donde indica el curso [diap. 384]: el prénfasis antes del modulador FM y el deénfasis después del demodulador. Como aquí el mensaje es el multiplex completo, se filtra el multiplex. Son dos filtros de primer orden; el detalle está en `02_diseno/prenfasis_deenfasis.md`.
 
-**Resultado esperado** (misma desviación pico): el prénfasis no reduce el ruido total, lo reparte. Con f₀ = 30 kHz, el canal 3 mejora unos +2 dB, el canal 2 baja unos −1 dB y el canal 1 baja unos −6 dB, que tenía SNR de sobra. La teoría y la simulación en Python coinciden. **Pendiente medirlo en Simulink** con `analisis_awgn.m`.
+**Resultado esperado** (misma desviación pico): el prénfasis no reduce el ruido total, lo reparte. Con f₀ = 30 kHz, el canal 3 mejora unos +2 dB, el canal 2 baja unos −1 dB y el canal 1 baja unos −6 dB, que tenía SNR de sobra. La teoría y la simulación en Python coinciden. **[RESULTADO VERIFICADO] Simulink** (`analisis_awgn`): −5.7 / −1.1 / +2.0 dB sobre el umbral; con canal ideal el SDR no cambia.
 
 **Por qué no se aplica a cada audio por separado** (como el prénfasis de 75 µs de la FM estéreo [diap. 244–246]): en la FM estéreo el canal L+R está en banda base, donde el ruido sí crece dentro del audio. En nuestro canal 3, lo que domina es el término f_k², así que el ruido es casi plano dentro del audio y un prénfasis por audio casi no ayuda.
 

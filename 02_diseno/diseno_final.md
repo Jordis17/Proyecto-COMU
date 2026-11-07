@@ -129,7 +129,7 @@ Sin ruido, los dos filtros se cancelan y no cambian nada. Con ruido, el prénfas
 |---|---|---|
 | −5.8 dB | −1.3 dB | +2.0 dB |
 
-Mejora el canal más ruidoso a costa del que tenía SNR de sobra, y la diferencia entre canales baja de unos 13 dB a unos 6 dB. La prueba en Python dio lo mismo: −5.7 / −1.2 / +1.8 dB. **Falta confirmarlo en Simulink** con `analisis_awgn.m`.
+Mejora el canal más ruidoso a costa del que tenía SNR de sobra, y la diferencia entre canales baja de unos 13 dB a unos 6 dB. **Medido en Simulink** (`analisis_awgn`, fuentes de ruido, (SNR)_C de 20 a 40 dB): −5.7 / −1.1 / +2.0 dB, igual a la teoría. La diferencia entre el canal 1 y el canal 3 baja de 14.3 a 6.5 dB. Con canal ideal el SDR no cambia (60.3 / 59.7 / 60.0 dB con y sin prénfasis).
 
 ### 3.8 Canal AWGN
 
@@ -203,7 +203,18 @@ Ningún bloque tiene números escritos a mano: todos leen la estructura `P` de `
 - **Umbral FM:** por debajo de una CNR de unos 11 dB en el ancho de Carson, la calidad cae de golpe (diap. 381–382).
 - **Sin preselector:** con (SNR)_C = 25 dB, el SDR baja unos 3 dB, porque también entra el ruido de la banda imagen.
 
-**Prénfasis:** pendiente de medir en Simulink (sección 3.7).
+**Prénfasis** (f₀ = 30 kHz, misma (SNR)_C y mismo ruido, SDR en dB):
+
+| (SNR)_C | Sin: c1 / c2 / c3 | Con: c1 / c2 / c3 |
+|---|---|---|
+| 40 dB | 41.9 / 31.2 / 27.7 | 36.3 / 30.1 / 29.8 |
+| 30 dB | 32.0 / 21.3 / 17.7 | 26.3 / 20.2 / 19.8 |
+| 25 dB | 27.0 / 16.3 / 12.8 | 21.3 / 15.2 / 14.8 |
+| 20 dB | 21.9 / 11.5 / 8.2 | 16.2 / 10.4 / 10.0 |
+| 18 dB | 17.5 / 9.6 / 6.4 | 13.7 / 8.2 / 8.1 |
+| 16 dB | 11.9 / 6.6 / 4.4 | 7.7 / 5.6 / 6.1 |
+
+Sobre el umbral, el preénfasis cambia el SDR en −5.7 / −1.1 / +2.0 dB, lo mismo que predice la teoría (−5.8 / −1.3 / +2.0). Cerca del umbral el canal 3 sigue ganando unos +1.7 dB. Con canal ideal no cambia nada.
 
 **Audios reales:** pendiente (`probar_audio_real`).
 
