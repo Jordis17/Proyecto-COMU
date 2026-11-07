@@ -2,4 +2,8 @@
 slprj/
 *.slxc
 *.autosave
+<<<<<<< Updated upstream
 *.asv
+=======
+*.asv
+>>>>>>> Stashed changes
