@@ -32,10 +32,11 @@ El diagrama se ordena solo con el «Auto Arrange» de Simulink. Revisar que se v
 
 ## 2. `graficas_sistema` (~1 min)
 
-- [ ] Salen 5 figuras: audios, multiplex, FM, receptor, audios recuperados.
-- [ ] La consola imprime los SDR. Deben ser parecidos a los de antes: 60.3 / 59.4 / 57.1 dB.
-- [ ] La desviación pico debe ser ≈ 92 kHz (61 %), y el ancho al 99 % de la potencia ≈ 148 kHz.
+- [x] Salen 5 figuras: audios, multiplex, FM, receptor, audios recuperados.
+- [x] La consola imprime los SDR. Deben ser parecidos a los de antes: 60.3 / 59.4 / 57.1 dB.
+- [x] La desviación pico debe ser ≈ 92 kHz (61 %), y el ancho al 99 % de la potencia ≈ 148 kHz.
 - Guardar las figuras que se vayan a usar en el video.
+- **Hecho:** desviación pico 91.6 kHz (61 %), ancho al 99 % 148 kHz (Carson 530 kHz), SDR 60.3 / 59.4 / 57.1 dB, ganancia ≈ 0.997–0.998. ✔
 
 ## 3. `analisis_awgn` (~8–10 min)
 
