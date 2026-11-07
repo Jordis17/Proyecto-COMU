@@ -5,11 +5,12 @@ Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, nombre
 ## 1. `main` (1–2 min)
 
 - La primera vez imprime «Generando sistema_fdm_fm.slx...». Es normal: el modelo cambió y se regenera solo.
-- [ ] No debe aparecer ningún «Aviso: no se pudo renombrar…» ni «Aviso: no se pudo ordenar el diagrama…». Si aparece, copiar el mensaje completo.
+- [x] No debe aparecer ningún «Aviso: no se pudo renombrar…» ni «Aviso: no se pudo ordenar el diagrama…». Si aparece, copiar el mensaje completo.
 - La tabla debe terminar con **9 líneas `[OK]`** y decir «Prénfasis/deénfasis apagado».
 - Valores que no deberían cambiar respecto de antes:
   - tau = 411.79 / 226.37 / 226.37 µs
   - ganancias sin compensar +0.09 / −0.87 / −0.65
+- **Hecho (MATLAB R2026a Update 4):** 9 [OK], tau y ganancias iguales, órdenes de filtros iguales a los calculados. ✔
 - En la radio:
   - [ ] simular a 10 MHz con la casilla de prénfasis apagada → SDR ≈ 69 dB (fuente demo), igual que antes
   - [ ] lo mismo con la casilla de prénfasis encendida → SDR casi igual
