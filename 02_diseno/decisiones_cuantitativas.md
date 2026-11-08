@@ -93,7 +93,7 @@ Los tres demoduladores se probaron con el mismo modelo, la misma señal y el mis
 - **Cerca del umbral (16 dB)**, el PLL aguanta más. El discriminador es el primero en caer, unos 2–4 dB antes.
 
 **Por qué el discriminador:**
-- **Frente al detector de cuadratura:** el de cuadratura no se vio en el curso. Elegir el discriminador cuesta unos 17 dB en el audio 1 con canal ideal, pero sigue por encima de 43 dB. Sobre el umbral, que es donde trabaja el sistema, no cuesta nada.
+- **Frente al detector de cuadratura:** fue otra opción que encontramos al investigar. Seguimos con el discriminador porque es el que más conocemos del curso, y eso facilitaba implementarlo y relacionarlo con la teoría. Elegirlo cuesta unos 17 dB en el audio 1 con canal ideal, pero sigue por encima de 43 dB, y sobre el umbral no cuesta nada.
 - **Frente al PLL**, que también es del curso (diap. 347–354):
   - sin ruido, el PLL es peor en dos de los tres audios (38.7 y 34.0 dB frente a 52.2 y 54.4), porque el lazo no sigue bien los cambios rápidos de frecuencia del multiplex;
   - su ventaja solo aparece cerca del umbral, donde el audio 3 ya sale con menos de 5 dB con cualquiera de los dos;
