@@ -23,7 +23,7 @@ function radio_fdm_fm()
     % ---- panel de controles
     pc = uipanel(g, 'Title', 'Radio');
     gl = uigridlayout(pc, [19 2]);
-    gl.RowHeight = {150, 22, 22, 22, 22, 22, 22, 10, 22, 28, 10, 22, 22, 22, 22, 22, 30, 30, '1x'};
+    gl.RowHeight = {150, 22, 22, 22, 22, 22, 22, 10, 22, 28, 10, 22, 22, 22, 45, 22, 30, 30, '1x'};
     gl.ColumnWidth = {150, '1x'};
 
     perilla = uiknob(gl, 'continuous', 'Limits', [9 11], 'Value', 10, ...
@@ -53,11 +53,16 @@ function radio_fdm_fm()
     etiqueta(gl, 13, 'Duración [s reales]:');
     ed_T = uieditfield(gl, 'numeric', 'Value', 0.3, 'Limits', [0.02 3]);
     ed_T.Layout.Row = 13; ed_T.Layout.Column = 2;
-    cb_awgn = uicheckbox(gl, 'Text', 'Canal AWGN', 'Value', false);
+    cb_awgn = uicheckbox(gl, 'Text', 'Canal AWGN', 'Value', false, ...
+        'ValueChangedFcn', @(~,~) cambio_ruido());
     cb_awgn.Layout.Row = 14; cb_awgn.Layout.Column = 1;
-    etiqueta(gl, 15, '(SNR)_C [dB]:');
-    ed_snr = uieditfield(gl, 'numeric', 'Value', 25, 'Limits', [0 60]);
-    ed_snr.Layout.Row = 15; ed_snr.Layout.Column = 2;
+    lbl_snr = uilabel(gl, 'Text', '(SNR)_C = 25 dB');
+    lbl_snr.Layout.Row = 15; lbl_snr.Layout.Column = 1;
+    % barra de ruido: 10 dB (mucho ruido, bajo el umbral) a 40 dB (poco ruido), de 1 en 1 dB
+    sl_snr = uislider(gl, 'Limits', [10 40], 'Value', 25, 'MajorTicks', 10:5:40, ...
+        'MinorTicks', 10:1:40, 'Enable', 'off', ...
+        'ValueChangingFcn', @(~,ev) mostrar_snr(ev.Value), 'ValueChangedFcn', @(~,~) cambio_ruido());
+    sl_snr.Layout.Row = 15; sl_snr.Layout.Column = 2;
     cb_enf = uicheckbox(gl, 'Text', 'Prénfasis / deénfasis', 'Value', false);
     cb_enf.Layout.Row = 16; cb_enf.Layout.Column = [1 2];
 
@@ -98,11 +103,24 @@ function radio_fdm_fm()
         end
     end
 
-    function simular()
+    function mostrar_snr(v)
+        lbl_snr.Text = sprintf('(SNR)_C = %d dB', round(v));
+    end
+
+    function cambio_ruido()
+        % La barra queda en valores enteros y solo se activa con el canal AWGN.
+        sl_snr.Value = round(sl_snr.Value);
+        mostrar_snr(sl_snr.Value);
+        sl_snr.Enable = cb_awgn.Value;
+        if ~isempty(S.out)
+            lbl_estado.Text = 'Ruido cambiado. Presione "Sintonizar y simular" para ver el efecto.';
+        end
+    end
+
         bt_sim.Enable = 'off';
         try
             T = ed_T.Value;
-            snr = Inf;  if cb_awgn.Value, snr = ed_snr.Value; end
+            snr = Inf;  if cb_awgn.Value, snr = sl_snr.Value; end
             fc = perilla.Value;
             P = params_sistema(fc * 1e6, struct('imprimir', false, 'T_real', T, 'snr_c_dB', snr, ...
                 'desintonia', ed_des.Value * 1e3, 'log_rf_max', 2^18, 'enfasis', cb_enf.Value));
