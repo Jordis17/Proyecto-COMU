@@ -3,3 +3,6 @@ slprj/
 *.slxc
 *.autosave
 *.asv
+
+# Simulaciones guardadas por la radio (se regeneran al simular)
+03_codigo_matlab/radio_guardado.mat

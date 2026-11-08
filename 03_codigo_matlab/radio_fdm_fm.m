@@ -30,6 +30,11 @@ function radio_fdm_fm()
     S = struct('P', [], 'R', [], 'P_sim', [], 'fuente_sim', [], 'sdr', [], ...
         'clave_mostrada', '', 'texto_mostrado', '', 'player', []);
     S.memo = containers.Map();    % simulaciones ya hechas: se vuelven a mostrar sin simular
+    % Las simulaciones también se guardan en un archivo, así no se pierden al cerrar MATLAB.
+    % Si cambia el modelo, los parámetros, las fuentes o los WAV, se descartan solas.
+    archivo_memo = fullfile(fileparts(mfilename('fullpath')), 'radio_guardado.mat');
+    firma = firma_archivos(fileparts(mfilename('fullpath')));
+    S.memo = cargar_memo(archivo_memo, firma);
     H = struct();                 % objetos gráficos del plan de frecuencias
 
     % colores (los mismos en todas las gráficas)
@@ -179,6 +184,12 @@ function radio_fdm_fm()
     marcador(ax_af,  'Audio en frecuencia');
     iniciar_plan();
     cambio_sintonia();
+    if S.memo.Count > 0
+        if isempty(S.R)
+            estado(sprintf(['Hay %d simulaciones guardadas. Elija ruido y prénfasis para verlas, ' ...
+                'o simule una combinación nueva.'], S.memo.Count));
+        end
+    end
 
     %% ================= funciones internas =================
     % ---------- sintonía ----------
@@ -297,13 +308,15 @@ function radio_fdm_fm()
 
     function mostrar_guardada()
         % Si la combinación marcada ya se simuló, la muestra al instante; si no, avisa.
-        if ~isempty(S.R)
+        if ~isempty(S.R) || S.memo.Count > 0
             c = clave_de(cfg_actual());
             if strcmp(c, S.clave_mostrada)
                 estado(S.texto_mostrado);
             elseif isKey(S.memo, c)
                 mostrar_resultado(c);
                 estado([S.texto_mostrado ' (guardado)']);
+            elseif isempty(S.R)
+                estado('Falta simular esta combinación.');
             else
                 estado('Falta simular esta combinación. Se sigue mostrando la anterior.');
             end
@@ -374,7 +387,8 @@ function radio_fdm_fm()
                 end
                 t_sim = toc;
                 R = reducir(out);
-                sdr = sdr_tres(R, P, fuente);
+                sdr = sdr_tres(R, P, fuente);      % con las señales en doble precisión
+                R = a_single(R);                   % para guardar: la mitad de memoria
                 texto = sprintf('%.1f MHz, %s%s.', P.vista.fc_MHz, ...
                     ternario(isinf(cfg.snr), 'canal ideal', sprintf('(SNR)_C = %g dB', cfg.snr)), ...
                     ternario(cfg.enf, ', con prénfasis', ''));
@@ -387,6 +401,13 @@ function radio_fdm_fm()
             estado(['Error: ' err.message]);
         end
         if isvalid(dlg), close(dlg); end
+        if hechas > 0
+            try
+                datos = struct('memo', S.memo, 'firma', firma);
+                save(archivo_memo, '-struct', 'datos', '-v7');
+            catch
+            end
+        end
         bloquear(false);
         if hechas > 0
             c_act = clave_de(cfg_actual());
@@ -607,6 +628,36 @@ function R = reducir(out)
     R.y      = cell(1, 3);
     for k = 1:3
         R.y{k} = out.(sprintf('sim_y%d', k))(:).';
+    end
+end
+
+function R = a_single(R)
+% Las señales guardadas solo se grafican y se escuchan: basta precisión simple.
+    for f = {'r', 'mezcla', 'fi', 'm', 'm_hat'}
+        R.(f{1}) = single(R.(f{1}));
+    end
+    R.y = cellfun(@single, R.y, 'UniformOutput', false);
+end
+
+function f = firma_archivos(carpeta)
+% Fecha de modificación de todo lo que cambia el resultado de una simulación.
+    lista = [dir(fullfile(carpeta, 'sistema_fdm_fm.slx')); dir(fullfile(carpeta, 'params_sistema.m')); ...
+             dir(fullfile(carpeta, 'generar_fuentes.m')); dir(fullfile(carpeta, 'disenar_fir_kaiser.m')); ...
+             dir(fullfile(carpeta, 'audios', 'audio*.wav'))];
+    f = sprintf('%s|', lista.name);
+    f = [f sprintf('%.6f|', [lista.datenum])];
+end
+
+function memo = cargar_memo(archivo, firma)
+% Carga las simulaciones guardadas si siguen siendo válidas.
+    memo = containers.Map();
+    if ~exist(archivo, 'file'), return; end
+    try
+        d = load(archivo, 'memo', 'firma');
+        if strcmp(d.firma, firma) && isa(d.memo, 'containers.Map')
+            memo = d.memo;
+        end
+    catch
     end
 end
 
