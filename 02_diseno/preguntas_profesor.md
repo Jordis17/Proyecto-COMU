@@ -134,6 +134,9 @@ En la FM comercial el audio principal está en banda base, donde el ruido crece 
 **31. ¿El prénfasis mueve el umbral?**
 No, porque la desviación y el ancho de banda son los mismos.
 
+**31b. ¿Por qué con ruido los audios grabados salen mucho peor que los tonos de prueba?**
+Por la relación entre el pico y el valor rms. Cada audio se normaliza por su pico para no pasarse de la desviación de 150 kHz, pero contra el ruido cuenta la potencia promedio. Una senoide tiene un pico 3 dB por encima de su rms; nuestras grabaciones, unos 17–18 dB, por los picos de la voz y los silencios. Con el mismo pico llevan unos 14–15 dB menos de potencia y el SDR baja en esa proporción. A 11 MHz, con ruido y prénfasis, salió 12.7 / 10.2 / 7.7 dB, frente a 28.7 / 24.5 / 17.8 dB con la fuente demo: la diferencia es de 16 / 14 / 10 dB. En el audio 3 es menor porque los pitidos de la fuente demo suenan solo un tercio del tiempo, así que esa fuente ya tenía unos 5 dB menos de potencia. Con canal ideal no se nota (49 / 63 / 55 dB). Las emisoras comerciales comprimen el audio por este motivo.
+
 ---
 
 ## F. Implementación
