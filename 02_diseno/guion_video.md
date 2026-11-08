@@ -6,7 +6,7 @@
 
 En voz alta se dice el razonamiento y la cifra que decide. Los demás números se ven en la consola o en la radio, y su origen está en `decisiones_cuantitativas.md` por si el profesor pregunta.
 
-Son unas 930 palabras habladas, unos 6.5 minutos. Con los cambios de ventana y la demostración de la radio queda en unos 9–10 minutos.
+Son unas 1070 palabras habladas, unos 7.6 minutos. Con los cambios de ventana y la demostración de la radio queda en unos 9–10 minutos.
 
 ---
 
@@ -96,7 +96,7 @@ Son unas 930 palabras habladas, unos 6.5 minutos. Con los cambios de ventana y l
 
 ---
 
-## 7. Ruido y prénfasis (7:45–9:30) · Abner
+## 7. Ruido y prénfasis (7:45–9:15) · Abner
 
 **Pantalla:** la radio con la fuente «Ruido de 0.3 a 15 kHz» y la barra en 25 dB. Primero sin prénfasis y después con prénfasis (ya simulados con «Simular las 4 combinaciones»). La gráfica «SDR por audio» muestra los tres audios y la teoría.
 
@@ -108,13 +108,27 @@ Son unas 930 palabras habladas, unos 6.5 minutos. Con los cambios de ventana y l
 
 ---
 
-## 8. Cierre (9:30–10:00) · Jordi
+## 8. Conclusiones (9:15–10:15) · Jordi y Abner
 
-**Pantalla:** la radio o el nivel principal del modelo.
+**Pantalla:** la radio, pestaña «Demultiplexación y audio», con el SDR de los tres audios.
 
-> En resumen, logramos integrar el FDM, la FM, el receptor superheterodino y la radio. Lo más difícil fue que todas las etapas funcionaran juntas, y eso nos obligó a probar y corregir varias decisiones.
+**Jordi:**
+> Para cerrar, estas son nuestras conclusiones.
 >
-> Como limitaciones: la simulación no es en tiempo real, la fase de las subportadoras se corrige con un retardo conocido en vez de un tono piloto, y el canal solo tiene ruido blanco.
+> Primero, el sistema cumple lo pedido. Los tres audios caben en 120 kHz, la portadora se elige entre 9 y 11 MHz, y el receptor siempre baja la señal a la misma FI de 1.7 MHz.
+>
+> Segundo, sin ruido los tres audios se recuperan con más de 43 dB, así que el FDM los separa bien. Y si desintonizamos el receptor, el audio se pierde: el receptor sí selecciona la emisora.
+>
+> Tercero, escalar todo entre 100 fue lo que hizo posible la simulación. Con la tabla del enunciado, la FM cruzaba el cero.
+
+**Abner:**
+> Cuarto, con ruido el sistema se comporta como dice la teoría: el audio 3 sale unos 14 dB peor que el 1, y por debajo del umbral la calidad cae de golpe.
+>
+> Quinto, el prénfasis no quita ruido, pero lo reparte mejor: la diferencia entre audios bajó de 14 a 6 dB.
+>
+> Y sexto, el discriminador rinde igual que el PLL donde trabaja el sistema; el PLL solo gana cerca del umbral.
+>
+> Como limitaciones: la simulación no es en tiempo real, la fase de las subportadoras se corrige con un retardo conocido en vez de un tono piloto, y el canal solo tiene ruido blanco. Gracias.
 
 ---
 
