@@ -75,7 +75,7 @@ Son unas 1420 palabras habladas, unos 10 minutos. Con los cambios de ventana y l
 
 > Para demodular la FM probamos tres opciones en el mismo modelo y con el mismo ruido: un detector de cuadratura, un PLL y el discriminador. Con ruido moderado, los tres dieron prácticamente lo mismo, porque ahí lo que limita es el ruido. Las diferencias aparecieron en los extremos. Sin ruido, el detector de cuadratura dio la salida más limpia, y cerca del umbral el PLL aguantó un poco más.
 >
-> Al final decidimos usar el discriminador, porque es el que vimos en el curso y cumplía con lo que necesitábamos: con canal ideal da al menos 43 dB, que ya no se nota al escucharlo, y con ruido moderado rinde igual que los otros dos.
+> El detector de cuadratura lo descartamos porque no lo vimos en el curso. Entre el PLL y el discriminador, que sí son del curso, nos quedamos con el discriminador. Sin ruido, el PLL salía peor en dos de los tres audios: el audio 3 quedaba en 34 dB, porque el lazo no alcanza a seguir los cambios rápidos de frecuencia del multiplex, mientras que el discriminador da al menos 43 dB. Su ventaja aparece solo cerca del umbral, y ahí el audio 3 ya sale mal con cualquiera de los dos. Además, el PLL necesita diseñar el lazo y compensar su fase, y el discriminador no.
 >
 > El discriminador tiene un limitador, un derivador que convierte la FM en AM, y un detector de envolvente. Con el limitador tuvimos un problema. Al recortar la señal directamente, como en un limitador analógico, en la simulación aparecían componentes que se plegaban sobre la señal y empeoraban mucho el audio. Por eso lo implementamos normalizando la señal, o sea, dividiéndola entre su amplitud, con un valor mínimo para no dividir entre valores demasiado pequeños cuando hay ruido.
 
@@ -145,7 +145,7 @@ Son unas 1420 palabras habladas, unos 10 minutos. Con los cambios de ventana y l
 | Sin la sección de RF el audio empeora unos 3 dB | Simulink, con la versión anterior del demodulador. El efecto viene del ruido de la banda imagen, no del demodulador |
 | Sin compensar el retardo, el audio 2 baja a la mitad y los audios 1 y 3 salen invertidos | Cálculo que imprime `main`: cos(2π f_k τ_k) = −0.90 / +0.52 / −0.79, con τ = 421.48 / 236.06 / 236.06 µs. El audio 2 pierde 5.7 dB. Con el detector de cuadratura los retardos eran otros y el audio 1 quedaba en 0.09 |
 | El superheterodino y la FI de 1.7 MHz | Los pide el enunciado (§4.5). Las condiciones de la FI las revisa `main`: «La banda de FI no toca 0 Hz», «El paso de FI cubre el ancho de Carson» |
-| Comparación de los tres demoduladores | Simulink, mismo modelo y mismo ruido |
+| Comparación de los tres demoduladores | Simulink, mismo modelo y mismo ruido. Sin ruido: PLL 47.6 / 38.7 / 34.0 dB, discriminador 43.3 / 52.2 / 54.4 dB. A 30 dB: iguales. A 16 dB: PLL 16.7 / 7.3 / 4.7, discriminador 3.9 / 2.9 / 2.4 |
 | El limitador que recorta empeora mucho el audio | Python: 9–14 dB con canal ideal |
 | La elección de f₀ = 30 kHz | Cálculo con la fórmula de `params_sistema.m`. Solo 30 kHz se midió en Simulink (−5.4 / −1.1 / +2.0 dB) |
 | Con 600 kHz de desintonía el audio se pierde | Simulink: SDR de 0.9 dB |

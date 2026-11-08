@@ -100,6 +100,7 @@ Sí, un PLL (diap. 347–354) y un detector de cuadratura.
 - Con ruido moderado, los tres dan lo mismo.
 - El PLL aguanta unos 3–4 dB más antes del umbral (extensión del umbral), pero con canal ideal distorsiona más: 34–48 dB contra 43–54 dB del discriminador.
 - El detector de cuadratura no lo usamos porque no se vio en el curso.
+- El PLL sí es del curso. No lo usamos porque sin ruido es peor en dos de los tres audios (el audio 3 queda en 34 dB frente a 54 dB del discriminador), su ventaja solo aparece cerca del umbral, donde el audio 3 ya sale mal con cualquiera de los dos, y además hay que diseñar el lazo y compensar su fase.
 
 Está en `comparacion_demoduladores.md`.
 
