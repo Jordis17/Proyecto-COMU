@@ -71,8 +71,10 @@ SDR = relación señal a distorsión del audio recuperado frente al original (`c
 
 | Caso | Ganancia de cada canal | Fuente |
 |---|---|---|
-| Sin compensar | **+0.09 / −0.87 / −0.65**: el canal 1 casi desaparece | Cálculo: cos(2π f_k τ_k) |
-| **Compensando τ_k = 412 / 226 / 226 µs (elegida)** | 1 / 1 / 1. SDR 43.3 / 52.2 / 54.4 dB | Simulink |
+| Sin compensar | **−0.90 / +0.52 / −0.79**: el canal 2 pierde la mitad de la amplitud (−5.7 dB) y los canales 1 y 3 salen invertidos | Cálculo: cos(2π f_k τ_k), lo imprime `main` |
+| **Compensando τ_k = 421 / 236 / 236 µs (elegida)** | 1 / 1 / 1. SDR 43.3 / 52.2 / 54.4 dB | Simulink |
+
+El factor depende del retardo de los filtros. Con el detector de cuadratura (otros filtros), las ganancias eran +0.09 / −0.87 / −0.65 y el canal 1 casi desaparecía. Compensando, no importa qué filtros se usen.
 
 ## 8. Demodulador FM (la decisión más grande)
 
@@ -138,6 +140,6 @@ Bajar f₀ de 30 a 10 kHz le da al audio 3 solo 0.4 dB más, pero le quita 3.1 d
 | Δf | 150 kHz | +6 dB frente a 75 kHz; Carson de 530 kHz dentro de la FI de 700 kHz |
 | Inyección | Inferior | Suma de 20.65 MHz frente a 24.05 MHz con la superior |
 | Preselector | Sí | Imagen rechazada al menos 60 dB; sin él, −3 dB de SDR |
-| Retardo | Compensado | Sin compensar, el canal 1 queda con ganancia 0.09 |
+| Retardo | Compensado | Sin compensar, las ganancias serían −0.90 / +0.52 / −0.79 |
 | Demodulador | Discriminador | Es el del curso; ≥ 43 dB ideal; igual a los otros sobre el umbral |
 | Prénfasis | f₀ = 30 kHz, opcional | Audio 3 +2.0 dB; diferencia entre audios de 13.9 a 6.3 dB |

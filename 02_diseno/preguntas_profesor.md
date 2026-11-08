@@ -38,7 +38,7 @@ Los filtros reales necesitan una banda de transición. Con 10 kHz, los filtros d
 Cada audio tiene pico 1, así que la suma puede llegar a 3. Al dividir entre 3 (bloque «Normalización (dividir entre 3)»), la señal m(t) que entra al modulador nunca pasa de 1 y la desviación nunca pasa de 150 kHz.
 
 **10. ¿Qué pasa si la subportadora del receptor no está en fase?**
-La salida queda multiplicada por cos φ (diap. 237–238). Los filtros retrasan la señal: sin compensar, las ganancias serían +0.09, −0.87 y −0.65. El canal 1 caería 21 dB. Por eso el «Canal k oscilador local» del demultiplexor genera cos(2π f_k (t − τ_k)) y el «Canal k detector coherente» multiplica por esa señal ya corregida.
+La salida queda multiplicada por cos φ (diap. 237–238). Los filtros retrasan la señal: sin compensar, las ganancias serían −0.90, +0.52 y −0.79 (lo imprime `main`). El canal 2 perdería 5.7 dB y los otros dos saldrían invertidos. El valor depende de los filtros: con el detector de cuadratura, el canal 1 quedaba en 0.09 y caía 21 dB. Por eso el «Canal k oscilador local» del demultiplexor genera cos(2π f_k (t − τ_k)) y el «Canal k detector coherente» multiplica por esa señal ya corregida.
 
 **11. ¿Eso se puede hacer en un receptor real?**
 No exactamente, porque no se conoce el retardo. En la práctica se manda un tono piloto, como el de 19 kHz de la FM estéreo, o se usa un PLL. En la simulación el retardo es conocido y fijo, así que lo compensamos directamente. Lo dejamos como limitación.

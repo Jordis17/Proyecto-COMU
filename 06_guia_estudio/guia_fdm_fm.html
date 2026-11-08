@@ -329,7 +329,7 @@ dl.gl dd{margin:0}
   <div class="box proy"><div class="bh">En el proyecto: el problema del retardo</div>
     <p>Como el transmisor y el receptor están en la misma simulación, la frecuencia de las subportadoras es exacta (Δω = 0). Pero la <strong>fase</strong> no: entre el modulador DSB-SC y el detector, la señal atraviesa una docena de filtros FIR, y cada uno la retrasa (capítulo 03). Un retardo τ en una subportadora f<sub>k</sub> es un error de fase:</p>
     <div class="formula"><span class="eq">φ<sub>0</sub> = 2π·f<sub>k</sub>·τ</span> &nbsp;&nbsp;→&nbsp;&nbsp; ganancia del canal = cos(2π·f<sub>k</sub>·τ)</div>
-    <p>Con los filtros del proyecto, τ ≈ 226 µs en los canales 2 y 3 y 412 µs en el canal 1, que tiene un filtro más largo. Sin corregirlo, el canal 2 salía multiplicado por −0.87 y el canal 1 por 0.09: casi desaparecía. La solución fue generar en el receptor cada subportadora ya retrasada, cos(2π f<sub>k</sub>(t − τ<sub>k</sub>)), con τ<sub>k</sub> calculado sumando los retardos conocidos de los filtros. Es la misma idea que usa la FM estéreo, que retrasa a propósito el canal L+R para que llegue en fase con L−R (Tomasi).</p></div>
+    <p>Con los filtros del proyecto, τ ≈ 236 µs en los canales 2 y 3 y 421 µs en el canal 1, que tiene un filtro más largo. Sin corregirlo, los canales saldrían multiplicados por −0.90, +0.52 y −0.79: el canal 2 perdería la mitad de su amplitud. Con otros filtros puede ser peor: con el detector de cuadratura, el canal 1 quedaba en 0.09 y casi desaparecía. La solución fue generar en el receptor cada subportadora ya retrasada, cos(2π f<sub>k</sub>(t − τ<sub>k</sub>)), con τ<sub>k</sub> calculado sumando los retardos conocidos de los filtros. Es la misma idea que usa la FM estéreo, que retrasa a propósito el canal L+R para que llegue en fase con L−R (Tomasi).</p></div>
   <div class="lab">
     <div class="lab-h"><span class="t">Banco 4.2 · Ganancia de cada canal según el retardo</span><span class="q">Mueva τ, cargue los retardos reales y active la compensación</span></div>
     <div class="ctrls">
@@ -955,7 +955,7 @@ bindRange('dsDf', v => v + ' Hz', drawDSB)();
 let tauReal = false;
 function drawTau() {
   const t = +$('#tau').value, comp = $('#tauComp').checked, fk = [20, 60, 100];
-  const taus = tauReal ? [411.79, 226.37, 226.37] : [t, t, t];
+  const taus = tauReal ? [421.48, 236.06, 236.06] : [t, t, t];
   const g = fk.map((f, k) => comp ? 1 : Math.cos(2 * Math.PI * f * 1e3 * taus[k] * 1e-6));
   const svg = $('#tauSvg');
   const P = plot(svg, { W: 760, H: 230, x0: 0, x1: 3, y0: -1.15, y1: 1.15, xt: [], yt: [-1, -0.5, 0, 0.5, 1], ml: 40, mb: 30 });
@@ -1297,7 +1297,7 @@ const QZ = {
   dsb: [
     { q: '¿Cuál es el ancho de banda de una señal DSB-SC si el mensaje ocupa 15 kHz?', o: ['15 kHz', '30 kHz', '7.5 kHz'], a: 1, e: 'Aparecen las dos bandas laterales: el doble del mensaje (diap. 229).' },
     { q: 'En detección coherente, un error de fase de 90° hace que la salida…', o: ['se duplique', 'se invierta', 'desaparezca'], a: 2, e: 'e_o = ½f(t)·cos φ₀ y cos 90° = 0 (diap. 238).' },
-    { q: 'Una subportadora de 60 kHz llega con 226 µs de retardo y no se compensa. ¿Qué ganancia tiene el canal?', o: ['≈ 1', '≈ −0.87', '≈ 0'], a: 1, e: 'cos(2π·60 000·226·10⁻⁶) ≈ −0.87: el audio sale invertido y atenuado.' }],
+    { q: 'Una subportadora de 60 kHz llega con 236 µs de retardo y no se compensa. ¿Qué ganancia tiene el canal?', o: ['≈ 1', '≈ 0.5', '≈ 0'], a: 1, e: 'cos(2π·60 000·236·10⁻⁶) ≈ 0.5: el audio sale con la mitad de la amplitud (unos −6 dB).' }],
   fdm: [
     { q: 'En el ejemplo FDMA del curso, ¿por qué se puede usar SSB con un filtro?', o: ['Porque la voz telefónica empieza en 300 Hz y deja un hueco junto a la portadora', 'Porque SSB no necesita filtros', 'Porque las portadoras están muy separadas'], a: 0, e: 'El hueco de 0–300 Hz permite cortar una banda lateral. El audio real llega casi a 0 Hz y no deja ese hueco.' },
     { q: '¿Cuál es la frecuencia moduladora máxima del multiplex del proyecto?', o: ['15 kHz', '115 kHz', '120 kHz'], a: 1, e: 'El canal 3 va de 85 a 115 kHz: f_m(máx) = 115 kHz.' }],

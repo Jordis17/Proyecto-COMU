@@ -25,8 +25,8 @@ Esta rama usa el discriminador del curso como demodulador. Los pasos de prueba e
 - [x] No debe aparecer ningún «Aviso: no se pudo renombrar…» ni «Aviso: no se pudo ordenar el diagrama…». Si aparece, copiar el mensaje completo.
 - La tabla debe terminar con **9 líneas `[OK]`** y decir «Prénfasis/deénfasis apagado».
 - Valores que no deberían cambiar respecto de antes:
-  - tau = 411.79 / 226.37 / 226.37 µs
-  - ganancias sin compensar +0.09 / −0.87 / −0.65
+  - tau = 411.79 / 226.37 / 226.37 µs (detector de cuadratura); con el discriminador: 421.48 / 236.06 / 236.06 µs
+  - ganancias sin compensar +0.09 / −0.87 / −0.65 (cuadratura); con el discriminador: −0.90 / +0.52 / −0.79
 - **Hecho (MATLAB R2026a Update 4):** 9 [OK], tau y ganancias iguales, órdenes de filtros iguales a los calculados. ✔
 - En la radio:
   - [ ] simular a 10 MHz con la casilla de prénfasis apagada → anotar el SDR (fuente demo; con el discriminador se espera algo menos que los 69 dB del detector de cuadratura)

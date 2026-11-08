@@ -88,7 +88,7 @@ m(t) recuperado → Canal k pasabanda → Canal k detector coherente → Canal k
 | **Canal k detector coherente** | Multiplica la señal del canal por la portadora local | Lleva el audio de vuelta a 0 Hz: f(t)cos ω t · 2cos ω t = f(t) + f(t)cos 2ωt (diap. 230) |
 | **Canal k pasabajos 15 kHz** | Subsistema (páginas 4–6) | Quita el término en 2f_k y deja solo el audio |
 
-**Por qué hace falta τ_k.** Los filtros retrasan la señal unos 412 µs (canal 1) o 226 µs (canales 2 y 3). Si el oscilador local no tuviera ese mismo retardo, la salida saldría multiplicada por cos φ: 0.09, −0.87 y −0.65. El canal 1 casi desaparecería.
+**Por qué hace falta τ_k.** Los filtros retrasan la señal unos 421 µs (canal 1) o 236 µs (canales 2 y 3). Si el oscilador local no tuviera ese mismo retardo, la salida saldría multiplicada por cos φ: −0.90, +0.52 y −0.79. El canal 2 perdería la mitad de su amplitud y los otros dos saldrían invertidos.
 
 ## Páginas 4, 5 y 6. Canal k pasabajos 15 kHz
 

@@ -105,8 +105,8 @@ Después viene el filtro posdetección (diap. 376), de 120 kHz, que deja solo el
 
 **Retardo de los filtros.** En DSB-SC, si la subportadora del receptor llega con un error de fase φ, la salida queda multiplicada por cos φ (diap. 237–238). Los filtros FIR retrasan la señal:
 
-- El retardo hasta el detector es τ_1 = 412 µs y τ_2 = τ_3 = 226 µs.
-- Sin corregirlo, las ganancias serían +0.09, −0.87 y −0.65: el canal 1 casi desaparecería.
+- El retardo hasta el detector es τ_1 = 421 µs y τ_2 = τ_3 = 236 µs.
+- Sin corregirlo, las ganancias serían −0.90, +0.52 y −0.79: el canal 2 perdería la mitad de su amplitud y los otros dos saldrían invertidos. Con otros filtros podría ser peor (con el detector de cuadratura, el canal 1 quedaba en 0.09).
 - Por eso el receptor usa cos(2π f_k (t − τ_k)), donde τ_k es la suma de los retardos (N−1)/(2 f_s) de los filtros.
 
 ### 3.6 Frecuencias de muestreo por etapa

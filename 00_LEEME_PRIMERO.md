@@ -81,7 +81,7 @@ Tres audios de 15 kHz → **FDM** (DSB-SC) en ≤ 120 kHz → **FM** con portado
 | FM | **Δf = k_f = 150 kHz**, f_m,máx = 115 kHz, DR = 1.30, Carson 530 kHz, Bessel (n = 3) 690 kHz | Compromiso SNR (∝Δf²) / ancho de banda |
 | Superheterodino | **Inyección inferior** f_LO = f_c − 1.7 MHz; imagen f_c − 3.4 MHz; sección de RF (preselector) ±350 kHz (rechazo 60 dB desde ±1.55 MHz); FI 1.35–2.05 MHz en dos etapas (LPF a 48 MHz, ↓10, BPF a 4.8 MHz) | Suma más baja (cabe en 48 MHz), sin inversión espectral |
 | Demodulación FM | **Discriminador del curso**: limitador (divide por la amplitud, mínimo 0.3) → detector de pendiente (derivador FIR) → detector de envolvente (ley cuadrática) | Es el del curso. Se probaron también un PLL (mejor cerca del umbral, más distorsión con canal ideal) y un detector de cuadratura (no visto en el curso); ver `02_diseno/comparacion_demoduladores.md` |
-| Detección DSB-SC | Coherente con fase compensada: cos(2π f_k (t − τ_k)), τ_1 = 411.79 µs, τ_2 = τ_3 = 226.37 µs | Sin compensar, ganancias +0.09 / −0.87 / −0.65 |
+| Detección DSB-SC | Coherente con fase compensada: cos(2π f_k (t − τ_k)), τ_1 = 421.48 µs, τ_2 = τ_3 = 236.06 µs | Sin compensar, ganancias −0.90 / +0.52 / −0.79 |
 | Filtros | FIR Kaiser propios (`disenar_fir_kaiser.m`), 60 dB | **Sin toolboxes**: Abner no tiene DSP ni Signal Processing Toolbox |
 | Simulink | Solo bloques básicos; solver discreto paso fijo; `EnableMultiTasking` off; modo acelerado | Portabilidad y velocidad (4.3×) |
 | Ruido | (SNR)_C de Haykin = A_c²/(2·W·N₀), W = 120 kHz | Definición del curso (diap. 377) |

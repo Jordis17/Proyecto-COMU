@@ -57,13 +57,13 @@ Son unas 1330 palabras habladas, unos 9.5 minutos. Con los cambios de ventana y 
 
 ## 4. Receptor (3:15–4:30) · Jordi
 
-**Pantalla:** pestaña «Receptor superheterodino» de la radio; para el retardo, la consola de `main` (ganancias si no se compensara: +0.09 / −0.87 / −0.65).
+**Pantalla:** pestaña «Receptor superheterodino» de la radio; para el retardo, la consola de `main` (ganancias si no se compensara: −0.90 / +0.52 / −0.79).
 
 > Con el transmisor listo, faltaba ver que el receptor pudiera recuperar la señal. El oscilador local se calcula solo a partir de la portadora: es la portadora menos 1.7 MHz. Lo pusimos por debajo de la portadora porque, si lo poníamos por encima, la suma del mezclador ya no cabía en los 48 MHz de muestreo.
 >
 > En el superheterodino también hay que cuidar la frecuencia imagen, porque al mezclarse cae en la misma FI. Para eso está la sección de RF antes del mezclador. Probamos qué pasaba si la quitábamos: con ruido, la calidad del audio bajó unos 3 dB, porque entraba también el ruido de la banda imagen. Por eso la dejamos.
 >
-> En el demultiplexor hay otro detalle. Los filtros retrasan la señal, y en DSB-SC, si la subportadora del receptor queda desfasada, la salida se atenúa. Cuando calculamos ese efecto, el audio 1 casi desaparecía. Por eso la subportadora del receptor se atrasa lo mismo que los filtros.
+> En el demultiplexor hay otro detalle. Los filtros retrasan la señal, y en DSB-SC, si la subportadora del receptor queda desfasada, la salida se atenúa. Cuando calculamos ese efecto, cada audio quedaba multiplicado por un número distinto: el audio 2 bajaba a la mitad y los otros dos salían invertidos. Por eso la subportadora del receptor se atrasa lo mismo que los filtros.
 
 ---
 
@@ -141,7 +141,7 @@ Son unas 1330 palabras habladas, unos 9.5 minutos. Con los cambios de ventana y 
 | SSB necesitaría un filtro casi ideal | Análisis; no se simuló SSB |
 | 150 kHz da unos 6 dB más que 75 kHz | Cálculo (SNR ∝ Δf²) y prueba en Python |
 | Sin la sección de RF el audio empeora unos 3 dB | Simulink, con la versión anterior del demodulador. El efecto viene del ruido de la banda imagen, no del demodulador |
-| Sin compensar el retardo, el audio 1 casi desaparece | Cálculo: ganancia cos(2π f_k τ_k) = 0.09 |
+| Sin compensar el retardo, el audio 2 baja a la mitad y los audios 1 y 3 salen invertidos | Cálculo que imprime `main`: cos(2π f_k τ_k) = −0.90 / +0.52 / −0.79, con τ = 421.48 / 236.06 / 236.06 µs. El audio 2 pierde 5.7 dB. Con el detector de cuadratura los retardos eran otros y el audio 1 quedaba en 0.09 |
 | Comparación de los tres demoduladores | Simulink, mismo modelo y mismo ruido |
 | El limitador que recorta empeora mucho el audio | Python: 9–14 dB con canal ideal |
 | La elección de f₀ = 30 kHz | Cálculo con la fórmula de `params_sistema.m`. Solo 30 kHz se midió en Simulink (−5.4 / −1.1 / +2.0 dB) |
