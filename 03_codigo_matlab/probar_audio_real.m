@@ -8,7 +8,8 @@
 %
 %   Resultado: audios/recuperado1.wav ... recuperado3.wav (y los originales normalizados
 %   original1..3.wav), para escucharlos o usarlos en el video sin tener que esperar.
-%   Duración: unos 4-5 minutos de simulación por cada segundo de audio (modo acelerado).
+%   Duración: unos 2.5 minutos de simulación por cada segundo de audio (modo acelerado;
+%   2 s tardaron 283 s en la computadora donde se probó).
 
 clear; clc;
 T_real   = 2;          % segundos de audio (2 s alcanzan para reconocer cada audio)
@@ -24,7 +25,7 @@ fuente = generar_fuentes(P, 'audio');
 mdl = 'sistema_fdm_fm';
 if exist('modelo_al_dia', 'file'), modelo_al_dia(mdl); end
 load_system(mdl);
-fprintf('Simulando %.1f s de audio real (unos %.0f min)...\n', T_real, 4.5*T_real);
+fprintf('Simulando %.1f s de audio real (unos %.0f min)...\n', T_real, 2.5*T_real);
 try
     set_param(mdl, 'SimulationMode', 'accelerator');
     tic; out = sim(mdl);

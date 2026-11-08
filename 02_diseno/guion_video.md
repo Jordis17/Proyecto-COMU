@@ -101,7 +101,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 > Después agregamos el canal AWGN para ver cómo se comportaba el sistema cuando ya no era un canal ideal. Los resultados siguieron la tendencia que da la teoría del curso, pero al acercarnos al umbral de la FM la calidad empezó a caer bastante rápido.
 >
-> También notamos que, con ruido moderado, el audio 3 salía unos 14 dB peor que el audio 1. La explicación está en la teoría: a la salida del discriminador el ruido crece con el cuadrado de la frecuencia, y el audio 3 está en la subportadora más alta. Con la fórmula del curso esa diferencia da unos 13 dB, muy cerca de lo que medimos.
+> También notamos que, con ruido moderado, el audio 3 salía unos 14 dB peor que el audio 1. La explicación está en la teoría: a la salida del discriminador el ruido crece con el cuadrado de la frecuencia, y el audio 3 está en la subportadora más alta. Con la fórmula del curso, usando la potencia que tenía cada audio, da también unos 14 dB.
 >
 > Para compensar esa diferencia usamos prénfasis y deénfasis. El prénfasis no elimina el ruido, lo reparte: el audio 3 mejora a costa del audio 1, que tenía calidad de sobra. Para escoger la frecuencia de corte calculamos qué pasaba con varios valores. Si se baja mucho, el audio 3 casi no mejora más, pero el audio 1 pierde bastante. Por eso dejamos 30 kHz. En la simulación, el audio 3 mejoró unos 2 dB, y la diferencia entre el mejor y el peor audio bajó de 14 a unos 6 dB.
 
@@ -143,5 +143,5 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 | El limitador que recorta empeora mucho el audio | Python: 9–14 dB con canal ideal |
 | La elección de f₀ = 30 kHz | Cálculo con la fórmula de `params_sistema.m`. Solo 30 kHz se midió en Simulink (−5.4 / −1.1 / +2.0 dB) |
 | Con 600 kHz de desintonía el audio se pierde | Simulink: SDR de 0.9 dB |
-| El audio 3 sale unos 14 dB peor que el audio 1 | Simulink (`analisis_awgn`, fuente de ruido): 13.9 dB a 25 y 30 dB. Teoría: 10·log[(100² + 15²/3)/(20² + 15²/3)] = 13.3 dB. A 40 dB baja a 12 dB porque el audio 1 se acerca a su límite sin ruido (43 dB); cerca del umbral, a 10 dB |
+| El audio 3 sale unos 14 dB peor que el audio 1 | Simulink (`analisis_awgn`, fuente de ruido): 13.9 dB a 25 y 30 dB. Teoría con la potencia de cada audio (columnas `teo_c1` y `teo_c3` de `resultados_awgn.csv`): 14.2 dB. Si los tres audios tuvieran la misma potencia: 10·log[(100² + 15²/3)/(20² + 15²/3)] = 13.3 dB. A 40 dB la diferencia baja a 12 dB, porque el audio 1 se acerca a su límite sin ruido (43 dB); cerca del umbral (20 dB) baja a 10 dB |
 | Con prénfasis la diferencia baja de 14 a unos 6 dB | Simulink, 25 dB: sin prénfasis 26.7 − 12.8 = 13.9 dB; con prénfasis 21.1 − 14.8 = 6.3 dB. Con las grabaciones: de 12.2 a 5.0 dB |

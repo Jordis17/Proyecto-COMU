@@ -133,7 +133,7 @@ Reloj t → 2 pi fc → 2π f_c t
 ```
 
 - **Reloj t:** da el tiempo de cada muestra.
-- **2 pi fc:** lo multiplica por 2π f_c. f_c es la portadora elegida en la radio (9–11 MHz) y se lee de `P.fc`, así que cambia sola al mover la perilla.
+- **2 pi fc:** lo multiplica por 2π f_c. f_c es la portadora elegida en la radio (9–11 MHz) y se lee de `P.fc`, así que cambia sola al mover el dial.
 
 ## Página 9. Interpolación (x100)
 

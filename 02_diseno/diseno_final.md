@@ -137,7 +137,7 @@ Sin ruido, los dos filtros se cancelan y no cambian nada. Con ruido, el prénfas
 |---|---|---|
 | −5.8 dB | −1.3 dB | +2.0 dB |
 
-Mejora el canal más ruidoso a costa del que tenía SNR de sobra. **Medido en Simulink** (`analisis_awgn`, discriminador, (SNR)_C de 20 a 40 dB): −5.4 / −1.1 / +2.0 dB, casi igual a la teoría. La diferencia entre el canal 1 y el canal 3 baja de unos 13 a unos 6 dB. Con canal ideal el SDR no cambia.
+Mejora el canal más ruidoso a costa del que tenía SNR de sobra. **Medido en Simulink** (`analisis_awgn`, discriminador, (SNR)_C de 20 a 40 dB): −5.4 / −1.1 / +2.0 dB, casi igual a la teoría. A 25 dB, la diferencia entre el canal 1 y el canal 3 baja de 13.9 a 6.3 dB. Con canal ideal el SDR no cambia.
 
 ### 3.8 Canal AWGN
 
@@ -168,12 +168,12 @@ Ningún bloque tiene números escritos a mano: todos leen la estructura `P` de `
 
 **GUI** (`radio_fdm_fm.m`):
 
-- Una perilla para la portadora (9–11 MHz). Al moverla se recalculan al instante el LO, la imagen y el preselector.
+- Un dial para la portadora (9–11 MHz) con botones de ±0.1 MHz. Al moverlo se recalculan al instante el LO, la imagen y el preselector, y se redibuja el plan de frecuencias sin simular.
 - Muestra la FI, el LO, la imagen, Δf y Carson.
-- Un selector de audio 1/2/3. Actúa después del demultiplexor, así que no vuelve a simular ni toca el LO.
-- Casillas para AWGN y para el prénfasis, y un campo de desintonía.
-- Gráficas del espectro de RF, la salida del mezclador, el multiplex recuperado y el audio original frente al recuperado.
-- Botones para escuchar el audio original y el recuperado.
+- Botones Audio 1/2/3. Actúan después del demultiplexor, así que no vuelven a simular ni tocan el LO.
+- Fuente de audio (señales de prueba o grabaciones), casillas para AWGN (con una barra de 10 a 40 dB) y prénfasis, y un campo de desintonía.
+- Siete gráficas en dos pestañas: plan de frecuencias, espectro de RF, salida del mezclador y FI; multiplex, SDR de los tres audios y audio en el tiempo.
+- Cada simulación se guarda (también en `radio_guardado.mat`), y al volver a una combinación ya simulada se muestra sin simular.
 
 **Scripts:**
 
@@ -225,23 +225,22 @@ Ningún bloque tiene números escritos a mano: todos leen la estructura `P` de `
 
 Sobre el umbral, el preénfasis cambia el SDR en −5.4 / −1.1 / +2.0 dB, casi lo mismo que predice la teoría (−5.8 / −1.3 / +2.0). Con canal ideal no cambia nada (44.8 / 55.9 / 58.5 dB con preénfasis).
 
-**Audios reales:** pendiente (`probar_audio_real`).
+**Audios reales** (grabaciones del equipo, 2 s, 10 MHz):
+
+| Caso | Audio 1 | Audio 2 | Audio 3 |
+|---|---|---|---|
+| Canal ideal (`probar_audio_real` y radio) | 49.1 | 63.4 | 55.2 |
+| (SNR)_C = 25 dB, sin prénfasis (radio) | 18.3 | 11.3 | 6.1 |
+| (SNR)_C = 25 dB, con prénfasis (radio) | 12.7 | 10.2 | 7.7 |
+
+Con ruido, la voz sale peor que las señales de prueba porque su pico está unos 17–18 dB sobre su valor rms (una senoide, 3 dB): con el mismo pico lleva menos potencia.
 
 ## 6. Limitaciones
 
-- No funciona en tiempo real. Cada cambio en la GUI vuelve a simular, y un segundo de audio tarda unos 4–5 minutos en modo acelerado.
+- No funciona en tiempo real. Cada combinación nueva hay que simularla: 2 s de audio tardaron 283 s en modo acelerado. La radio guarda lo ya simulado para no repetirlo.
 - La portadora del receptor se genera con la fase correcta porque conocemos el retardo de los filtros. En un receptor real se usaría un tono piloto o un PLL, como en la FM estéreo.
 - El canal solo tiene ruido blanco: no hay desvanecimiento ni interferencias.
 
-## 7. Propuesta para el video (~10 min)
+## 7. Video
 
-| Min | Escena | Qué mostrar |
-|---|---|---|
-| 0–1 | El problema | Diagrama de bloques del sistema |
-| 1–3 | Errores del enunciado | Tabla de escalamiento con el cálculo de la FM que cruza 0 Hz; la regla de muestreo; el prénfasis como condición |
-| 3–5 | Diseño | Plan FDM y su espectro, Δf/DR/Carson con el espectro FM, LO, imagen y FI |
-| 5–7 | Modelo y GUI | Recorrido por los subsistemas; cambiar la portadora y ver que el LO cambia y la FI queda en 1.7 MHz; elegir audio 1, 2 o 3 y escucharlos |
-| 7–9 | AWGN | Gráfica del barrido; por qué el canal 3 sale peor; umbral; efecto del prénfasis |
-| 9–10 | Conclusiones | Lo que se cumplió y las limitaciones |
-
-Los dos debemos poder explicar cualquier parte, así que conviene que cada uno practique también las escenas del otro.
+El guion está en `guion_video.md` y la justificación de cada decisión, con números, en `decisiones_cuantitativas.md`.

@@ -9,7 +9,7 @@ En §4.5 dice: «Si la calidad de las señales demoduladas es baja, debe conside
 
 ## Por qué el canal 3 sale peor
 
-A la salida del discriminador, el ruido crece con el cuadrado de la frecuencia: S_No(f) = N₀f²/A_c² (diap. 385). El canal 3 está en la subportadora más alta (100 kHz), así que le toca más ruido que al canal 1 (20 kHz). La diferencia teórica es de unos 13 dB.
+A la salida del discriminador, el ruido crece con el cuadrado de la frecuencia: S_No(f) = N₀f²/A_c² (diap. 385). El canal 3 está en la subportadora más alta (100 kHz), así que le toca más ruido que al canal 1 (20 kHz). La diferencia teórica es de unos 13 dB si los audios tienen la misma potencia, y de 14.2 dB con la potencia que tenía cada audio en la prueba. Medido: 13.9 dB.
 
 ## Dónde se colocan
 
@@ -42,7 +42,7 @@ Comparamos con la misma desviación pico. El prénfasis no reduce el ruido total
 | **Simulink, discriminador** (`analisis_awgn`), (SNR)_C de 20 a 40 dB | **−5.4 dB** | **−1.1 dB** | **+2.0 dB** |
 | GUI `radio`, fuente demo, (SNR)_C = 25 dB, a 10 y 11 MHz | −5.5 dB | −1.3 dB | +1.9 dB |
 
-Los resultados de Python salen de `04_verificacion_python/verificar_enfasis_bb.py`. Los de Simulink, de `analisis_awgn.m` (`resultados_awgn.csv`). La diferencia entre el canal 1 y el canal 3 baja de unos 13 a unos 6 dB, y con canal ideal el SDR no cambia (43.9 / 52.6 / 55.1 dB sin preénfasis, 44.8 / 55.9 / 58.5 dB con preénfasis).
+Los resultados de Python salen de `04_verificacion_python/verificar_enfasis_bb.py`. Los de Simulink, de `analisis_awgn.m` (`resultados_awgn.csv`). A 25 dB, la diferencia entre el canal 1 y el canal 3 baja de 13.9 a 6.3 dB, y con canal ideal el SDR no cambia (43.9 / 52.6 / 55.1 dB sin preénfasis, 44.8 / 55.9 / 58.5 dB con preénfasis).
 
 Nota: con el preénfasis, el pico de m(t) al modulador fue 0.49, frente a 0.57 sin él. La regla de g es conservadora y deja un poco de desviación sin usar; aun así, el resultado coincide con la teoría.
 

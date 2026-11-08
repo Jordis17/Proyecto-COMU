@@ -132,7 +132,7 @@ Se entregan 8 `.m` (los marcados con ✔), el `.slx` y los audios; el resto qued
 | `construir_modelo.m` | **(No se entrega.)** Genera `sistema_fdm_fm.slx` por código (subsistemas Transmisor FDM, Modulador FM, Canal, Receptor superheterodino, Demultiplexor FDM) y pone los nombres de bloques y señales (sección 5) |
 | `modelo_al_dia.m` | **(No se entrega.)** Genera el `.slx` solo si no existe (el `.slx` del repositorio está ordenado a mano y nunca se sobrescribe solo). Los scripts de la entrega lo usan solo si existe; sin él, usan el `.slx` tal cual |
 | ✔ `generar_fuentes.m` | Fuentes: `demo`, `tonos`, `ruido`, `audio` (WAV en la carpeta `audios/`, que hay que crear) |
-| ✔ `radio_fdm_fm.m` | GUI: perilla de portadora, LO automático, selector de audio, AWGN, prénfasis, desintonía |
+| ✔ `radio_fdm_fm.m` | GUI: dial de portadora, LO automático, selector de audio, AWGN, prénfasis, desintonía |
 | ✔ `graficas_sistema.m` | Figuras de cada etapa: audios, multiplex, FM con Carson, receptor, audios recuperados |
 | `analisis_awgn.m` | **(No se entrega; resultados en el video.)** Barrido AWGN frente a la teoría, sin y con prénfasis. Guarda CSV, MAT y PNG |
 | `probar_audio_real.m` | **(No se entrega; los WAV recuperados se usan en el video.)** Pasa `audios/audio1..3.wav` por el sistema y guarda `recuperado1..3.wav` (ver `audios/LEEME.txt`) |

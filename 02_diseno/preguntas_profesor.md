@@ -70,7 +70,7 @@ Ganarían SNR, pero la FM sería más ancha. Entraría más ruido al filtro de F
 Es la otra frecuencia que, al mezclarse con el LO, también da 1.7 MHz: f_c − 2·f_FI = 6.6 MHz a 10 MHz. La sección de RF (preselector), antes del mezclador, deja pasar f_c ± 350 kHz y rechaza más de 60 dB desde ±1.55 MHz, así que la imagen, que está a 3.4 MHz de distancia, no pasa.
 
 **18. Si solo hay una emisora, ¿para qué el preselector?**
-Para el ruido. Sin preselector, el ruido de la banda imagen también llega a la FI. Lo medimos: con (SNR)_C = 25 dB, quitar el preselector empeora unos 3 dB, que es lo que predice la teoría (se duplica el ruido).
+Para el ruido. Sin preselector, el ruido de la banda imagen también llega a la FI. Lo medimos: con (SNR)_C = 25 dB, quitar el preselector empeora unos 3 dB, que es lo que predice la teoría (se duplica el ruido). Esa prueba se hizo con la versión anterior del demodulador; el efecto viene del ruido de la banda imagen, que entra antes del demodulador.
 
 **19. ¿Por qué inyección inferior, si los ejemplos del curso usan la superior?**
 Con la superior el producto suma llegaría a unos 24 MHz y haría falta muestrear a más de 48 MHz. Con la inferior cabe y el espectro no sale invertido. En radio AM se usa la superior por el rango de sintonía del oscilador, pero aquí el rango es solo de 9 a 11 MHz.
@@ -79,7 +79,7 @@ Con la superior el producto suma llegaría a unos 24 MHz y haría falta muestrea
 Cumple la definición del curso (diap. 359): es menor que la portadora y mayor que el mensaje (115 kHz). Además, 1.7 MHz − 350 kHz > 0, así que la banda de FI no toca 0 Hz.
 
 **21. ¿Cómo se calcula el LO cuando cambio la portadora?**
-f_LO = f_c − 1.7 MHz, lo calcula `params_sistema.m`. Al mover la perilla también se recalculan la imagen y el preselector. La FI no cambia.
+f_LO = f_c − 1.7 MHz, lo calcula `params_sistema.m`. Al mover el dial también se recalculan la imagen y el preselector, y el plan de frecuencias de la radio se mueve sin simular. La FI no cambia.
 
 **22. ¿Cómo demodulan la FM?**
 Con el discriminador del curso (diap. 342–345): limitador → detector de pendiente → detector de envolvente.
@@ -93,7 +93,7 @@ En el modelo es el subsistema «Demodulador FM», dentro del receptor.
 En una simulación digital, recortar la onda genera armónicos que, a 4.8 MHz de muestreo, se pliegan sobre la señal: lo probamos y la calidad bajaba a 9–14 dB. Dividir por la amplitud (medida con un detector de ley cuadrática) logra lo mismo, una amplitud constante, sin generar armónicos. Además, nunca se usa una amplitud menor a 0.3, como un limitador real, que tiene ganancia finita.
 
 **22c. ¿Y si se quita el limitador?**
-Deja de funcionar con ruido. La salida del discriminador es amplitud × frecuencia, así que el ruido de amplitud queda multiplicado por toda la FI (1.7 MHz). A 40 dB de (SNR)_C, el SDR caía a 5 dB. Por eso el curso siempre lo pone (diap. 375).
+Deja de funcionar con ruido. La salida del discriminador es amplitud × frecuencia, así que el ruido de amplitud queda multiplicado por toda la FI (1.7 MHz). En la prueba en Python, a 40 dB de (SNR)_C el SDR caía a 5 dB. Por eso el curso siempre lo pone (diap. 375).
 
 **22d. ¿Probaron otros demoduladores?**
 Sí, un PLL (diap. 347–354) y un detector de cuadratura.
@@ -126,7 +126,7 @@ Porque no hace falta: sin ruido el SDR ya es de 43 a 54 dB. Además, el prénfas
 Antes del modulador FM y después del demodulador, como en la diap. 384. El mensaje que entra al modulador es el multiplex, así que se filtra el multiplex completo. Es un filtro de primer orden que sube las frecuencias altas; el deénfasis es su inverso exacto. En el modelo son el «Filtro de preénfasis» (al final del transmisor) y el «Filtro de deénfasis» (después del filtro posdetección).
 
 **29. ¿Por qué el prénfasis empeora el canal 1?**
-Mantenemos la misma desviación pico para no cambiar el ancho de banda. Si se suben los canales altos, hay que bajar un poco el total, y el canal 1 queda con menos señal. El prénfasis no quita ruido en total: lo reparte. En Simulink medimos −5.4 / −1.1 / +2.0 dB en los canales 1 / 2 / 3 (la teoría da −5.8 / −1.3 / +2.0). El canal 1 tenía SNR de sobra y el 3 era el que limitaba; la diferencia entre ellos bajó de unos 13 a unos 6 dB.
+Mantenemos la misma desviación pico para no cambiar el ancho de banda. Si se suben los canales altos, hay que bajar un poco el total, y el canal 1 queda con menos señal. El prénfasis no quita ruido en total: lo reparte. En Simulink medimos −5.4 / −1.1 / +2.0 dB en los canales 1 / 2 / 3 (la teoría da −5.8 / −1.3 / +2.0). El canal 1 tenía SNR de sobra y el 3 era el que limitaba; a 25 dB la diferencia entre ellos bajó de 13.9 a 6.3 dB.
 
 **30. ¿Por qué no usaron el prénfasis de 75 µs de la radio FM?**
 En la FM comercial el audio principal está en banda base, donde el ruido crece dentro del propio audio. En nuestro canal 3 el ruido depende sobre todo de la posición de la subportadora, así que dentro del audio es casi plano y un prénfasis por audio casi no ayudaría.
@@ -145,13 +145,13 @@ Por la relación entre el pico y el valor rms. Cada audio se normaliza por su pi
 Uno de los dos no tiene DSP System Toolbox ni Signal Processing Toolbox. Diseñamos los FIR con ventana de Kaiser en `disenar_fir_kaiser.m`, que sube el orden hasta medir 60 dB de rechazo.
 
 **33. ¿Cómo saben que el modelo de Simulink está bien?**
-Escribimos la misma cadena en MATLAB puro y comparamos muestra por muestra: las diferencias fueron menores a 10⁻⁹. También medimos el SDR de los audios recuperados (43 a 54 dB) y comparamos el ruido con la teoría (menos de 1 dB de diferencia).
+Escribimos el transmisor, el canal y el receptor hasta la FI en MATLAB puro y comparamos muestra por muestra con Simulink: las diferencias fueron menores a 10⁻⁹. También medimos el SDR de los audios recuperados (43 a 54 dB) y comparamos el resultado con ruido contra la fórmula del curso: a 25 y 30 dB la diferencia es de 0.4 a 0.8 dB. A 40 dB el audio 1 queda 2.7 dB abajo de la fórmula, porque se acerca a su límite sin ruido (43 dB).
 
 **34. ¿Qué es el SDR que reportan?**
 La potencia del audio original dividida entre la potencia del error, después de alinear el retardo y la ganancia. 50 dB significa que el error es 100 000 veces más pequeño que la señal (en potencia).
 
 **35. ¿Por qué tarda tanto la simulación?**
-La parte de RF va a 48 MHz nominales: un segundo de audio son 48 millones de muestras. En modo acelerado, un segundo de audio tarda unos 4–5 minutos.
+La parte de RF va a 48 MHz nominales: un segundo de audio son 48 millones de muestras. En modo acelerado, 2 s de audio tardaron 283 s (unos 2.5 minutos por segundo de audio) en la computadora donde lo probamos. Por eso la radio guarda cada simulación y no hay que repetirla.
 
 **36. ¿Qué se actualiza cuando cambio la portadora en la GUI?**
 Se recalculan los parámetros: LO, imagen y coeficientes del preselector. La GUI muestra los valores nuevos al instante, y al simular el modelo los usa, porque ningún bloque tiene números fijos.

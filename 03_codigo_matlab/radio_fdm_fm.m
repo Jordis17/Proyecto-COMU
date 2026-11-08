@@ -376,7 +376,7 @@ function radio_fdm_fm()
                 fuente = generar_fuentes(P, cfg.fuente);
                 dlg.Message = sprintf('Simulación %d de %d: %s%s (unos %.0f s).', i, n, ...
                     ternario(isinf(cfg.snr), 'canal ideal', sprintf('(SNR)_C = %g dB', cfg.snr)), ...
-                    ternario(cfg.enf, ', con prénfasis', ''), 270*cfg.T);
+                    ternario(cfg.enf, ', con prénfasis', ''), 145*cfg.T);
                 drawnow;
                 assignin('base', 'P', P);
                 assignin('base', 'fuente', fuente);
