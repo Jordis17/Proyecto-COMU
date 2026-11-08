@@ -8,12 +8,16 @@ function radio_fdm_fm()
 %        simular" ejecuta el modelo Simulink con esos parámetros.
 %     2) AUDIO 1 / 2 / 3: elige qué salida del demultiplexor FDM se grafica y se escucha.
 %        NO vuelve a simular ni toca el LO (la selección ocurre después de la demodulación).
+%   Cada simulación queda guardada: al volver a una combinación ya simulada (ruido,
+%   prénfasis, portadora...) se muestra al instante. "Simular las 4 combinaciones" deja
+%   listas la de canal ideal y la de ruido, cada una sin y con prénfasis.
 %   Todas las frecuencias se muestran en valores NOMINALES (simulado x K): el escalamiento
 %   es transparente para el usuario. Solo usa MATLAB básico (uifigure) + Simulink.
 
     mdl = 'sistema_fdm_fm';
     S = struct();                 % estado: parámetros, fuentes, resultados
     S.P = [];  S.fuente = [];  S.out = [];  S.fuente_sim = [];  S.P_sim = [];
+    S.memo = containers.Map();    % simulaciones ya hechas: se vuelven a mostrar sin simular
 
     %% ---------------- ventana ----------------
     fig = uifigure('Name', 'Radio FM superheterodina - FDM de 3 canales', 'Position', [60 60 1320 780]);
@@ -22,8 +26,8 @@ function radio_fdm_fm()
 
     % ---- panel de controles
     pc = uipanel(g, 'Title', 'Radio');
-    gl = uigridlayout(pc, [19 2]);
-    gl.RowHeight = {150, 22, 22, 22, 22, 22, 22, 10, 22, 28, 10, 22, 22, 22, 45, 22, 30, 30, '1x'};
+    gl = uigridlayout(pc, [20 2]);
+    gl.RowHeight = {150, 22, 22, 22, 22, 22, 22, 10, 22, 28, 10, 22, 22, 22, 45, 22, 30, 30, 30, '1x'};
     gl.ColumnWidth = {150, '1x'};
 
     perilla = uiknob(gl, 'continuous', 'Limits', [9 11], 'Value', 10, ...
@@ -48,10 +52,12 @@ function radio_fdm_fm()
     lbl_sdr.Layout.Row = 10; lbl_sdr.Layout.Column = [1 2];
 
     etiqueta(gl, 12, 'Fuente de audio:');
-    dd_fuente = uidropdown(gl, 'Items', {'demo', 'tonos', 'audio'}, 'Value', 'demo');
+    dd_fuente = uidropdown(gl, 'Items', {'demo', 'tonos', 'audio'}, 'Value', 'demo', ...
+        'ValueChangedFcn', @(~,~) mostrar_guardada());
     dd_fuente.Layout.Row = 12; dd_fuente.Layout.Column = 2;
     etiqueta(gl, 13, 'Duración [s reales]:');
-    ed_T = uieditfield(gl, 'numeric', 'Value', 0.3, 'Limits', [0.02 3]);
+    ed_T = uieditfield(gl, 'numeric', 'Value', 0.3, 'Limits', [0.02 3], ...
+        'ValueChangedFcn', @(~,~) mostrar_guardada());
     ed_T.Layout.Row = 13; ed_T.Layout.Column = 2;
     cb_awgn = uicheckbox(gl, 'Text', 'Canal AWGN', 'Value', false, ...
         'ValueChangedFcn', @(~,~) cambio_ruido());
@@ -63,19 +69,24 @@ function radio_fdm_fm()
         'MinorTicks', 10:1:40, 'Enable', 'off', ...
         'ValueChangingFcn', @(~,ev) mostrar_snr(ev.Value), 'ValueChangedFcn', @(~,~) cambio_ruido());
     sl_snr.Layout.Row = 15; sl_snr.Layout.Column = 2;
-    cb_enf = uicheckbox(gl, 'Text', 'Prénfasis / deénfasis', 'Value', false);
+    cb_enf = uicheckbox(gl, 'Text', 'Prénfasis / deénfasis', 'Value', false, ...
+        'ValueChangedFcn', @(~,~) mostrar_guardada());
     cb_enf.Layout.Row = 16; cb_enf.Layout.Column = [1 2];
 
     bt_sim = uibutton(gl, 'Text', 'Sintonizar y simular', 'FontWeight', 'bold', ...
         'ButtonPushedFcn', @(~,~) simular());
     bt_sim.Layout.Row = 17; bt_sim.Layout.Column = [1 2];
+    bt_4 = uibutton(gl, 'Text', 'Simular las 4 combinaciones', ...
+        'Tooltip', 'Ideal y con ruido, sin y con prénfasis. Después se cambia entre ellas sin simular.', ...
+        'ButtonPushedFcn', @(~,~) simular_cuatro());
+    bt_4.Layout.Row = 18; bt_4.Layout.Column = [1 2];
     bt_rx = uibutton(gl, 'Text', 'Escuchar recuperado', 'ButtonPushedFcn', @(~,~) escuchar(true));
-    bt_rx.Layout.Row = 18; bt_rx.Layout.Column = 1;
+    bt_rx.Layout.Row = 19; bt_rx.Layout.Column = 1;
     bt_tx = uibutton(gl, 'Text', 'Escuchar original', 'ButtonPushedFcn', @(~,~) escuchar(false));
-    bt_tx.Layout.Row = 18; bt_tx.Layout.Column = 2;
+    bt_tx.Layout.Row = 19; bt_tx.Layout.Column = 2;
     lbl_estado = uilabel(gl, 'Text', 'Listo. Elija la portadora y presione "Sintonizar y simular".', ...
         'WordWrap', 'on', 'VerticalAlignment', 'top');
-    lbl_estado.Layout.Row = 19; lbl_estado.Layout.Column = [1 2];
+    lbl_estado.Layout.Row = 20; lbl_estado.Layout.Column = [1 2];
 
     % ---- gráficas
     ga = uigridlayout(g, [2 2]);
@@ -98,9 +109,7 @@ function radio_fdm_fm()
         lbl_fi.Text = sprintf('%.1f MHz', V.fFI_MHz);
         lbl_im.Text = sprintf('%.2f MHz', V.fimagen_MHz);
         lbl_bw.Text = sprintf('%.0f / %.0f kHz', V.df_kHz, V.carson_kHz);
-        if ~isempty(S.out)
-            lbl_estado.Text = 'Parámetros actualizados. Presione "Sintonizar y simular" para ver el efecto.';
-        end
+        if ~isempty(S.out), mostrar_guardada(); end
     end
 
     function mostrar_snr(v)
@@ -112,47 +121,86 @@ function radio_fdm_fm()
         sl_snr.Value = round(sl_snr.Value);
         mostrar_snr(sl_snr.Value);
         sl_snr.Enable = cb_awgn.Value;
-        if ~isempty(S.out)
-            lbl_estado.Text = 'Ruido cambiado. Presione "Sintonizar y simular" para ver el efecto.';
+        mostrar_guardada();
+    end
+
+    function snr = snr_elegida()
+        snr = Inf;  if cb_awgn.Value, snr = sl_snr.Value; end
+    end
+
+    function c = clave(snr, enf)
+        % Identifica una simulación por todo lo que cambia su resultado.
+        c = sprintf('%.1f|%g|%s|%g|%g|%d', perilla.Value, ed_des.Value, dd_fuente.Value, ...
+            ed_T.Value, snr, enf);
+    end
+
+    function mostrar_guardada()
+        % Si esta combinación ya se simuló, la muestra al instante; si no, avisa.
+        if isempty(S.out), return; end
+        c = clave(snr_elegida(), cb_enf.Value);
+        if isKey(S.memo, c)
+            r = S.memo(c);
+            S.out = r.out;  S.P_sim = r.P;  S.fuente_sim = r.fuente;
+            graficar_todo();
+            lbl_estado.Text = ['Resultado guardado (sin volver a simular): ' r.texto];
+        else
+            lbl_estado.Text = ['Esta combinación todavía no se ha simulado. Presione "Sintonizar y simular". ' ...
+                'Las gráficas y el audio siguen siendo los de la simulación anterior.'];
         end
     end
 
     function simular()
-        bt_sim.Enable = 'off';
+        correr({snr_elegida()}, {cb_enf.Value});
+    end
+
+    function simular_cuatro()
+        % Canal ideal y con ruido (el de la barra), cada uno sin y con prénfasis.
+        cb_awgn.Value = true;  sl_snr.Enable = 'on';
+        correr({Inf, Inf, sl_snr.Value, sl_snr.Value}, {false, true, false, true});
+        cb_awgn.Value = false;  sl_snr.Enable = 'off';  cb_enf.Value = false;
+        mostrar_guardada();
+    end
+
+    function correr(snrs, enfs)
+        bt_sim.Enable = 'off';  bt_4.Enable = 'off';
         try
-            T = ed_T.Value;
-            snr = Inf;  if cb_awgn.Value, snr = sl_snr.Value; end
-            fc = perilla.Value;
-            P = params_sistema(fc * 1e6, struct('imprimir', false, 'T_real', T, 'snr_c_dB', snr, ...
-                'desintonia', ed_des.Value * 1e3, 'log_rf_max', 2^18, 'enfasis', cb_enf.Value));
-            rng(1);
-            fuente = generar_fuentes(P, dd_fuente.Value);
-            lbl_estado.Text = sprintf(['Simulando %.2f s reales (%.0f s simulados)... ' ...
-                'En modo acelerado tarda unos %.0f s (más la 1.ª vez, que compila).'], T, P.T_sim, 270*T);
-            drawnow;
+            T = ed_T.Value;  fc = perilla.Value;  n = numel(snrs);
             if exist('modelo_al_dia', 'file'), modelo_al_dia(mdl); end
             load_system(mdl);
-            assignin('base', 'P', P);
-            assignin('base', 'fuente', fuente);
-            try
-                set_param(mdl, 'SimulationMode', 'accelerator');
-                tic; out = sim(mdl);
-            catch
-                set_param(mdl, 'SimulationMode', 'normal');
-                tic; out = sim(mdl);
+            for i = 1:n
+                snr = snrs{i};  enf = enfs{i};
+                P = params_sistema(fc * 1e6, struct('imprimir', false, 'T_real', T, 'snr_c_dB', snr, ...
+                    'desintonia', ed_des.Value * 1e3, 'log_rf_max', 2^18, 'enfasis', enf));
+                rng(1);
+                fuente = generar_fuentes(P, dd_fuente.Value);
+                lbl_estado.Text = sprintf(['Simulando %d de %d (%.2f s reales)... En modo acelerado ' ...
+                    'tarda unos %.0f s cada una (más la 1.ª vez, que compila).'], i, n, T, 270*T);
+                drawnow;
+                assignin('base', 'P', P);
+                assignin('base', 'fuente', fuente);
+                try
+                    set_param(mdl, 'SimulationMode', 'accelerator');
+                    tic; out = sim(mdl);
+                catch
+                    set_param(mdl, 'SimulationMode', 'normal');
+                    tic; out = sim(mdl);
+                end
+                t_sim = toc;
+                pico = max(abs(out.sim_m_n(:)));       % pico de m_n = desviación usada / Df
+                texto = sprintf('f_c = %.1f MHz, LO = %.2f MHz%s%s. Desviación pico usada: %.0f %% de %.0f kHz.', ...
+                    P.vista.fc_MHz, P.vista.fLO_MHz, ternario(isinf(snr), ', canal ideal', sprintf(', (SNR)_C = %g dB', snr)), ...
+                    ternario(P.enfasis, ', con prénfasis', ''), 100*pico, P.vista.df_kHz);
+                S.memo(clave(snr, enf)) = struct('out', out, 'P', P, 'fuente', fuente, 'texto', texto);
+                S.out = out;  S.P_sim = P;  S.fuente_sim = fuente;
             end
-            t_sim = toc;
-            S.out = out;  S.P_sim = P;  S.fuente_sim = fuente;
             graficar_todo();
-            pico = max(abs(out.sim_m_n(:)));       % pico de m_n = desviación usada / Df
-            lbl_estado.Text = sprintf(['Simulación lista en %.1f s. f_c = %.1f MHz, LO = %.2f MHz%s%s. ' ...
-                'Desviación pico usada: %.0f %% de %.0f kHz.'], ...
-                t_sim, P.vista.fc_MHz, P.vista.fLO_MHz, ternario(isinf(snr), ', canal ideal', sprintf(', (SNR)_C = %g dB', snr)), ...
-                ternario(P.enfasis, ', con prénfasis', ''), 100*pico, P.vista.df_kHz);
+            if n == 1
+                lbl_estado.Text = sprintf('Simulación lista en %.1f s. %s', t_sim, texto);
+            end
         catch err
             lbl_estado.Text = ['Error: ' err.message];
         end
-        bt_sim.Enable = 'on';
+        bt_sim.Enable = 'on';  bt_4.Enable = 'on';
     end
 
     function graficar_todo()
