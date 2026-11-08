@@ -124,10 +124,10 @@ function radio_fdm_fm()
     g3b = uigridlayout(g3, [1 2], 'Padding', [0 0 0 0], 'ColumnSpacing', 6);
     g3b.ColumnWidth = {18, '1x'};
     lamp = uilamp(g3b, 'Color', [0.6 0.6 0.6]);
-    lbl_lamp = uilabel(g3b, 'Text', 'Todavía no hay simulación');
+    lbl_lamp = uilabel(g3b, 'Text', 'Sin simular');
 
     % 4) Salida: presintonías de audio, SDR y botones de escucha
-    p4 = uipanel(gc, 'Title', 'Salida: audio de interés (no vuelve a simular)', 'FontWeight', 'bold');
+    p4 = uipanel(gc, 'Title', 'Salida', 'FontWeight', 'bold');
     g4 = uigridlayout(p4, [3 3], 'RowSpacing', 6, 'Padding', [8 6 8 6]);
     g4.RowHeight = {56, 22, 28};
     g4.ColumnWidth = {'1x', '1x', '1x'};
@@ -155,8 +155,8 @@ function radio_fdm_fm()
     bt_stop.Layout.Row = 3; bt_stop.Layout.Column = 3;
 
     % 5) Estado
-    lbl_estado = uilabel(gc, 'Text', ['Listo. Mueva el dial: el plan de frecuencias se actualiza solo. ' ...
-        'Luego presione "Sintonizar y simular".'], 'WordWrap', 'on', 'VerticalAlignment', 'top');
+    lbl_estado = uilabel(gc, 'Text', 'Elija la portadora y presione "Sintonizar y simular".', ...
+        'WordWrap', 'on', 'VerticalAlignment', 'top', 'FontColor', [0.35 0.35 0.35]);
 
     %% ---------------- gráficas en pestañas ----------------
     tg = uitabgroup(g);
@@ -170,13 +170,13 @@ function radio_fdm_fm()
     controles = {bt_menos, bt_mas, dial, ed_des, dd_fuente, ed_T, cb_awgn, sl_snr, cb_enf, ...
         bt_sim, bt_4, bg, bt_rx, bt_tx, bt_stop};
 
-    marcador(ax_rf,  'Espectro RF recibido');
+    marcador(ax_rf,  'Espectro de RF');
     marcador(ax_mez, 'Salida del mezclador');
-    marcador(ax_fi,  'FI filtrada');
-    marcador(ax_mux, 'Multiplex FDM recuperado');
-    marcador(ax_sdr, 'SDR de los tres audios');
-    marcador(ax_t,   'Audio elegido en el tiempo');
-    marcador(ax_af,  'Audio elegido en frecuencia');
+    marcador(ax_fi,  'FI');
+    marcador(ax_mux, 'Multiplex FDM');
+    marcador(ax_sdr, 'SDR por audio');
+    marcador(ax_t,   'Audio en el tiempo');
+    marcador(ax_af,  'Audio en frecuencia');
     iniciar_plan();
     cambio_sintonia();
 
@@ -235,15 +235,13 @@ function radio_fdm_fm()
         H.t_fi = text(ax, 0, 0, '', 'Color', C.fi);
         H.t_su = text(ax, 0, 0, '', 'Color', C.suma);
         set([H.t_rf H.t_lo H.t_im H.t_fi H.t_su], 'HorizontalAlignment', 'center', ...
-            'VerticalAlignment', 'bottom', 'FontWeight', 'bold');
+            'VerticalAlignment', 'bottom', 'FontSize', 9);
         hold(ax, 'off');
         xlim(ax, [0 22]);  ylim(ax, [0 1.75]);  ax.YTick = [];  ax.XTick = 0:2:22;
         grid(ax, 'on');  box(ax, 'on');
         xlabel(ax, 'f nominal [MHz]');
-        legend(ax, [H.rf H.pre H.lo H.im H.dif H.fib H.suma], {'señal FM (ancho de Carson)', ...
-            'paso de la sección de RF', 'oscilador local', 'frecuencia imagen', ...
-            'f_c − f_{LO} (va a la FI)', 'paso de la sección de FI', 'f_c + f_{LO} (se elimina)'}, ...
-            'Location', 'northoutside', 'NumColumns', 3, 'FontSize', 8);
+        leyenda(ax, [H.pre H.fib], {'paso de la sección de RF', 'paso de la sección de FI'}, 'northeast');
+        estilo(ax);
     end
 
     function actualizar_plan(fc, des)
@@ -263,14 +261,13 @@ function radio_fdm_fm()
         set(H.t_fi, 'Position', [fdi 0.94 0], 'String', sprintf('f_c−f_{LO} %.2f', fdi));
         set(H.t_su, 'Position', [fsu 0.82 0], 'String', sprintf('suma %.2f', fsu));
         if abs(fdi - FI) > HW
-            title(ax_plan, sprintf(['Desintonía de %+.0f kHz: la señal cae en %.2f MHz, ' ...
-                'fuera del paso de FI'], des*1e3, fdi), 'Color', [0.80 0 0]);
+            title(ax_plan, sprintf('Desintonía de %+.0f kHz: la señal queda fuera de la FI', des*1e3), ...
+                'Color', [0.80 0 0]);
         elseif abs(fdi - FI) + b2 > HW
-            title(ax_plan, sprintf(['Desintonía de %+.0f kHz: parte del ancho de Carson ' ...
-                'queda fuera del paso de FI'], des*1e3), 'Color', [0.85 0.45 0]);
+            title(ax_plan, sprintf('Desintonía de %+.0f kHz: la señal se sale en parte de la FI', des*1e3), ...
+                'Color', [0.85 0.45 0]);
         else
-            title(ax_plan, sprintf('Plan de frecuencias (en vivo): LO = f_c − FI = %.2f MHz', flo), ...
-                'Color', [0 0 0]);
+            title(ax_plan, 'Plan de frecuencias', 'Color', [0 0 0]);
         end
     end
 
@@ -303,13 +300,12 @@ function radio_fdm_fm()
         if ~isempty(S.R)
             c = clave_de(cfg_actual());
             if strcmp(c, S.clave_mostrada)
-                estado(['Mostrando: ' S.texto_mostrado]);
+                estado(S.texto_mostrado);
             elseif isKey(S.memo, c)
                 mostrar_resultado(c);
-                estado(['Resultado guardado (sin volver a simular): ' S.texto_mostrado]);
+                estado([S.texto_mostrado ' (guardado)']);
             else
-                estado(['Esta combinación todavía no se ha simulado. Presione "Sintonizar y simular". ' ...
-                    'Las gráficas y el audio siguen siendo los de la simulación anterior.']);
+                estado('Falta simular esta combinación. Se sigue mostrando la anterior.');
             end
         end
         actualizar_lampara();
@@ -317,11 +313,11 @@ function radio_fdm_fm()
 
     function actualizar_lampara()
         if isempty(S.R)
-            lamp.Color = [0.6 0.6 0.6];   lbl_lamp.Text = 'Todavía no hay simulación';
+            lamp.Color = [0.6 0.6 0.6];   lbl_lamp.Text = 'Sin simular';
         elseif strcmp(clave_de(cfg_actual()), S.clave_mostrada)
-            lamp.Color = [0.20 0.75 0.20]; lbl_lamp.Text = 'Las gráficas corresponden a los controles';
+            lamp.Color = [0.20 0.75 0.20]; lbl_lamp.Text = 'Gráficas al día';
         else
-            lamp.Color = [0.95 0.65 0.10]; lbl_lamp.Text = 'Cambió un parámetro: falta simular';
+            lamp.Color = [0.95 0.65 0.10]; lbl_lamp.Text = 'Falta simular';
         end
     end
 
@@ -363,10 +359,9 @@ function radio_fdm_fm()
                     'enfasis', cfg.enf));
                 rng(1);
                 fuente = generar_fuentes(P, cfg.fuente);
-                dlg.Message = sprintf(['Simulación %d de %d: %s%s.\n%.2f s reales = %.0f s simulados. ' ...
-                    'En modo acelerado tarda unos %.0f s (más la primera vez, que compila).'], i, n, ...
+                dlg.Message = sprintf('Simulación %d de %d: %s%s (unos %.0f s).', i, n, ...
                     ternario(isinf(cfg.snr), 'canal ideal', sprintf('(SNR)_C = %g dB', cfg.snr)), ...
-                    ternario(cfg.enf, ', con prénfasis', ''), cfg.T, P.T_sim, 270*cfg.T);
+                    ternario(cfg.enf, ', con prénfasis', ''), 270*cfg.T);
                 drawnow;
                 assignin('base', 'P', P);
                 assignin('base', 'fuente', fuente);
@@ -380,10 +375,9 @@ function radio_fdm_fm()
                 t_sim = toc;
                 R = reducir(out);
                 sdr = sdr_tres(R, P, fuente);
-                texto = sprintf('f_c = %.1f MHz, LO = %.2f MHz%s%s. Desviación pico usada: %.0f %% de %.0f kHz.', ...
-                    P.vista.fc_MHz, P.vista.fLO_MHz, ...
-                    ternario(isinf(cfg.snr), ', canal ideal', sprintf(', (SNR)_C = %g dB', cfg.snr)), ...
-                    ternario(cfg.enf, ', con prénfasis', ''), 100*R.pico, P.vista.df_kHz);
+                texto = sprintf('%.1f MHz, %s%s.', P.vista.fc_MHz, ...
+                    ternario(isinf(cfg.snr), 'canal ideal', sprintf('(SNR)_C = %g dB', cfg.snr)), ...
+                    ternario(cfg.enf, ', con prénfasis', ''));
                 c = clave_de(cfg);
                 S.memo(c) = struct('R', R, 'P', P, 'fuente', fuente, 'sdr', sdr, 'texto', texto);
                 hechas = hechas + 1;
@@ -399,10 +393,9 @@ function radio_fdm_fm()
             if isKey(S.memo, c_act), mostrar_resultado(c_act); else, mostrar_resultado(c); end
             if ~fallo
                 if n == 1
-                    estado(sprintf('Simulación lista en %.1f s. %s', t_sim, texto));
+                    estado(sprintf('%s Simulado en %.0f s.', texto, t_sim));
                 else
-                    estado(sprintf(['Listas %d de %d simulaciones. Cambie las casillas de ruido y ' ...
-                        'prénfasis para verlas sin volver a simular.'], hechas, n));
+                    estado(sprintf('Listas %d de %d. Cambie ruido y prénfasis para verlas.', hechas, n));
                 end
             end
         end
@@ -432,13 +425,11 @@ function radio_fdm_fm()
         cla(ax_rf, 'reset');  hold(ax_rf, 'on');
         h1 = plot(ax_rf, f/1e6, D, 'Color', C.rf);
         h2 = plot(ax_rf, f/1e6, resp_db(P.h.presel, P.fs_rf, f/K), '--', 'Color', C.filtro, 'LineWidth', 1.2);
-        h3 = plot(ax_rf, P.fc_rx*K/1e6*[1 1], yl, '-.', 'Color', C.lo, 'LineWidth', 1.2);
         h4 = plot(ax_rf, P.f_imagen*K/1e6*[1 1], yl, ':', 'Color', C.im, 'LineWidth', 1.5);
         hold(ax_rf, 'off');  grid(ax_rf, 'on');  ylim(ax_rf, yl);  xlim(ax_rf, fc + [-4.5 2]);
         xlabel(ax_rf, 'f nominal [MHz]');  ylabel(ax_rf, 'DEP [dB]');
-        legend(ax_rf, [h1 h2 h3 h4], {'señal recibida', '|H| sección de RF', 'sintonía del RX', 'imagen'}, ...
-            'Location', 'northwest');
-        title(ax_rf, sprintf('Espectro RF recibido (portadora %.1f MHz)', fc));
+        leyenda(ax_rf, [h1 h2 h4], {'señal recibida', 'sección de RF', 'imagen'}, 'northwest');
+        title(ax_rf, 'Espectro de RF');  estilo(ax_rf);
 
         % salida del mezclador y |H| del pasabajos de la sección de FI (quita el producto suma)
         [f, D] = graficar_espectro(R.mezcla, P.fs_rf, K, struct('nfft', 2^14));
@@ -449,10 +440,8 @@ function radio_fdm_fm()
         h4 = plot(ax_mez, P.f_suma*K/1e6*[1 1], yl, '--', 'Color', C.suma, 'LineWidth', 1.2);
         hold(ax_mez, 'off');  grid(ax_mez, 'on');  ylim(ax_mez, yl);  xlim(ax_mez, [0 24]);
         xlabel(ax_mez, 'f nominal [MHz]');  ylabel(ax_mez, 'DEP [dB]');
-        legend(ax_mez, [h1 h2 h3 h4], {'salida del mezclador', '|H| pasabajos de la sección de FI', ...
-            'FI = 1.7 MHz', 'f_c + f_{LO} (producto suma)'}, 'Location', 'north');
-        title(ax_mez, sprintf('Mezclador: LO = %.2f MHz, |f_c − f_{LO}| = %.2f MHz', ...
-            P.vista.fLO_MHz, abs(P.fc - P.f_LO)*K/1e6));
+        leyenda(ax_mez, [h2 h3 h4], {'pasabajos de FI', 'FI', 'producto suma'}, 'north');
+        title(ax_mez, 'Salida del mezclador');  estilo(ax_mez);
 
         % FI filtrada, |H| del pasabanda de FI y ancho de Carson
         [f, D] = graficar_espectro(R.fi, P.fs_fi, K, struct('nfft', 2^13));
@@ -463,16 +452,16 @@ function radio_fdm_fm()
         h3 = plot(ax_fi, [fFI-bc fFI-bc NaN fFI+bc fFI+bc], [yl NaN yl], ':', 'Color', [0 0 0], 'LineWidth', 1.2);
         hold(ax_fi, 'off');  grid(ax_fi, 'on');  ylim(ax_fi, yl);  xlim(ax_fi, fFI + [-0.7 0.7]);
         xlabel(ax_fi, 'f nominal [MHz]');  ylabel(ax_fi, 'DEP [dB]');
-        legend(ax_fi, [h1 h2 h3], {'FI filtrada', '|H| pasabanda de FI', 'ancho de Carson'}, 'Location', 'south');
+        leyenda(ax_fi, [h2 h3], {'pasabanda de FI', 'ancho de Carson'}, 'south');
         if isinf(P.snr_c_dB)
             % ancho que contiene el 99 % de la potencia, dentro del paso de FI
             v = abs(f - P.f_FI*K) <= P.HW*K;  p = 10.^(D(v)/10);  cp = cumsum(p) / sum(p);  fv = f(v);
             B99 = (fv(find(cp >= 0.995, 1)) - fv(find(cp >= 0.005, 1))) / 1e3;
-            title(ax_fi, sprintf('FI en %.1f MHz: ancho medido (99 %%) = %.0f kHz, Carson = %.0f kHz', ...
-                fFI, B99, 2*bc*1e3));
+            title(ax_fi, sprintf('FI: 99 %% de la potencia en %.0f kHz', B99));
         else
-            title(ax_fi, sprintf('FI en %.1f MHz con ruido (Carson = %.0f kHz)', fFI, 2*bc*1e3));
+            title(ax_fi, 'FI con ruido');
         end
+        estilo(ax_fi);
     end
 
     function graficar_canal()
@@ -495,9 +484,8 @@ function radio_fdm_fm()
         h2 = plot(ax_mux, f/1e3, D2, 'k');
         hold(ax_mux, 'off');  grid(ax_mux, 'on');  ylim(ax_mux, [-100 15]);  xlim(ax_mux, [0 240]);
         xlabel(ax_mux, 'f nominal [kHz]');  ylabel(ax_mux, 'DEP [dB]');
-        legend(ax_mux, [h1 h2], {'multiplex transmitido m(t)', 'multiplex recuperado'}, 'Location', 'northeast');
-        b = (P.f_sc(k) + [-1 1]*P.Wa) * K / 1e3;
-        title(ax_mux, sprintf('Multiplex FDM a la salida del demodulador (audio %d: %.0f a %.0f kHz)', k, b));
+        leyenda(ax_mux, [h1 h2], {'transmitido', 'recuperado'}, 'northeast');
+        title(ax_mux, 'Multiplex FDM');  estilo(ax_mux);
 
         % SDR de los tres audios (separación de canales); con ruido, también la teoría
         sdr = S.sdr;  ymax = max([70, sdr + 8]);
@@ -507,24 +495,24 @@ function radio_fdm_fm()
         hb = bar(ax_sdr, 1:3, sdr, 0.6, 'FaceColor', 'flat', 'EdgeColor', 'none');
         hb.CData = col;
         text(ax_sdr, 1:3, sdr, compose('%.1f dB', sdr), 'HorizontalAlignment', 'center', ...
-            'VerticalAlignment', 'bottom', 'FontWeight', 'bold');
+            'VerticalAlignment', 'bottom', 'FontSize', 9);
         if isinf(P.snr_c_dB)
-            title(ax_sdr, 'Separación de los tres audios (canal ideal)');
+            title(ax_sdr, 'SDR por audio (canal ideal)');
         else
             % (SNR)_k = (SNR)_C W Df^2 Px / [18 Wa (f_k^2 + Wa^2/3)]  (la misma de analisis_awgn)
             Px = mean(S.fuente_sim.X.^2, 2).';
             teo = P.snr_c_dB + 10*log10(P.W * P.df^2 * Px ./ (18 * P.Wa * (P.f_sc.^2 + P.Wa^2/3)));
             if P.enfasis, teo = teo + P.enf.mejora_dB; end
             ht = plot(ax_sdr, [1:3; 1:3] + [-0.35; 0.35], [teo; teo], 'k--', 'LineWidth', 1.5);
-            legend(ax_sdr, ht(1), {'teoría (válida sobre el umbral)'}, 'Location', 'northeast');
+            leyenda(ax_sdr, ht(1), {'teoría'}, 'northeast');
             ymax = max([ymax, teo + 8]);
-            title(ax_sdr, sprintf('(SNR)_C = %g dB, CNR en B_T = %.1f dB%s', P.snr_c_dB, P.cnr_BT_dB, ...
-                ternario(P.cnr_BT_dB < 14, ': zona del umbral FM', '')));
+            title(ax_sdr, sprintf('SDR por audio, (SNR)_C = %g dB%s', P.snr_c_dB, ...
+                ternario(P.cnr_BT_dB < 14, ' (bajo el umbral)', '')));
         end
         hold(ax_sdr, 'off');  grid(ax_sdr, 'on');
         ax_sdr.XTick = 1:3;  ax_sdr.XTickLabel = {'Audio 1', 'Audio 2', 'Audio 3'};
         xlim(ax_sdr, [0.4 3.6]);  ylim(ax_sdr, [min(0, min(sdr) - 5), ymax]);
-        ylabel(ax_sdr, 'SDR [dB]');
+        ylabel(ax_sdr, 'SDR [dB]');  estilo(ax_sdr);
 
         % audio elegido: original y recuperado en el tiempo (retardo descontado)
         x = S.fuente_sim.X(k,:);  y = R.y{k};
@@ -536,8 +524,8 @@ function radio_fdm_fm()
         plot(ax_t, tr(v), x(v), 'Color', C.orig, 'LineWidth', 2.5);
         plot(ax_t, ty(vy), y(vy), 'Color', C.canal(k,:));
         hold(ax_t, 'off');  grid(ax_t, 'on');
-        xlabel(ax_t, 'tiempo real [ms]');  legend(ax_t, {'original', 'recuperado'}, 'Location', 'northeast');
-        title(ax_t, sprintf('Audio %d en el tiempo (retardo del sistema descontado)', k));
+        xlabel(ax_t, 'tiempo [ms]');  leyenda(ax_t, [], {'original', 'recuperado'}, 'northeast');
+        title(ax_t, sprintf('Audio %d en el tiempo', k));  estilo(ax_t);
 
         % audio elegido en frecuencia
         [f, Dx] = graficar_espectro(x, P.fs_a, K, struct('nfft', 1024));
@@ -548,8 +536,8 @@ function radio_fdm_fm()
         plot(ax_af, P.Wa*K/1e3*[1 1], [-90 5], 'k:', 'LineWidth', 1.2);
         hold(ax_af, 'off');  grid(ax_af, 'on');  xlim(ax_af, [0 24]);  ylim(ax_af, [-90 5]);
         xlabel(ax_af, 'f nominal [kHz]');  ylabel(ax_af, 'DEP [dB]');
-        legend(ax_af, {'original', 'recuperado', 'W_a = 15 kHz'}, 'Location', 'northeast');
-        title(ax_af, sprintf('Audio %d en frecuencia', k));
+        leyenda(ax_af, [], {'original', 'recuperado'}, 'northeast');
+        title(ax_af, sprintf('Audio %d en frecuencia', k));  estilo(ax_af);
 
         % texto del SDR
         lbl_sdr.Text = sprintf('SDR del audio %d: %.1f dB', k, sdr(k));
@@ -640,6 +628,21 @@ function Hdb = resp_db(h, fs, f)
     Hdb = Hdb - max(Hdb);
 end
 
+function leyenda(ax, h, textos, lugar)
+% Leyenda pequeña y sin recuadro, igual en todas las gráficas.
+    if isempty(h)
+        legend(ax, textos, 'Location', lugar, 'Box', 'off', 'FontSize', 8);
+    else
+        legend(ax, h, textos, 'Location', lugar, 'Box', 'off', 'FontSize', 8);
+    end
+end
+
+function estilo(ax)
+% Aspecto común: letra pequeña, títulos sin negrita y cuadrícula suave.
+    ax.FontSize = 9;  ax.TitleFontWeight = 'normal';
+    ax.GridAlpha = 0.12;  box(ax, 'on');  grid(ax, 'on');
+end
+
 function poner_caja(h, centro, medio, alto)
     set(h, 'XData', centro + medio*[-1 1 1 -1], 'YData', [0 0 alto alto]);
 end
@@ -647,10 +650,10 @@ end
 function marcador(ax, titulo)
 % Eje vacío con una indicación, antes de la primera simulación.
     cla(ax, 'reset');
-    title(ax, titulo);
+    title(ax, titulo, 'FontWeight', 'normal');
     ax.XTick = [];  ax.YTick = [];  box(ax, 'on');
-    text(ax, 0.5, 0.5, 'Presione "Sintonizar y simular"', 'Units', 'normalized', ...
-        'HorizontalAlignment', 'center', 'Color', [0.55 0.55 0.55], 'FontSize', 12);
+    text(ax, 0.5, 0.5, 'Sin simular', 'Units', 'normalized', ...
+        'HorizontalAlignment', 'center', 'Color', [0.6 0.6 0.6], 'FontSize', 11);
 end
 
 function l = par(gl, fila, col, texto)
