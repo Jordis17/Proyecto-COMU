@@ -19,22 +19,26 @@ señal de FI → Limitador → Detector de pendiente (derivador) → Detector de
 
 **Por qué el limitador es imprescindible.** Sin él, la salida es amplitud × frecuencia. El ruido de amplitud se multiplica por toda la FI (1.7 MHz) y tapa la señal: a 40 dB de (SNR)_C, el SDR cae a 5 dB.
 
-## Qué esperar (Python, `04_verificacion_python/comparar_demoduladores.py`)
+## Resultados en Simulink (MATLAB R2026a)
 
-| (SNR)_C | Discriminador | PLL (en Simulink) |
+**Canal ideal** (`graficas_sistema`): SDR = **43.3 / 52.2 / 54.4 dB**. Los audios recuperados se superponen con los originales (`fig5`).
+
+**Canal AWGN** (`analisis_awgn`, SDR en dB, sin preénfasis), comparado con el PLL:
+
+| (SNR)_C | Discriminador | PLL |
 |---|---|---|
-| Canal ideal | ≈ 41 / 45 / 44 dB | 47.6 / 38.7 / 34.0 dB |
-| 30 dB | ≈ 31 / 24 / 19 | 31.7 / 21.1 / 17.4 |
-| 25 dB | ≈ 27 / 19 / 14 | 26.7 / 16.2 / 12.6 |
-| 20 dB | ≈ 18 / 13 / 9 | 21.6 / 11.3 / 8.0 |
-| 16 dB | ≈ 4 / 3 / 3 | 16.7 / 7.3 / 4.7 |
+| Canal ideal | 43.9 / 52.6 / 55.1 | 47.4 / 38.8 / 33.9 |
+| 40 dB | 39.7 / 31.2 / 27.6 | 40.7 / 30.5 / 26.6 |
+| 30 dB | 31.6 / 21.3 / 17.7 | 31.7 / 21.1 / 17.4 |
+| 25 dB | 26.7 / 16.3 / 12.8 | 26.7 / 16.2 / 12.6 |
+| 20 dB | 18.4 / 10.9 / 8.0 | 21.6 / 11.3 / 8.0 |
+| 18 dB | 10.3 / 7.1 / 5.4 | **19.5 / 9.4 / 6.3** |
+| 16 dB | 3.9 / 2.9 / 2.4 | **16.7 / 7.3 / 4.7** |
 
-Lo que se espera:
-- **Canal ideal:** un poco mejor que el PLL en los canales 2 y 3.
-- **Ruido moderado:** igual que el PLL.
-- **Cerca del umbral:** el discriminador se cae antes; el PLL es claramente mejor.
-
-En Simulink los números pueden cambiar un poco.
+- **Canal ideal:** el discriminador es mejor en los canales 2 y 3 (52–55 dB contra 34–39 dB). El PLL es algo mejor en el canal 1.
+- **Ruido moderado (25–40 dB):** son iguales; los dos siguen la teoría de FM.
+- **Cerca del umbral (16–20 dB):** el PLL es claramente mejor. El discriminador entra en umbral antes.
+- **Preénfasis:** funciona igual que en las otras versiones. Con canal ideal no cambia nada (44.8 / 55.9 / 58.5 dB); con ruido, el canal 3 sube unos 2 dB y el canal 1 baja unos 5 dB.
 
 ## Cómo probarla
 
