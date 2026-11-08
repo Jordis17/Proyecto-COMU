@@ -4,10 +4,12 @@
 
 **Pantalla** es lo que se muestra mientras se habla.
 
-**Números:**
-- **Se dice:** el razonamiento y la cifra que decide.
-- **Se muestra:** los demás números, en la tabla o figura que esté en pantalla.
-- Todos salen de `decisiones_cuantitativas.md`. Si el profesor pregunta por uno que no se dijo, está ahí.
+**Qué se muestra:** solo el propio proyecto, sin presentación.
+- **`main`:** imprime en la consola la tabla de diseño, con cada frecuencia en su valor real y simulado, y abre la radio.
+- **La radio.**
+- **El modelo `sistema_fdm_fm.slx`.**
+
+Se dice el razonamiento y la cifra que decide. Los demás números están en la consola o en la radio, y todos tienen su origen en `decisiones_cuantitativas.md` por si el profesor pregunta.
 
 Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radio queda en 10.5–11 minutos. Si al ensayar se pasan de 11, acorten el párrafo del limitador (sección 5) y el del retardo (sección 4).
 
@@ -27,25 +29,25 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 ### Escalamiento · Abner
 
-**Pantalla:** `figuras_video/tabla_escalamiento.png` (compara la tabla del enunciado con la nuestra).
+**Pantalla:** consola de `main`, tabla «PARÁMETROS DEL SISTEMA (K = 100)»: columna del valor real y columna del simulado.
 
 > Sí. El enunciado pide simular con las frecuencias escaladas y da una tabla de referencia. Cuando revisamos esa tabla vimos que bajaba la portadora y la FI, pero dejaba igual el ancho del multiplex. Hicimos el cálculo con nuestra señal FM y, con esos valores, el espectro quedaba tan ancho comparado con la portadora que llegaba a cruzar el cero. Además, la FI quedaba por debajo del propio mensaje.
 >
-> El mismo enunciado dice que hay que mantener las proporciones, así que decidimos dividir todas las frecuencias del sistema entre 100: el audio, las subportadoras, la desviación, la portadora y la FI. Así las relaciones entre frecuencias son las mismas del sistema real, y en la radio siempre se muestran los valores reales.
+> El mismo enunciado dice que hay que mantener las proporciones, así que decidimos dividir todas las frecuencias del sistema entre 100: el audio, las subportadoras, la desviación, la portadora y la FI. Así las relaciones entre frecuencias son las mismas del sistema real. En la consola se ve: el audio de 15 kHz queda en 150 Hz, la portadora de 10 MHz en 100 kHz y la FI en 17 kHz. Las muestras del audio no cambian; solo se leen 100 veces más despacio, y para escucharlo se reproducen otra vez a 48 kHz. En la radio siempre se muestran los valores reales.
 
 ### Muestreo · Jordi
 
-**Pantalla:** salida del mezclador en la radio; luego `figuras_video/tabla_muestreo.png`.
+**Pantalla:** la radio a 11 MHz, plan de frecuencias y salida del mezclador (producto suma); luego la consola de `main` (filas «Producto suma» y «f_s RF»).
 
 > Con las frecuencias ya escaladas había que definir el muestreo. El enunciado recomienda trabajar entre 5 y 10 veces el ancho de banda. Cuando revisamos etapa por etapa, vimos que en una señal pasabanda lo que importa es la frecuencia más alta que aparece, y que después del mezclador esa regla no alcanza. El mezclador genera la suma de la portadora y el oscilador local, que llega a unos 20 MHz. Para no tener aliasing hay que muestrear a más del doble, así que en esa parte usamos 48 MHz.
 >
-> Como no tenía sentido simular todo a 48 MHz, cada etapa trabaja a la frecuencia de muestreo que necesita. En la tabla se ven los valores de cada una.
+> Como no tenía sentido simular todo a 48 MHz, cada etapa trabaja a la frecuencia de muestreo que necesita. En la consola se ven los valores de cada una.
 
 ---
 
 ## 3. Transmisor (2:00–3:15) · Abner
 
-**Pantalla:** espectro del multiplex (`03_codigo_matlab/figuras/fig2_multiplex.png`); luego `figuras_video/tabla_desviacion.png`.
+**Pantalla:** la radio, pestaña «Demultiplexación y audio» (multiplex con las tres bandas); luego el panel de sintonía, que dice «Δf / B_T: 150 / 530 kHz», y la gráfica de FI con las líneas de Carson.
 
 > En el transmisor, lo primero era repartir los tres audios dentro de los 120 kHz. Analizamos dos opciones, DSB-SC y SSB. SSB usa menos ancho de banda, pero un audio real tiene contenido casi desde 0 Hz, y para quedarse con una sola banda lateral haría falta un filtro casi ideal. Como con DSB-SC los tres canales cabían, con bandas de guarda entre ellos y usando cerca de tres cuartas partes del ancho disponible, nos quedamos con DSB-SC.
 >
@@ -55,7 +57,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 ## 4. Receptor (3:15–4:30) · Jordi
 
-**Pantalla:** pestaña «Receptor superheterodino» de la radio.
+**Pantalla:** pestaña «Receptor superheterodino» de la radio; para el retardo, la consola de `main` (ganancias si no se compensara: +0.09 / −0.87 / −0.65).
 
 > Con el transmisor listo, faltaba ver que el receptor pudiera recuperar la señal. El oscilador local se calcula solo a partir de la portadora: es la portadora menos 1.7 MHz. Lo pusimos por debajo de la portadora porque, si lo poníamos por encima, la suma del mezclador ya no cabía en los 48 MHz de muestreo.
 >
@@ -67,7 +69,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 ## 5. Demodulador (4:30–6:00) · Abner
 
-**Pantalla:** `figuras_video/comparacion_demoduladores.png`; luego «Demodulador FM» en el `.slx`.
+**Pantalla:** «Demodulador FM» en el `.slx` (limitador, detector de pendiente, detector de envolvente).
 
 > Para demodular la FM probamos tres opciones en el mismo modelo y con el mismo ruido: un detector de cuadratura, un PLL y el discriminador. Con ruido moderado, los tres dieron prácticamente lo mismo, porque ahí lo que limita es el ruido. Las diferencias aparecieron en los extremos. Sin ruido, el detector de cuadratura dio la salida más limpia, y cerca del umbral el PLL aguantó un poco más.
 >
@@ -97,7 +99,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 ## 7. Ruido y prénfasis (7:45–9:30) · Abner
 
-**Pantalla:** `fig_awgn.png`; luego `figuras_video/prenfasis_f0.png`.
+**Pantalla:** la radio con la fuente «Ruido de 0.3 a 15 kHz» y la barra en 25 dB. Primero sin prénfasis y después con prénfasis (ya simulados con «Simular las 4 combinaciones»). La gráfica «SDR por audio» muestra los tres audios y la teoría.
 
 > Después agregamos el canal AWGN para ver cómo se comportaba el sistema cuando ya no era un canal ideal. Los resultados siguieron la tendencia que da la teoría del curso, pero al acercarnos al umbral de la FM la calidad empezó a caer bastante rápido.
 >
@@ -109,7 +111,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 ## 8. Cierre (9:30–10:00) · Jordi
 
-**Pantalla:** `figuras_video/tabla_resumen.png`.
+**Pantalla:** la radio o el nivel principal del modelo.
 
 > En general, logramos integrar todo lo que pedía el proyecto: el FDM, la FM, el receptor superheterodino y la radio. Lo que más trabajo nos dio fue que todas las etapas fueran compatibles entre sí, y para eso tuvimos que ir probando y corrigiendo varias decisiones.
 >
@@ -119,16 +121,16 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 ## Antes de grabar
 
-- [ ] Presentación lista: `02_diseno/presentacion_video.pptx` tiene las figuras y tablas en el orden del guion, y el texto de cada parte en las notas del presentador. Falta pegar en la diapositiva 2 una captura del nivel principal del `.slx`.
-- [ ] Figuras a mano:
-  - `03_codigo_matlab/figuras/` (las de `graficas_sistema`);
-  - `fig_awgn.png` (de `analisis_awgn`);
-  - `02_diseno/figuras_video/`.
-- [ ] Las tablas para mostrar están en `02_diseno/figuras_video/` (`tabla_*.png`); se regeneran con `python3 04_verificacion_python/tablas_video.py`. Los números que no se dicen tienen que verse ahí.
-- [ ] Simular antes en la radio («Simular las 4 combinaciones») para no esperar en la grabación.
-- [ ] Para **mostrar espectros** usen la fuente «Arpegio, sirena y pitidos»: el espectro de RF y el mezclador guardan solo el final de la señal, y con las grabaciones ese final es silencio. Para **escuchar** usen «Grabaciones (WAV)».
+- [ ] Correr `main` y dejar la consola visible: ahí está la tabla de diseño.
+- [ ] En la radio, simular antes lo que se va a mostrar, para no esperar en la grabación:
+  - **Grabaciones (WAV)**, canal ideal, 10 MHz: para escuchar (sección 6);
+  - **Ruido de 0.3 a 15 kHz**, 25 dB, con «Simular las 4 combinaciones»: para ruido y prénfasis (sección 7);
+  - **Arpegio, sirena y pitidos**, canal ideal, 11 MHz: para los espectros del receptor (secciones 2 y 4); con las grabaciones, el espectro de RF muestra el silencio del final.
+- [ ] Tener abierto `sistema_fdm_fm.slx` (secciones 1 y 5).
+- [ ] Al grabar, pasar entre la consola, la radio y Simulink con Alt + Tab.
+- [ ] Los números de la sección 7 se leen en la radio. Pueden diferir unas décimas de los del guion, porque dependen de la duración elegida. Digan los que aparezcan en pantalla.
 - [ ] Ensayar con cronómetro. El máximo es 12 min.
-- [ ] Cada uno debe poder explicar todas las partes y responder por los números de la tabla, aunque no los diga.
+- [ ] Cada uno debe poder explicar todas las partes.
 
 ## Qué se probó y qué se calculó (por si el profesor pregunta)
 
