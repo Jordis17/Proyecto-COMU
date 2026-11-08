@@ -6,7 +6,7 @@ Probamos tres formas de demodular la FM, con la misma señal (multiplex de 3 can
 
 | Demodulador | Cómo funciona | En el curso / bibliografía |
 |---|---|---|
-| **Detector de cuadratura** (el del modelo) | Separa la FI en I y Q y mide cuánto gira la fase entre una muestra y la siguiente | Tomasi: demodulador de FM en cuadratura. Es la forma digital de f_i = (1/2π)·dφ/dt |
+| **Detector de cuadratura** (respaldo, no se entrega) | Separa la FI en I y Q y mide cuánto gira la fase entre una muestra y la siguiente | Tomasi: demodulador de FM en cuadratura. Es la forma digital de f_i = (1/2π)·dφ/dt |
 | **PLL** | Detector de fase (multiplicador) → filtro de lazo PI → VCO. La salida del filtro de lazo es el mensaje. f_n = 200 kHz, ζ = 0.707 | Diap. 347–354 |
 | **Discriminador** | Derivador (detector de pendiente) → detector de envolvente. La amplitud se normaliza para hacer el papel del limitador | Diap. 342–345, 375 |
 
@@ -35,7 +35,7 @@ Probamos tres formas de demodular la FM, con la misma señal (multiplex de 3 can
 | 16 dB | 11.9 / 6.6 / 4.4 | **16.7 / 7.3 / 4.7** | 3.9 / 2.9 / 2.4 |
 | 14 dB | 4.1 / 2.7 / 2.1 | **9.6 / 4.8 / 3.0** | 1.3 / 0.9 / 0.9 |
 
-Cada demodulador está en su rama: cuadratura en `claude/affectionate-bardeen-qmc9v9`, PLL en `claude/version-pll` y discriminador en `claude/version-discriminador`. En Simulink, el discriminador (con el limitador que normaliza la amplitud y tiene un mínimo de 0.3) salió mejor que en la prueba de Python con canal ideal y se degrada de forma gradual cerca del umbral.
+Cada demodulador está en su rama: discriminador en la rama principal (`claude/affectionate-bardeen-qmc9v9`) y en `claude/version-discriminador`, PLL en `claude/version-pll` y cuadratura en `claude/version-cuadratura`. En Simulink, el discriminador (con el limitador que normaliza la amplitud y tiene un mínimo de 0.3) salió mejor que en la prueba de Python con canal ideal y se degrada de forma gradual cerca del umbral.
 
 ## Qué se ve
 
@@ -51,9 +51,14 @@ Cada demodulador está en su rama: cuadratura en `claude/affectionate-bardeen-qm
 
 ## Conclusión
 
-Usamos el **detector de cuadratura**:
-- es el más limpio con canal ideal (63 dB);
-- con ruido rinde igual que los otros por encima del umbral;
-- no necesita limitador.
+Usamos el **discriminador** (limitador → detector de pendiente → detector de envolvente), porque es el que se vio en el curso (diap. 342–345 y 375).
 
-El **PLL** es una buena alternativa si interesa trabajar cerca del umbral, a costa de más distorsión con canal ideal (está implementado en la rama `claude/version-pll`). El **discriminador** del curso, en digital, es el más delicado: necesita normalizar la amplitud y es el primero en fallar con ruido.
+- **Lo que cuesta:**
+  - Con canal ideal da 43.3 / 52.2 / 54.4 dB, frente a 60.3 / 59.4 / 57.1 del detector de cuadratura. Sigue por encima de 43 dB, así que la distorsión no se oye.
+  - Entra en umbral unos 2–4 dB antes que los otros.
+- **Lo que no cuesta:** sobre el umbral, que es donde trabaja el sistema, da lo mismo que los otros dos. A 30 dB: 31.6 / 21.3 / 17.7 dB.
+- **Las otras dos opciones quedan guardadas:**
+  - el PLL, que aguanta más cerca del umbral, en `claude/version-pll`;
+  - el detector de cuadratura, que no se vio en el curso, en `claude/version-cuadratura`.
+
+El resumen de todas las decisiones, con números, está en `decisiones_cuantitativas.md`.

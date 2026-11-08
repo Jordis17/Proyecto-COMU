@@ -41,7 +41,9 @@ Reglas de trabajo (vienen de las instrucciones del proyecto, archivo `07_instruc
 | `06_guia_estudio/diagramas_explicados.html` | Versión visual de la explicación: los 23 diagramas con cada bloque explicado (abrir en el navegador; funciona sin internet) |
 | `02_diseno/explicacion_diagramas.md` | Explicación de cada diagrama del modelo (orden de `Diagramas nuevos.pdf`): qué hace cada bloque y por qué está |
 | `02_diseno/correspondencia_curso_modelo.md` | Qué bloque del modelo corresponde a cada bloque de los esquemas del curso, y por qué existen los bloques extra |
-| `02_diseno/guion_video.md` | Guion del video (~10 min, repartido entre Jordi y Abner) |
+| `02_diseno/guion_video.md` | Guion del video (10–11 min, máximo 12), con cada decisión comparada con números |
+| `02_diseno/decisiones_cuantitativas.md` | Cada decisión del diseño: opciones comparadas, números y fuente de cada número |
+| `02_diseno/figuras_video/` | Figuras de comparación para el video (`04_verificacion_python/figuras_video.py`) |
 | `02_diseno/preguntas_profesor.md` | 38 preguntas probables del profesor con respuesta corta |
 | `PENDIENTES_MATLAB.md` | Lista de lo que hay que correr en MATLAB y qué debe salir |
 | `03_codigo_matlab/` | Todo el código del proyecto (17 archivos `.m`) |
