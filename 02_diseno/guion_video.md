@@ -27,7 +27,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 ### Escalamiento · Abner
 
-**Pantalla:** tabla del §5 del enunciado junto a la tabla 1 de `decisiones_cuantitativas.md`.
+**Pantalla:** `figuras_video/tabla_escalamiento.png` (compara la tabla del enunciado con la nuestra).
 
 > Sí. El enunciado pide simular con las frecuencias escaladas y da una tabla de referencia. Cuando revisamos esa tabla vimos que bajaba la portadora y la FI, pero dejaba igual el ancho del multiplex. Hicimos el cálculo con nuestra señal FM y, con esos valores, el espectro quedaba tan ancho comparado con la portadora que llegaba a cruzar el cero. Además, la FI quedaba por debajo del propio mensaje.
 >
@@ -35,7 +35,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 ### Muestreo · Jordi
 
-**Pantalla:** salida del mezclador en la radio; al lado, la tabla de frecuencias de muestreo (tabla 2).
+**Pantalla:** salida del mezclador en la radio; luego `figuras_video/tabla_muestreo.png`.
 
 > Con las frecuencias ya escaladas había que definir el muestreo. El enunciado recomienda trabajar entre 5 y 10 veces el ancho de banda. Cuando revisamos etapa por etapa, vimos que en una señal pasabanda lo que importa es la frecuencia más alta que aparece, y que después del mezclador esa regla no alcanza. El mezclador genera la suma de la portadora y el oscilador local, que llega a unos 20 MHz. Para no tener aliasing hay que muestrear a más del doble, así que en esa parte usamos 48 MHz.
 >
@@ -45,7 +45,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 ## 3. Transmisor (2:00–3:15) · Abner
 
-**Pantalla:** espectro del multiplex (figura 2 de `graficas_sistema`); luego la tabla 4 de `decisiones_cuantitativas.md`.
+**Pantalla:** espectro del multiplex (`03_codigo_matlab/figuras/fig2_multiplex.png`); luego `figuras_video/tabla_desviacion.png`.
 
 > En el transmisor, lo primero era repartir los tres audios dentro de los 120 kHz. Analizamos dos opciones, DSB-SC y SSB. SSB usa menos ancho de banda, pero un audio real tiene contenido casi desde 0 Hz, y para quedarse con una sola banda lateral haría falta un filtro casi ideal. Como con DSB-SC los tres canales cabían, con bandas de guarda entre ellos y usando cerca de tres cuartas partes del ancho disponible, nos quedamos con DSB-SC.
 >
@@ -109,7 +109,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 ## 8. Cierre (9:30–10:00) · Jordi
 
-**Pantalla:** tabla 10 de `decisiones_cuantitativas.md`.
+**Pantalla:** `figuras_video/tabla_resumen.png`.
 
 > En general, logramos integrar todo lo que pedía el proyecto: el FDM, la FM, el receptor superheterodino y la radio. Lo que más trabajo nos dio fue que todas las etapas fueran compatibles entre sí, y para eso tuvimos que ir probando y corrigiendo varias decisiones.
 >
@@ -123,7 +123,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
   - `03_codigo_matlab/figuras/` (las de `graficas_sistema`);
   - `fig_awgn.png` (de `analisis_awgn`);
   - `02_diseno/figuras_video/`.
-- [ ] Tablas de `decisiones_cuantitativas.md` listas para mostrar: los números que no se dicen tienen que verse.
+- [ ] Las tablas para mostrar están en `02_diseno/figuras_video/` (`tabla_*.png`); se regeneran con `python3 04_verificacion_python/tablas_video.py`. Los números que no se dicen tienen que verse ahí.
 - [ ] Simular antes en la radio («Simular las 4 combinaciones») para no esperar en la grabación.
 - [ ] Para **mostrar espectros** usen la fuente «Arpegio, sirena y pitidos»: el espectro de RF y el mezclador guardan solo el final de la señal, y con las grabaciones ese final es silencio. Para **escuchar** usen «Grabaciones (WAV)».
 - [ ] Ensayar con cronómetro. El máximo es 12 min.
