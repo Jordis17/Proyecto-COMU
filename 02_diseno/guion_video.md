@@ -1,4 +1,6 @@
-# Guion del video (10–11 min)
+# Guion del video (~10 min)
+
+Unas 970 palabras habladas, unos 7 minutos. Con la demostración de la radio y las pausas en las figuras queda en 9–10 minutos.
 
 **Texto** es lo que se dice; es una base, díganlo con sus palabras. **Pantalla** es lo que se muestra mientras se habla. Los números salen de `decisiones_cuantitativas.md`.
 
@@ -113,5 +115,5 @@
   - `fig_awgn.png` (de `analisis_awgn`);
   - `02_diseno/figuras_video/`.
 - [ ] Simular antes en la radio («Simular las 4 combinaciones») para no esperar en la grabación.
-- [ ] Ensayar con cronómetro. Si pasa de 11 min, quitar primero el párrafo del limitador (sección 5) y el del retardo (sección 4).
+- [ ] Ensayar con cronómetro. El máximo es 12 min. Si se pasan, quiten primero el párrafo del limitador (sección 5) y el del retardo (sección 4).
 - [ ] Cada uno debe poder explicar todas las partes.
