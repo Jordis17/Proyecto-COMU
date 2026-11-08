@@ -59,7 +59,9 @@ Son unas 1330 palabras habladas, unos 9.5 minutos. Con los cambios de ventana y 
 
 **Pantalla:** pestaña «Receptor superheterodino» de la radio; para el retardo, la consola de `main` (ganancias si no se compensara: −0.90 / +0.52 / −0.79).
 
-> Con el transmisor listo, faltaba ver que el receptor pudiera recuperar la señal. El oscilador local se calcula solo a partir de la portadora: es la portadora menos 1.7 MHz. Lo pusimos por debajo de la portadora porque, si lo poníamos por encima, la suma del mezclador ya no cabía en los 48 MHz de muestreo.
+> Con el transmisor listo, faltaba ver que el receptor pudiera recuperar la señal. El enunciado pide un superheterodino, y la ventaja se ve en la radio: sin importar qué portadora sintonicemos, la señal siempre se baja a la misma FI de 1.7 MHz. Así, el filtro de FI y el demodulador se diseñan una sola vez, y lo único que cambia con la sintonía es el oscilador local. Esa FI además sirve: está por debajo de la portadora, por encima del mensaje de 115 kHz, y su banda no llega a 0 Hz.
+>
+> El oscilador local se calcula solo a partir de la portadora: es la portadora menos 1.7 MHz. Lo pusimos por debajo de la portadora porque, si lo poníamos por encima, la suma del mezclador ya no cabía en los 48 MHz de muestreo.
 >
 > En el superheterodino también hay que cuidar la frecuencia imagen, porque al mezclarse cae en la misma FI. Para eso está la sección de RF antes del mezclador. Probamos qué pasaba si la quitábamos: con ruido, la calidad del audio bajó unos 3 dB, porque entraba también el ruido de la banda imagen. Por eso la dejamos.
 >
@@ -142,6 +144,7 @@ Son unas 1330 palabras habladas, unos 9.5 minutos. Con los cambios de ventana y 
 | 150 kHz da unos 6 dB más que 75 kHz | Cálculo (SNR ∝ Δf²) y prueba en Python |
 | Sin la sección de RF el audio empeora unos 3 dB | Simulink, con la versión anterior del demodulador. El efecto viene del ruido de la banda imagen, no del demodulador |
 | Sin compensar el retardo, el audio 2 baja a la mitad y los audios 1 y 3 salen invertidos | Cálculo que imprime `main`: cos(2π f_k τ_k) = −0.90 / +0.52 / −0.79, con τ = 421.48 / 236.06 / 236.06 µs. El audio 2 pierde 5.7 dB. Con el detector de cuadratura los retardos eran otros y el audio 1 quedaba en 0.09 |
+| El superheterodino y la FI de 1.7 MHz | Los pide el enunciado (§4.5). Las condiciones de la FI las revisa `main`: «La banda de FI no toca 0 Hz», «El paso de FI cubre el ancho de Carson» |
 | Comparación de los tres demoduladores | Simulink, mismo modelo y mismo ruido |
 | El limitador que recorta empeora mucho el audio | Python: 9–14 dB con canal ideal |
 | La elección de f₀ = 30 kHz | Cálculo con la fórmula de `params_sistema.m`. Solo 30 kHz se midió en Simulink (−5.4 / −1.1 / +2.0 dB) |
