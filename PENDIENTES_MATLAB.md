@@ -32,6 +32,18 @@ Esta rama usa el discriminador del curso como demodulador. Los pasos de prueba e
   - [ ] simular a 10 MHz con la casilla de prénfasis apagada → anotar el SDR (fuente demo; con el discriminador se espera algo menos que los 69 dB del detector de cuadratura)
   - [ ] lo mismo con la casilla de prénfasis encendida → SDR casi igual
   - [ ] el mensaje de estado muestra la desviación usada (debe ser ≤ 100 %)
+- **Hecho con ruido (discriminador, fuente demo, 0.3 s, AWGN (SNR)_C = 25 dB):** ✔
+
+  | f_c | Prénfasis | Audio 1 | Audio 2 | Audio 3 |
+  |---|---|---|---|---|
+  | 10 MHz | no | 34.2 dB | 25.7 dB | 15.8 dB |
+  | 10 MHz | sí | 28.7 dB | 24.4 dB | 17.7 dB |
+  | 11 MHz | no | 34.4 dB | 25.8 dB | 15.9 dB |
+  | 11 MHz | sí | 28.7 dB | 24.5 dB | 17.8 dB |
+
+  - Efecto del prénfasis: −5.5 / −1.3 / +1.9 dB (teoría −5.8 / −1.3 / +2.0).
+  - 10 y 11 MHz dan lo mismo (±0.1 dB): la sintonía funciona en las dos portadoras.
+  - Los valores absolutos son más altos que los de `analisis_awgn` (26.7 / 16.3 / 12.8) porque la fuente es otra: `analisis_awgn` usa ruido que llena toda la banda de 15 kHz, y la fuente demo usa senoides, que tienen más potencia para el mismo pico.
 
 ### Revisar el modelo (`sistema_fdm_fm.slx`)
 

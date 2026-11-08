@@ -40,6 +40,7 @@ Comparamos con la misma desviación pico. El prénfasis no reduce el ruido total
 | Mejora teórica (`P.enf.mejora_dB`) | −5.8 dB | −1.3 dB | +2.0 dB |
 | Simulación rápida en Python, (SNR)_C de 20 a 40 dB | −5.7 dB | −1.2 dB | +1.8 dB |
 | **Simulink, discriminador** (`analisis_awgn`), (SNR)_C de 20 a 40 dB | **−5.4 dB** | **−1.1 dB** | **+2.0 dB** |
+| GUI `radio`, fuente demo, (SNR)_C = 25 dB, a 10 y 11 MHz | −5.5 dB | −1.3 dB | +1.9 dB |
 
 Los resultados de Python salen de `04_verificacion_python/verificar_enfasis_bb.py`. Los de Simulink, de `analisis_awgn.m` (`resultados_awgn.csv`). La diferencia entre el canal 1 y el canal 3 baja de unos 13 a unos 6 dB, y con canal ideal el SDR no cambia (43.9 / 52.6 / 55.1 dB sin preénfasis, 44.8 / 55.9 / 58.5 dB con preénfasis).
 
