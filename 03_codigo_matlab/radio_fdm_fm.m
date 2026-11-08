@@ -307,6 +307,10 @@ function radio_fdm_fm()
         k = canal();
         if recuperado
             y = S.out.(sprintf('sim_y%d', k))(:).';
+            % se quita el retardo del sistema: ahí está el chasquido de arranque de los filtros,
+            % que si no se quita fija el pico de la normalización y deja la voz muy baja
+            n0 = round(S.P_sim.retardo_audio(k) * S.P_sim.fs_a);
+            y = y(min(n0, numel(y)-1)+1:end);
         else
             y = S.fuente_sim.X(k,:);
         end

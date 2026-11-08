@@ -41,6 +41,7 @@ for k = 1:3
     n = min(numel(x), numel(y));
     sdr = comparar_senales(x(1:n), y(1:n), P.retardo_audio(k), P.fs_a);
     fprintf('Audio %d: SDR = %.1f dB\n', k, sdr);
+    y = y(round(P.retardo_audio(k) * P.fs_a)+1:end);   % sin el retardo ni el chasquido de arranque
     y = 0.9 * y / max(abs(y));                          % se normaliza solo para escucharlo
     audiowrite(fullfile('audios', sprintf('original%d.wav', k)), 0.9 * x, fs);
     audiowrite(fullfile('audios', sprintf('recuperado%d.wav', k)), y, fs);
