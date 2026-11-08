@@ -29,7 +29,7 @@ Son unas 1330 palabras habladas, unos 9.5 minutos. Con los cambios de ventana y 
 
 ### Escalamiento · Abner
 
-**Pantalla:** consola de `main`, tabla «PARÁMETROS DEL SISTEMA (K = 100)»: columna del valor real y columna del simulado.
+**Pantalla:** consola de `main`, tabla «DISEÑO DEL SISTEMA (escala K = 100)»: columna del valor real y columna del simulado.
 
 > Sí. El enunciado pide simular con las frecuencias escaladas y da una tabla de referencia. Cuando revisamos esa tabla vimos que bajaba la portadora y la FI, pero dejaba igual el ancho del multiplex. Hicimos el cálculo con nuestra señal FM y, con esos valores, el espectro quedaba tan ancho comparado con la portadora que llegaba a cruzar el cero. Además, la FI quedaba por debajo del propio mensaje.
 >
@@ -37,7 +37,7 @@ Son unas 1330 palabras habladas, unos 9.5 minutos. Con los cambios de ventana y 
 
 ### Muestreo · Jordi
 
-**Pantalla:** la radio a 11 MHz, plan de frecuencias y salida del mezclador (producto suma); luego la consola de `main` (filas «Producto suma» y «f_s RF»).
+**Pantalla:** la radio a 11 MHz, plan de frecuencias y salida del mezclador (producto suma); luego la consola de `main` (filas «Producto suma» y «Muestreo de la RF»).
 
 > Con las frecuencias ya escaladas había que definir el muestreo. El enunciado recomienda trabajar entre 5 y 10 veces el ancho de banda. Cuando revisamos etapa por etapa, vimos que en una señal pasabanda lo que importa es la frecuencia más alta que aparece, y que después del mezclador esa regla no alcanza. El mezclador genera la suma de la portadora y el oscilador local, que llega a unos 20 MHz. Para no tener aliasing hay que muestrear a más del doble, así que en esa parte usamos 48 MHz.
 >
