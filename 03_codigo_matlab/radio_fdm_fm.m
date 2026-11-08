@@ -388,7 +388,7 @@ function radio_fdm_fm()
                     tic; out = sim(mdl);
                 end
                 t_sim = toc;
-                R = reducir(out);
+                R = reducir(out, P);
                 sdr = sdr_tres(R, P, fuente);      % con las señales en doble precisión
                 R = a_single(R);                   % para guardar: la mitad de memoria
                 texto = sprintf('%.1f MHz, %s%s.', P.vista.fc_MHz, ...
@@ -607,12 +607,22 @@ function c = clave_de(cfg)
     c = sprintf('%.1f|%g|%s|%g|%g|%d', cfg.fc, cfg.des, cfg.fuente, cfg.T, cfg.snr, cfg.enf);
 end
 
-function R = reducir(out)
+function R = reducir(out, P)
 % Guarda solo lo que usa la radio (las señales a 48 MHz ya vienen limitadas por log_rf_max).
     R.r      = out.sim_r(:).';
     R.mezcla = out.sim_mezcla(:).';
-    fi       = out.sim_fi(:).';
-    R.fi     = fi(max(1, numel(fi) - 2^19 + 1):end);
+    % FI: se toma el tramo donde el multiplex tiene más energía. Con una grabación, el final
+    % suele ser silencio, y ahí la FM es solo la portadora (el ancho medido saldría casi cero).
+    fi = out.sim_fi(:).';  m = out.sim_m(:).';
+    L  = min(2^19, numel(fi));  r = round(P.fs_fi / P.fs_m);  Lm = max(1, floor(L / r));
+    e  = cumsum([0, m.^2]);
+    if numel(m) > Lm
+        [~, i0] = max(e(Lm+1:end) - e(1:end-Lm));      % inicio de la ventana de más energía
+    else
+        i0 = 1;
+    end
+    k0 = min(max(1, (i0 - 1) * r + 1), numel(fi) - L + 1);
+    R.fi = fi(k0:k0 + L - 1);
     R.m      = out.sim_m(:).';
     R.m_hat  = out.sim_m_hat(:).';
     R.pico   = max(abs(out.sim_m_n(:)));       % pico de m_n = desviación usada / Df
@@ -631,9 +641,11 @@ function R = a_single(R)
 end
 
 function f = firma_archivos(carpeta)
-% Fecha de modificación de todo lo que cambia el resultado de una simulación.
+% Fecha de modificación de todo lo que cambia el resultado guardado (incluida esta radio,
+% porque aquí se decide qué tramo de cada señal se guarda).
     lista = [dir(fullfile(carpeta, 'sistema_fdm_fm.slx')); dir(fullfile(carpeta, 'params_sistema.m')); ...
              dir(fullfile(carpeta, 'generar_fuentes.m')); dir(fullfile(carpeta, 'disenar_fir_kaiser.m')); ...
+             dir(fullfile(carpeta, 'radio_fdm_fm.m')); ...
              dir(fullfile(carpeta, 'audios', 'audio*.wav'))];
     f = sprintf('%s|', lista.name);
     f = [f sprintf('%.6f|', [lista.datenum])];
