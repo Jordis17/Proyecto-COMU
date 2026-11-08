@@ -29,7 +29,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 **Pantalla:** tabla del §5 del enunciado junto a la tabla 1 de `decisiones_cuantitativas.md`.
 
-> Sí. Simular directamente 10 MHz con audio de 15 kHz necesita demasiadas muestras, así que el enunciado propone bajar las frecuencias y da una tabla de referencia. Cuando revisamos esa tabla vimos que bajaba la portadora y la FI, pero dejaba igual el ancho del multiplex. Hicimos el cálculo con nuestra señal FM y, con esos valores, el espectro quedaba tan ancho comparado con la portadora que llegaba a cruzar el cero. Además, la FI quedaba por debajo del propio mensaje.
+> Sí. El enunciado pide simular con las frecuencias escaladas y da una tabla de referencia. Cuando revisamos esa tabla vimos que bajaba la portadora y la FI, pero dejaba igual el ancho del multiplex. Hicimos el cálculo con nuestra señal FM y, con esos valores, el espectro quedaba tan ancho comparado con la portadora que llegaba a cruzar el cero. Además, la FI quedaba por debajo del propio mensaje.
 >
 > El mismo enunciado dice que hay que mantener las proporciones, así que decidimos dividir todas las frecuencias del sistema entre 100: el audio, las subportadoras, la desviación, la portadora y la FI. Así las relaciones entre frecuencias son las mismas del sistema real, y en la radio siempre se muestran los valores reales.
 
@@ -37,7 +37,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 **Pantalla:** salida del mezclador en la radio; al lado, la tabla de frecuencias de muestreo (tabla 2).
 
-> Con las frecuencias ya escaladas había que definir el muestreo. El enunciado recomienda trabajar entre 5 y 10 veces el ancho de banda. Cuando revisamos etapa por etapa, vimos que para el audio y el multiplex eso funciona, pero después del mezclador no alcanza. El mezclador genera la suma de la portadora y el oscilador local, que llega a unos 20 MHz. Para no tener aliasing hay que muestrear a más del doble, así que en esa parte usamos 48 MHz.
+> Con las frecuencias ya escaladas había que definir el muestreo. El enunciado recomienda trabajar entre 5 y 10 veces el ancho de banda. Cuando revisamos etapa por etapa, vimos que en una señal pasabanda lo que importa es la frecuencia más alta que aparece, y que después del mezclador esa regla no alcanza. El mezclador genera la suma de la portadora y el oscilador local, que llega a unos 20 MHz. Para no tener aliasing hay que muestrear a más del doble, así que en esa parte usamos 48 MHz.
 >
 > Como no tenía sentido simular todo a 48 MHz, cada etapa trabaja a la frecuencia de muestreo que necesita. En la tabla se ven los valores de cada una.
 
@@ -125,6 +125,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
   - `02_diseno/figuras_video/`.
 - [ ] Tablas de `decisiones_cuantitativas.md` listas para mostrar: los números que no se dicen tienen que verse.
 - [ ] Simular antes en la radio («Simular las 4 combinaciones») para no esperar en la grabación.
+- [ ] Para **mostrar espectros** usen la fuente «Arpegio, sirena y pitidos»: el espectro de RF y el mezclador guardan solo el final de la señal, y con las grabaciones ese final es silencio. Para **escuchar** usen «Grabaciones (WAV)».
 - [ ] Ensayar con cronómetro. El máximo es 12 min.
 - [ ] Cada uno debe poder explicar todas las partes y responder por los números de la tabla, aunque no los diga.
 
