@@ -57,12 +57,12 @@ function R = modelo_referencia(P, X)
     v  = filter(P.h.fi_lpf, 1, v);                        % pasabajos anti-aliasing (quita suma)
     v  = v(1:P.M1:end);                                   % decimación -> fs_fi
     fi = filter(P.h.fi, 1, v);                            % sección de FI (pasabanda selectivo)
-    n_fi = 0:numel(fi)-1;
 
-    % demodulador FM en cuadratura: f_i = fs/(2 pi) * arg(z[n] z*[n-1])
-    z = fi .* exp(-1j*2*pi*P.f_FI*n_fi/P.fs_fi);
-    z = filter(P.h.iq, 1, z);
-    finst = [0, angle(z(2:end) .* conj(z(1:end-1)))] * P.fs_fi / (2*pi);
+    % demodulador FM: discriminador (igual que el modelo)
+    A  = max(sqrt(max(2*filter(P.h.iq, 1, fi.^2), 0)), P.disc.amin);     % limitador: amplitud
+    fd = [zeros(1, P.disc.d_env), fi(1:end-P.disc.d_env)];               % FI retrasada para alinear
+    d  = filter(P.disc.h_der, 1, fd ./ A);                              % detector de pendiente
+    finst = sqrt(max(2*filter(P.h.iq, 1, d.^2), 0)) / (2*pi) - P.f_FI;   % detector de envolvente
     m_hat = filter(P.h.mux, 1, finst / P.kf);             % filtro posdetección (120 kHz nom)
     m_hat = m_hat(1:P.M2:end) * P.normalizacion;          % -> fs_m, deshace /3
     m_hat = filter(P.enf.num_rx, P.enf.den_rx, m_hat);   % deénfasis (cable si P.enfasis = false)
