@@ -16,8 +16,7 @@ function radio_fdm_fm()
 %                                de la sección de RF, salida del mezclador con el pasabajos de
 %                                la sección de FI, y la FI filtrada con su ancho medido.
 %     Demultiplexación y audio : multiplex transmitido y recuperado, SDR de los tres audios
-%                                (con la teoría si hay ruido) y el audio elegido en el tiempo
-%                                y en frecuencia.
+%                                (con la teoría si hay ruido) y el audio elegido en el tiempo.
 %
 %   Cada simulación queda guardada: al volver a una combinación ya simulada (ruido, prénfasis,
 %   portadora...) se muestra al instante. La lámpara dice si las gráficas corresponden a los
@@ -171,8 +170,10 @@ function radio_fdm_fm()
     t2 = uitab(tg, 'Title', 'Demultiplexación y audio');
     ga1 = uigridlayout(t1, [2 2]);
     ax_plan = uiaxes(ga1);  ax_rf = uiaxes(ga1);  ax_mez = uiaxes(ga1);  ax_fi = uiaxes(ga1);
-    ga2 = uigridlayout(t2, [2 2]);
-    ax_mux = uiaxes(ga2);  ax_sdr = uiaxes(ga2);  ax_t = uiaxes(ga2);  ax_af = uiaxes(ga2);
+    ga2 = uigridlayout(t2, [2 2]);     % multiplex arriba a todo lo ancho; SDR y audio abajo
+    ax_mux = uiaxes(ga2);  ax_mux.Layout.Row = 1;  ax_mux.Layout.Column = [1 2];
+    ax_sdr = uiaxes(ga2);  ax_sdr.Layout.Row = 2;  ax_sdr.Layout.Column = 1;
+    ax_t   = uiaxes(ga2);  ax_t.Layout.Row   = 2;  ax_t.Layout.Column   = 2;
     % controles que se bloquean mientras se simula
     controles = {bt_menos, bt_mas, dial, ed_des, dd_fuente, ed_T, cb_awgn, sl_snr, cb_enf, ...
         bt_sim, bt_4, bg, bt_rx, bt_tx, bt_stop};
@@ -183,7 +184,6 @@ function radio_fdm_fm()
     marcador(ax_mux, 'Multiplex FDM');
     marcador(ax_sdr, 'SDR por audio');
     marcador(ax_t,   'Audio en el tiempo');
-    marcador(ax_af,  'Audio en frecuencia');
     iniciar_plan();
     cambio_sintonia();
     if S.memo.Count > 0
@@ -550,17 +550,6 @@ function radio_fdm_fm()
         xlabel(ax_t, 'tiempo [ms]');  leyenda(ax_t, [], {'original', 'recuperado'}, 'northeast');
         title(ax_t, sprintf('Audio %d en el tiempo', k));  estilo(ax_t);
 
-        % audio elegido en frecuencia
-        [f, Dx] = graficar_espectro(x, P.fs_a, K, struct('nfft', 1024));
-        [~, Dy] = graficar_espectro(y, P.fs_a, K, struct('nfft', 1024));
-        cla(ax_af, 'reset');  hold(ax_af, 'on');
-        plot(ax_af, f/1e3, Dx, 'Color', C.orig, 'LineWidth', 2.5);
-        plot(ax_af, f/1e3, Dy, 'Color', C.canal(k,:));
-        plot(ax_af, P.Wa*K/1e3*[1 1], [-90 5], 'k:', 'LineWidth', 1.2);
-        hold(ax_af, 'off');  grid(ax_af, 'on');  xlim(ax_af, [0 24]);  ylim(ax_af, [-90 5]);
-        xlabel(ax_af, 'f nominal [kHz]');  ylabel(ax_af, 'DEP [dB]');
-        leyenda(ax_af, [], {'original', 'recuperado'}, 'northeast');
-        title(ax_af, sprintf('Audio %d en frecuencia', k));  estilo(ax_af);
 
         % texto del SDR
         lbl_sdr.Text = sprintf('SDR del audio %d: %.1f dB', k, sdr(k));
