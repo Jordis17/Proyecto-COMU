@@ -6,7 +6,7 @@
 
 En voz alta se dice el razonamiento y la cifra que decide. Los demás números se ven en la consola o en la radio, y su origen está en `decisiones_cuantitativas.md` por si el profesor pregunta.
 
-Son unas 1070 palabras habladas, unos 7.6 minutos. Con los cambios de ventana y la demostración de la radio queda en unos 9–10 minutos.
+Son unas 1170 palabras habladas, unos 8.3 minutos. Con los cambios de ventana y la demostración de la radio queda en unos 9–10 minutos.
 
 ---
 
@@ -46,7 +46,9 @@ Son unas 1070 palabras habladas, unos 7.6 minutos. Con los cambios de ventana y 
 
 **Pantalla:** la radio, pestaña «Demultiplexación y audio» (multiplex con las tres bandas); luego el panel de sintonía, que dice «Δf / B_T: 150 / 530 kHz», y la gráfica de FI con las líneas de Carson.
 
-> Para el multiplex usamos DSB-SC, con subportadoras en 20, 60 y 100 kHz. Pensamos en SSB, que ocupa menos, pero el audio real empieza casi en 0 Hz, y separar una sola banda lateral necesitaría un filtro casi ideal. Con DSB-SC los tres canales caben con espacio entre ellos.
+> Para el multiplex usamos DSB-SC, con subportadoras en 20, 60 y 100 kHz. Pensamos en SSB, que ocupa menos, pero el audio real empieza casi en 0 Hz, y separar una sola banda lateral necesitaría un filtro casi ideal.
+>
+> Con DSB-SC cada canal ocupa 30 kHz. Quedan en 5 a 35, 45 a 75 y 85 a 115 kHz, con bandas de guarda de 10 kHz entre ellos y 5 kHz libres en cada extremo, justo los 120 kHz. Las guardas son para que los filtros tengan espacio de transición: con 10 kHz, el filtro de cada canal deja pasar su audio completo y atenúa al vecino 60 dB.
 >
 > Para la FM escogimos una desviación de 150 kHz. Más desviación da mejor calidad, pero también ocupa más ancho de banda. Con 150 kHz ganamos unos 6 dB frente a 75 kHz, y por Carson la señal ocupa 530 kHz, que cabe en el filtro de FI. En Carson usamos 115 kHz, que es lo máximo del multiplex, y no los 15 kHz del audio, porque lo que se modula es el multiplex completo.
 
@@ -113,22 +115,18 @@ Son unas 1070 palabras habladas, unos 7.6 minutos. Con los cambios de ventana y 
 **Pantalla:** la radio, pestaña «Demultiplexación y audio», con el SDR de los tres audios.
 
 **Jordi:**
-> Para cerrar, estas son nuestras conclusiones.
+> Para cerrar, volvemos a los objetivos del proyecto.
 >
-> Primero, el sistema cumple lo pedido. Los tres audios caben en 120 kHz, la portadora se elige entre 9 y 11 MHz, y el receptor siempre baja la señal a la misma FI de 1.7 MHz.
+> Diseñamos un plan FDM que mete los tres audios en 120 kHz, con guardas de 10 kHz, y en el receptor los tres se separan con más de 43 dB. El transmisor FM se dimensionó con el criterio de Carson, 530 kHz, y en la simulación la potencia quedó dentro de ese ancho.
 >
-> Segundo, sin ruido los tres audios se recuperan con más de 43 dB, así que el FDM los separa bien. Y si desintonizamos el receptor, el audio se pierde: el receptor sí selecciona la emisora.
->
-> Tercero, escalar todo entre 100 fue lo que hizo posible la simulación. Con la tabla del enunciado, la FM cruzaba el cero.
+> El receptor superheterodino hace la conversión y el filtrado como se pidió: cualquier portadora entre 9 y 11 MHz se baja a la misma FI de 1.7 MHz, y si el receptor no está sintonizado, el audio se pierde. Para demodular, el discriminador del curso rindió igual que un PLL en condiciones normales.
 
 **Abner:**
-> Cuarto, con ruido el sistema se comporta como dice la teoría: el audio 3 sale unos 14 dB peor que el 1, y por debajo del umbral la calidad cae de golpe.
+> Analizar las señales en tiempo y en frecuencia nos permitió comparar el original con el recuperado y explicar con la teoría lo que pasa con ruido: el audio 3 sale unos 14 dB peor porque el ruido crece con la frecuencia, y con prénfasis esa diferencia baja a 6 dB.
 >
-> Quinto, el prénfasis no quita ruido, pero lo reparte mejor: la diferencia entre audios bajó de 14 a 6 dB.
+> La radio cumple lo que se pedía de la interfaz: se elige la portadora y el audio, se ve la FI, y todo se recalcula solo al mover el dial. Y escalar todo entre 100 fue lo que nos permitió simular el sistema sin perder las proporciones reales.
 >
-> Y sexto, el discriminador rinde igual que el PLL donde trabaja el sistema; el PLL solo gana cerca del umbral.
->
-> Como limitaciones: la simulación no es en tiempo real, la fase de las subportadoras se corrige con un retardo conocido en vez de un tono piloto, y el canal solo tiene ruido blanco. Gracias.
+> Como limitaciones, la simulación no es en tiempo real, la fase de las subportadoras se corrige con un retardo conocido en vez de un tono piloto, y el canal solo tiene ruido blanco. Gracias.
 
 ---
 
@@ -152,6 +150,8 @@ Son unas 1070 palabras habladas, unos 7.6 minutos. Con los cambios de ventana y 
 | La tabla del enunciado haría cruzar el cero a la FM | Cálculo |
 | La suma del mezclador llega a unos 20 MHz; con inyección superior no cabría en 48 MHz | Cálculo |
 | SSB necesitaría un filtro casi ideal | Análisis; no se simuló SSB |
+| Guardas de 10 kHz; cada filtro atenúa al canal vecino 60 dB | Diseño de los filtros (`disenar_fir_kaiser.m`); `main` lo comprueba: «Canales FDM dentro de 0-120 kHz y sin solaparse» y «Todos los filtros rechazan al menos 60 dB» |
+| En la simulación la potencia queda dentro de Carson | Simulink: el 99 % de la potencia en 148 kHz, frente a 530 kHz de Carson |
 | 150 kHz da unos 6 dB más que 75 kHz | Cálculo (SNR ∝ Δf²) y prueba en Python |
 | Sin la sección de RF el audio empeora unos 3 dB | Simulink, con la versión anterior del demodulador. El efecto viene del ruido de la banda imagen, no del demodulador |
 | Sin compensar el retardo, el audio 2 baja a la mitad y los audios 1 y 3 salen invertidos | Cálculo que imprime `main`: cos(2π f_k τ_k) = −0.90 / +0.52 / −0.79, con τ = 421.48 / 236.06 / 236.06 µs. El audio 2 pierde 5.7 dB. Con el detector de cuadratura los retardos eran otros y el audio 1 quedaba en 0.09 |
