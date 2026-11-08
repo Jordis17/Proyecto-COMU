@@ -69,7 +69,7 @@ function construir_modelo(nombre)
     add_block('built-in/Subsystem', rx, 'Position', caja(900, 70, 170, 120));
     construir_receptor(rx);
     set_param(rx, 'Description', ['Sección RF (preselector en f_c) -> mezclador con LO = f_c - f_FI -> ' ...
-        'pasabajos + decimación -> pasabanda FI 1.7 MHz -> demodulador FM en cuadratura -> filtro posdetección -> deénfasis (opcional)']);
+        'pasabajos + decimación -> pasabanda FI 1.7 MHz -> demodulador FM (discriminador) -> filtro posdetección -> deénfasis (opcional)']);
     nombrar(add_line(mdl, 'Canal/1', 'Receptor_Superheterodino/1', 'autorouting', 'on'), 'x(t) = s(t) + w(t)');
 
     %% ---------------- Demultiplexor FDM ----------------

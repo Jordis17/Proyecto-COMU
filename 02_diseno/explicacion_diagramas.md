@@ -169,64 +169,67 @@ x(t) → Sección de RF (preselector) → Mezclador → Sección de FI → Demod
 | **Oscilador local** | 2·cos(2π f_LO t), con f_LO = f_c − 1.7 MHz (8.3 MHz a 10 MHz) | Se calcula solo a partir de la portadora elegida (inyección inferior) |
 | **Mezclador** | Multiplica x(t) por el oscilador local | Produce la diferencia (1.7 MHz, la FI) y la suma (18.3 MHz). Es el heterodinaje (diap. 357) |
 | **Sección de FI** | Subsistema (página 16) | Deja solo la FI, 1.35–2.05 MHz |
-| **Demodulador FM** | Subsistema (página 11) | Entrega la frecuencia instantánea |
+| **Demodulador FM** | Subsistema: discriminador (ver «Demodulador FM») | Entrega la desviación de frecuencia |
 | **Filtro posdetección** | Subsistema (página 15) | Deja solo el multiplex (diap. 376) |
 | **Filtro de deénfasis** | Filtro IIR de primer orden, inverso del preénfasis | Baja el ruido de alta frecuencia (diap. 384). Con la casilla apagada es un cable |
 | Salidas «señal de FI» y «salida del mezclador» | — | Solo para las gráficas |
 
-## Página 11. Demodulador FM
+## Demodulador FM: discriminador del curso
+
+> Los números de página de esta sección y las siguientes cambian con el PDF de diagramas de la versión con discriminador.
 
 ```
-señal de FI → Rama en fase (I)       → I ┐
-            → Rama en cuadratura (Q) → Q ┴→ Giro de fase entre muestras → Convertir a frecuencia → frecuencia instantánea
+señal de FI → Limitador → Detector de pendiente (derivador) → Detector de envolvente → Convertir a desviación → frecuencia instantánea
 ```
 
-**La idea.** La frecuencia instantánea es la velocidad con que gira la fase: f_i = (1/2π)·dφ/dt. Un discriminador del curso (diap. 342) da una salida proporcional a f_i. Este demodulador calcula f_i directamente:
+Es el discriminador de las diap. 342–345 y 375: un limitador deja la amplitud constante, el detector de pendiente convierte la FM en AM y el detector de envolvente recupera esa amplitud.
 
-1. Separa la FI en sus componentes en fase (I) y en cuadratura (Q), con la representación de banda angosta de la diap. 174.
-2. Mide cuánto giró la fase entre una muestra y la siguiente (Δφ).
-3. Lo convierte a frecuencia: f_i = Δφ · f_s / 2π.
+| Bloque | Qué hace | Por qué |
+|---|---|---|
+| **Limitador** | Divide la FI por su amplitud: queda con amplitud 1 | Sin él, la salida sería amplitud × frecuencia y el ruido de amplitud tapa el mensaje (diap. 375) |
+| **Detector de pendiente (derivador)** | FIR derivador de 63 coeficientes | Al derivar cos θ(t) sale −2π f_i·sen θ(t): la amplitud es proporcional a la frecuencia instantánea |
+| **Detector de envolvente** | Saca la amplitud de la salida del derivador | Da 2π f_i |
+| **Convertir a desviación** | Divide entre 2π y resta f_FI | Queda f_i − f_FI = k_f·m(t), la desviación en Hz |
 
-| Bloque | Qué hace |
-|---|---|
-| **Rama en fase (I)** | Página 14 |
-| **Rama en cuadratura (Q)** | Página 13 |
-| **Giro de fase entre muestras** | Página 12 |
-| **Convertir a frecuencia** (`P.fs_fi/(2*pi)`) | Multiplica el ángulo por f_s/2π, con f_s = 4.8 MHz. El resultado es la desviación de frecuencia en Hz |
-
-**Por qué no se usa limitador** (diap. 375): el ángulo no depende de la amplitud de la señal, así que el ruido de amplitud no afecta.
-
-## Página 12. Giro de fase entre muestras
+## Limitador (dentro del Demodulador FM)
 
 ```
-I, Q → Muestra anterior (1/z) → 4 productos → Parte real y Parte imaginaria → Ángulo girado (atan2) → giro de fase
-```
-
-Si la señal en banda base es z[n] = I[n] + j·Q[n], el giro de fase entre dos muestras es el ángulo de z[n]·z*[n−1]:
-
-- **Parte real** = I·I[n−1] + Q·Q[n−1]
-- **Parte imaginaria** = Q·I[n−1] − I·Q[n−1]
-
-| Bloque | Qué hace |
-|---|---|
-| **Muestra anterior de I / de Q** (`1/z`) | Dan I[n−1] y Q[n−1] |
-| **I por I anterior, Q por Q anterior, Q por I anterior, I por Q anterior** | Los cuatro productos de la multiplicación compleja |
-| **Parte real** (`+ +`), **Parte imaginaria** (`+ −`) | Arman Re y Im de z[n]·z*[n−1] |
-| **Ángulo girado (atan2)** | Δφ = atan2(Im, Re), el ángulo entre −π y π |
-
-Es la forma digital de derivar la fase: Δφ ≈ (dφ/dt)·T_s. Las líneas se cruzan porque cada producto combina una muestra actual con una anterior de la otra rama.
-
-## Páginas 13 y 14. Rama en cuadratura (Q) y rama en fase (I)
-
-```
-señal de FI → Mezcla (×) ← cos(2π f_FI t)   [o −sen(2π f_FI t)] → Pasabajos → I  [o Q]
+señal de FI → Cuadrado de la FI → Pasabajos (amplitud) → ×2 → No negativo → Raíz → Amplitud mínima ┐
+señal de FI → Retardo para alinear ───────────────────────────────────────────────────────────────→ Dividir por la amplitud → FI con amplitud 1
 ```
 
 | Bloque | Qué hace | Por qué |
 |---|---|---|
-| **cos(2 pi fFI t)** / **−sen(2 pi fFI t)** | Oscilador a la FI (1.7 MHz), en fase y desfasado 90° | Para separar las dos componentes de la señal de banda angosta (diap. 174) |
-| **Mezcla en fase (I)** / **Mezcla en cuadratura (Q)** | Multiplica la FI por el coseno o el seno | Baja la FI a 0 Hz. Es otra vez heterodinaje, igual que el detector coherente de DSB-SC (diap. 230) |
-| **Pasabajos I / Pasabajos Q** | FIR de 33 coeficientes: pasa ±400 kHz y rechaza 60 dB desde 950 kHz | Quita el término en 2·f_FI (3.4 MHz) y deja solo la banda base |
+| **Cuadrado de la FI** (`x`) | FI² = A²·cos²θ = A²/2 + A²/2·cos 2θ | Primer paso del detector de ley cuadrática |
+| **Pasabajos (amplitud)** | FIR de 33 coeficientes: pasa 400 kHz | Quita el término en 2θ y deja A²/2 |
+| **×2**, **No negativo**, **Raíz** | √(2·A²/2) = A | Sale la amplitud. «No negativo» evita la raíz de un número negativo por redondeo |
+| **Amplitud mínima** (Saturation) | Nunca deja que A sea menor a 0.3 | Como un limitador real, que tiene ganancia finita. Sin esto, cuando el ruido acerca la amplitud a cero, la división dispara picos enormes |
+| **Retardo para alinear** (Delay) | Retrasa la FI lo mismo que tarda el pasabajos (16 muestras) | Para dividir cada muestra por *su* amplitud y no por la de un instante anterior |
+| **Dividir por la amplitud** (Divide) | FI / A | La salida tiene amplitud 1: hace lo mismo que el limitador del curso |
+
+**Por qué divide en vez de recortar.** Un limitador clásico recorta la onda y genera armónicos. En una simulación digital a 4.8 MHz, esos armónicos se pliegan sobre la señal: probándolo, la calidad bajaba a 9–14 dB.
+
+## Detector de pendiente (derivador)
+
+Es un único bloque Discrete Filter (FIR de 63 coeficientes). Es un derivador ideal (h[n] = cos(πn)/n) suavizado con ventana de Kaiser y multiplicado por f_s para que salga en rad/s.
+
+**Ejemplo con números.** Si la FI está en 1.85 MHz (f_i = f_FI + 150 kHz), la salida es una senoide de amplitud 2π·1.85·10⁶. Si está en 1.55 MHz, su amplitud es 2π·1.55·10⁶. **La frecuencia se convirtió en amplitud**: FM → AM.
+
+## Detector de envolvente (dentro del Demodulador FM)
+
+```
+salida del derivador → Cuadrado → Pasabajos → ×2 → No negativo → Raíz → envolvente = 2π f_i
+```
+
+Es el mismo detector de ley cuadrática que el del limitador: cuadrado → pasabajos (quita el término en 2θ) → ×2 → raíz. Da la amplitud de la salida del derivador, o sea 2π f_i.
+
+## Convertir a desviación (dentro del Demodulador FM)
+
+```
+envolvente → Dividir entre 2 pi → Restar la FI ← Frecuencia de FI (1.7 MHz) → desviación de frecuencia
+```
+
+f_i − f_FI = k_f·m(t): es lo que sigue al «Filtro posdetección», que divide entre k_f.
 
 ## Página 15. Filtro posdetección
 

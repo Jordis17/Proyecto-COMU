@@ -81,8 +81,27 @@ Cumple la definición del curso (diap. 359): es menor que la portadora y mayor q
 **21. ¿Cómo se calcula el LO cuando cambio la portadora?**
 f_LO = f_c − 1.7 MHz, lo calcula `params_sistema.m`. Al mover la perilla también se recalculan la imagen y el preselector. La FI no cambia.
 
-**22. ¿Cómo demodulan la FM? En clase vimos discriminadores.**
-En cuadratura: bajamos la FI a 0 Hz con cos y −sen, y medimos cuánto gira la fase entre dos muestras. Eso es la frecuencia instantánea, f_i = (1/2π)·dφ/dt, que es exactamente lo que busca un discriminador. No necesita limitador. En el modelo es el subsistema «Demodulador FM», dentro del receptor. También probamos un discriminador como el del curso (limitador → derivador → envolvente) y dio peor calidad.
+**22. ¿Cómo demodulan la FM?**
+Con el discriminador del curso (diap. 342–345): limitador → detector de pendiente → detector de envolvente.
+- El limitador deja la amplitud constante.
+- El derivador convierte la FM en AM: al derivar cos θ(t), la amplitud queda proporcional a dθ/dt = 2π f_i.
+- El detector de envolvente saca esa amplitud. Dividiendo entre 2π y restando la FI queda k_f·m(t).
+
+En el modelo es el subsistema «Demodulador FM», dentro del receptor.
+
+**22b. ¿Por qué el limitador divide por la amplitud en vez de recortar la onda?**
+En una simulación digital, recortar la onda genera armónicos que, a 4.8 MHz de muestreo, se pliegan sobre la señal: lo probamos y la calidad bajaba a 9–14 dB. Dividir por la amplitud (medida con un detector de ley cuadrática) logra lo mismo, una amplitud constante, sin generar armónicos. Además, nunca se usa una amplitud menor a 0.3, como un limitador real, que tiene ganancia finita.
+
+**22c. ¿Y si se quita el limitador?**
+Deja de funcionar con ruido. La salida del discriminador es amplitud × frecuencia, así que el ruido de amplitud queda multiplicado por toda la FI (1.7 MHz). A 40 dB de (SNR)_C, el SDR caía a 5 dB. Por eso el curso siempre lo pone (diap. 375).
+
+**22d. ¿Probaron otros demoduladores?**
+Sí, un PLL (diap. 347–354) y un detector de cuadratura.
+- Con ruido moderado, los tres dan lo mismo.
+- El PLL aguanta unos 3–4 dB más antes del umbral (extensión del umbral), pero con canal ideal distorsiona más: 34–48 dB contra 43–54 dB del discriminador.
+- El detector de cuadratura no lo usamos porque no se vio en el curso.
+
+Está en `comparacion_demoduladores.md`.
 
 **23. ¿Qué pasa si el receptor está desintonizado?**
 Con 600 kHz de error, la señal cae fuera del filtro de FI y el audio se pierde (SDR ≈ 0.9 dB). Con errores pequeños (50 kHz) sigue funcionando, porque la FI tiene margen y el pasabanda de cada canal elimina el nivel de DC que aparece.
@@ -98,16 +117,16 @@ Con la del curso (Haykin, diap. 377): (SNR)_C = (A_c²/2) / (W·N₀), con W = 1
 A la salida del discriminador el ruido crece con f² (diap. 385). El canal 3 está en 100 kHz y el canal 1 en 20 kHz. Integrando, la diferencia teórica es de unos 13 dB, y medimos unos 14 dB (los audios no tenían exactamente la misma potencia).
 
 **26. ¿Qué es el efecto umbral?**
-Cuando el ruido se hace comparable a la portadora, la fase da saltos y el demodulador produce picos. La calidad cae de golpe en vez de bajar poco a poco. En nuestro sistema aparece con una relación portadora a ruido de unos 11 dB en el ancho de Carson.
+Cuando el ruido se hace comparable a la portadora, la fase da saltos y el demodulador produce picos. La calidad cae de golpe en vez de bajar poco a poco. En nuestro sistema, con el discriminador, aparece con una relación portadora a ruido de unos 14 dB en el ancho de Carson ((SNR)_C ≈ 20 dB). Con un PLL aparece unos 3–4 dB más abajo.
 
 **27. ¿Por qué no usaron el prénfasis con canal ideal?**
-Porque no hace falta: sin ruido el SDR ya es de unos 60 dB. Además, el prénfasis y el deénfasis son inversos, así que sin ruido se cancelan.
+Porque no hace falta: sin ruido el SDR ya es de 43 a 54 dB. Además, el prénfasis y el deénfasis son inversos, así que sin ruido se cancelan.
 
 **28. ¿Dónde pusieron el prénfasis y por qué ahí?**
 Antes del modulador FM y después del demodulador, como en la diap. 384. El mensaje que entra al modulador es el multiplex, así que se filtra el multiplex completo. Es un filtro de primer orden que sube las frecuencias altas; el deénfasis es su inverso exacto. En el modelo son el «Filtro de preénfasis» (al final del transmisor) y el «Filtro de deénfasis» (después del filtro posdetección).
 
 **29. ¿Por qué el prénfasis empeora el canal 1?**
-Mantenemos la misma desviación pico para no cambiar el ancho de banda. Si se suben los canales altos, hay que bajar un poco el total, y el canal 1 queda con menos señal. El prénfasis no quita ruido en total: lo reparte. En Simulink medimos −5.7 / −1.1 / +2.0 dB en los canales 1 / 2 / 3 (la teoría da −5.8 / −1.3 / +2.0). El canal 1 tenía SNR de sobra y el 3 era el que limitaba; la diferencia entre ellos bajó de 14.3 a 6.5 dB.
+Mantenemos la misma desviación pico para no cambiar el ancho de banda. Si se suben los canales altos, hay que bajar un poco el total, y el canal 1 queda con menos señal. El prénfasis no quita ruido en total: lo reparte. En Simulink medimos −5.4 / −1.1 / +2.0 dB en los canales 1 / 2 / 3 (la teoría da −5.8 / −1.3 / +2.0). El canal 1 tenía SNR de sobra y el 3 era el que limitaba; la diferencia entre ellos bajó de unos 13 a unos 6 dB.
 
 **30. ¿Por qué no usaron el prénfasis de 75 µs de la radio FM?**
 En la FM comercial el audio principal está en banda base, donde el ruido crece dentro del propio audio. En nuestro canal 3 el ruido depende sobre todo de la posición de la subportadora, así que dentro del audio es casi plano y un prénfasis por audio casi no ayudaría.
@@ -123,10 +142,10 @@ No, porque la desviación y el ancho de banda son los mismos.
 Uno de los dos no tiene DSP System Toolbox ni Signal Processing Toolbox. Diseñamos los FIR con ventana de Kaiser en `disenar_fir_kaiser.m`, que sube el orden hasta medir 60 dB de rechazo.
 
 **33. ¿Cómo saben que el modelo de Simulink está bien?**
-Escribimos la misma cadena en MATLAB puro y comparamos muestra por muestra: las diferencias fueron menores a 10⁻⁹. También medimos el SDR de los audios recuperados (unos 60 dB) y comparamos el ruido con la teoría (menos de 1 dB de diferencia).
+Escribimos la misma cadena en MATLAB puro y comparamos muestra por muestra: las diferencias fueron menores a 10⁻⁹. También medimos el SDR de los audios recuperados (43 a 54 dB) y comparamos el ruido con la teoría (menos de 1 dB de diferencia).
 
 **34. ¿Qué es el SDR que reportan?**
-La potencia del audio original dividida entre la potencia del error, después de alinear el retardo y la ganancia. 60 dB significa que el error es un millón de veces más pequeño que la señal.
+La potencia del audio original dividida entre la potencia del error, después de alinear el retardo y la ganancia. 50 dB significa que el error es 100 000 veces más pequeño que la señal (en potencia).
 
 **35. ¿Por qué tarda tanto la simulación?**
 La parte de RF va a 48 MHz nominales: un segundo de audio son 48 millones de muestras. En modo acelerado, un segundo de audio tarda unos 4–5 minutos.

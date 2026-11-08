@@ -54,6 +54,18 @@ Reglas de trabajo (vienen de las instrucciones del proyecto, archivo `07_instruc
 
 ---
 
+## Ramas del repositorio
+
+| Rama | Qué tiene |
+|---|---|
+| `claude/affectionate-bardeen-qmc9v9` | **Versión de trabajo** (la del PR): modelo agrupado con el **discriminador** del curso |
+| `claude/version-agrupada` | Copia de la anterior (se mantiene igual) |
+| `claude/version-discriminador` | Donde se desarrolló y probó el discriminador |
+| `claude/version-pll` | Variante con PLL como demodulador (probada en Simulink) |
+| `claude/version-cuadratura` | Respaldo con el detector de cuadratura (no se entrega) |
+| `claude/version-sin-agrupar` | Respaldo del modelo antes de agrupar (detector de cuadratura) |
+| `main` | Paquete original, antes de la revisión |
+
 ## 3. El proyecto en una página
 
 Tres audios de 15 kHz → **FDM** (DSB-SC) en ≤ 120 kHz → **FM** con portadora seleccionable de 9–11 MHz → canal (ideal o **AWGN**) → **receptor superheterodino** (sección de RF, oscilador local, mezclador, sección de FI de 1.7 MHz) → demodulador FM → demultiplexor FDM → audio 1, 2 o 3 en una **GUI tipo radio**. Todo en MATLAB/Simulink.
@@ -67,7 +79,7 @@ Tres audios de 15 kHz → **FDM** (DSB-SC) en ≤ 120 kHz → **FM** con portado
 | FDM | DSB-SC, subportadoras **20 / 60 / 100 kHz**, bandas 5–35 / 45–75 / 85–115 kHz, guardas 10 kHz, multiplex ÷3 | Audio llega casi a 0 Hz → SSB exigiría filtros casi ideales |
 | FM | **Δf = k_f = 150 kHz**, f_m,máx = 115 kHz, DR = 1.30, Carson 530 kHz, Bessel (n = 3) 690 kHz | Compromiso SNR (∝Δf²) / ancho de banda |
 | Superheterodino | **Inyección inferior** f_LO = f_c − 1.7 MHz; imagen f_c − 3.4 MHz; sección de RF (preselector) ±350 kHz (rechazo 60 dB desde ±1.55 MHz); FI 1.35–2.05 MHz en dos etapas (LPF a 48 MHz, ↓10, BPF a 4.8 MHz) | Suma más baja (cabe en 48 MHz), sin inversión espectral |
-| Demodulación FM | En **cuadratura**: f_i = (f_s/2π)·arg(z[n]·z*[n−1]) con atan2 | Discriminador del curso (limitador→derivador→envolvente) probado como alternativa, peor desempeño |
+| Demodulación FM | **Discriminador del curso**: limitador (divide por la amplitud, mínimo 0.3) → detector de pendiente (derivador FIR) → detector de envolvente (ley cuadrática) | Es el del curso. Se probaron también un PLL (mejor cerca del umbral, más distorsión con canal ideal) y un detector de cuadratura (no visto en el curso); ver `02_diseno/comparacion_demoduladores.md` |
 | Detección DSB-SC | Coherente con fase compensada: cos(2π f_k (t − τ_k)), τ_1 = 411.79 µs, τ_2 = τ_3 = 226.37 µs | Sin compensar, ganancias +0.09 / −0.87 / −0.65 |
 | Filtros | FIR Kaiser propios (`disenar_fir_kaiser.m`), 60 dB | **Sin toolboxes**: Abner no tiene DSP ni Signal Processing Toolbox |
 | Simulink | Solo bloques básicos; solver discreto paso fijo; `EnableMultiTasking` off; modo acelerado | Portabilidad y velocidad (4.3×) |
@@ -79,7 +91,7 @@ Tres audios de 15 kHz → **FDM** (DSB-SC) en ≤ 120 kHz → **FM** con portado
 1. **Tabla de escalamiento (§5):** escala portadora y FI ÷100 pero deja audio y FDM → B_FDM/f_c pasa de 0.012 a 1.2, la FM cruza 0 Hz, FI (17 kHz) < f_m,máx (115 kHz). **Corrección:** escalar todo por K = 100.
 2. **«Se escala por limitaciones computacionales»:** escalar no ahorra muestras (N = T_real·f_s,nominal). El ahorro se obtiene con multirritmo.
 3. **Muestrear a 5–10 × ancho de banda (§8):** el criterio es f_s > 2·f_máx incluyendo el producto suma del mezclador (hasta 20.65 MHz) → 48 MHz.
-4. **Prénfasis/deénfasis (§4.5) no es un error:** es una condición. Con canal ideal no hace falta (SDR ≈ 60 dB). Con AWGN el canal 3 sale unos 14 dB peor por el ruido ∝ f², así que se implementa sobre el multiplex y se mide (`analisis_awgn.m`).
+4. **Prénfasis/deénfasis (§4.5) no es un error:** es una condición. Con canal ideal no hace falta (SDR de 43 a 54 dB). Con AWGN el canal 3 sale unos 14 dB peor por el ruido ∝ f², así que se implementa sobre el multiplex y se mide (`analisis_awgn.m`).
 5. **Matices de redacción:** «índice de modulación» con mensaje compuesto → DR; falta sección de RF (preselector) en el receptor descrito.
 
 ---
@@ -146,9 +158,9 @@ En `verificacion/` quedan `modelo_referencia.m` (la misma cadena en MATLAB puro)
 |---|---|
 | Referencia MATLAB, canal ideal (9/10/11 MHz) | SDR ≈ 60 dB |
 | Simulink vs referencia: FI / multiplex | error 5·10⁻¹⁰ / 1.2·10⁻¹⁰ |
-| Audios recuperados, canal ideal (Simulink) | SDR 60.3 / 59.4 / 57.1 dB |
-| GUI, f_c = 10 MHz | LO 8.30 MHz, SDR 69 dB |
-| GUI, f_c = 11 MHz | LO 9.30 MHz, SDR 69 dB |
+| Audios recuperados, canal ideal (Simulink, discriminador) | SDR 43.3 / 52.2 / 54.4 dB (con el detector de cuadratura anterior: 60.3 / 59.4 / 57.1) |
+| GUI, f_c = 10 MHz | LO 8.30 MHz (SDR 69 dB con el detector de cuadratura anterior) |
+| GUI, f_c = 11 MHz | LO 9.30 MHz |
 | GUI, desintonía 600 kHz | SDR 0.9 dB (falla esperada) |
 | Ancho FM medido (98 / 99 / 99.9 % potencia) | 119 / 148 / 229 kHz |
 | Velocidad, modo acelerado | 13.4 s por 0.05 s de audio; ~40 s por 0.3 s en la GUI |

@@ -1,5 +1,7 @@
 # Pendiente de correr en MATLAB
 
+> **Estado:** la rama principal usa el **discriminador** (verificado en Simulink: SDR 43.3 / 52.2 / 54.4 dB con canal ideal; ver `02_diseno/version_discriminador.md`). Los resultados marcados ✔ más abajo con 60.3 / 59.4 / 57.1 dB son de la versión anterior (detector de cuadratura).
+
 Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, nombres de bloques y señales, scripts nuevos) se escribieron sin poder ejecutar MATLAB. Hay que correr esto en orden, desde `03_codigo_matlab/`. Si algo falla, guardar el mensaje de error **completo** (con archivo y línea).
 
 
@@ -27,7 +29,7 @@ Esta rama usa el discriminador del curso como demodulador. Los pasos de prueba e
   - ganancias sin compensar +0.09 / −0.87 / −0.65
 - **Hecho (MATLAB R2026a Update 4):** 9 [OK], tau y ganancias iguales, órdenes de filtros iguales a los calculados. ✔
 - En la radio:
-  - [ ] simular a 10 MHz con la casilla de prénfasis apagada → SDR ≈ 69 dB (fuente demo), igual que antes
+  - [ ] simular a 10 MHz con la casilla de prénfasis apagada → anotar el SDR (fuente demo; con el discriminador se espera algo menos que los 69 dB del detector de cuadratura)
   - [ ] lo mismo con la casilla de prénfasis encendida → SDR casi igual
   - [ ] el mensaje de estado muestra la desviación usada (debe ser ≤ 100 %)
 
@@ -41,7 +43,7 @@ El diagrama se ordena solo con el «Auto Arrange» de Simulink. Revisar que se v
 - [ ] **Modulador FM:** Subir tasa (a) y (b) → Integrador → 2 pi kf → Fase total (con Reloj t → 2 pi fc) → cos → Amplitud Ac.
 - [ ] **Canal:** Ruido blanco gaussiano → Nivel de ruido → Suma de ruido w(t).
 - [ ] **Receptor superheterodino:** Sección de RF (preselector) → Mezclador (con Oscilador local) → Filtro antitraslape → Bajar tasa 10 a 1 (FI) → Sección de FI → Demodulador FM → Dividir entre kf → Filtro posdetección → Bajar tasa 10 a 1 (multiplex) → Multiplicar por 3 → Filtro de deénfasis.
-- [ ] **Demodulador FM:** Mezcla en fase (I) y en cuadratura (Q) → Pasabajos I y Q → Muestra anterior → productos «I por I anterior», etc. → Parte real / Parte imaginaria → Ángulo girado (atan2) → Convertir a frecuencia. Es el que más probablemente quede con líneas cruzadas.
+- [ ] **Demodulador FM (discriminador):** Limitador → Detector de pendiente (derivador) → Detector de envolvente → Convertir a desviación.
 - [ ] **Demultiplexor FDM:** por canal, Canal k pasabanda → Canal k detector coherente (con Canal k oscilador local) → Canal k pasabajos 15 kHz → Canal k bajar tasa 10 a 1.
 - Si algún subsistema queda confuso, avisar cuál y mandar una captura.
 

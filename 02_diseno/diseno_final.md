@@ -27,7 +27,7 @@ El profesor avisó que el enunciado tiene errores a propósito. Primero los busc
 
 **2) La regla de muestrear a «5–10 veces el ancho de banda» no sirve en pasabanda (§8).** Lo que importa es la frecuencia más alta que aparece en la simulación, no el ancho de banda. En el mezclador aparece el producto suma f_c + f_LO, que llega a 20.65 MHz (con f_c = 11 MHz). Entonces hace falta f_s > 41.3 MHz, y usamos 48 MHz.
 
-**3) Prénfasis/deénfasis: no es un error.** El enunciado dice «si la calidad es baja, considerar prénfasis/deénfasis». Con canal ideal la calidad es buena (SDR ≈ 60 dB) y no hace falta. Con AWGN sí baja, sobre todo en el canal 3, así que lo implementamos (sección 3.7).
+**3) Prénfasis/deénfasis: no es un error.** El enunciado dice «si la calidad es baja, considerar prénfasis/deénfasis». Con canal ideal la calidad es buena (SDR de 43 a 54 dB) y no hace falta. Con AWGN sí baja, sobre todo en el canal 3, así que lo implementamos (sección 3.7).
 
 **Detalles menores:**
 - Con un mensaje formado por muchas frecuencias no se habla de índice de modulación sino de relación de desviación, DR = Δf/f_m,máx (diap. 328).
@@ -87,11 +87,19 @@ s(t) = A_c·cos[2π f_c t + 2π k_f ∫ m(τ) dτ], con k_f = Δf = 150 kHz. Es 
 
 ### 3.5 Demodulación FM y demultiplexación
 
-**Demodulador en cuadratura.** La FI se baja a 0 Hz con cos y −sen (componentes I y Q). La frecuencia instantánea se calcula como el giro de fase entre dos muestras seguidas:
+**Demodulador FM: discriminador del curso** (diap. 342–345, 375). Tiene tres partes:
 
-f_i[n] = (f_s / 2π) · ángulo(z[n] · z*[n−1])
+1. **Limitador.** Deja la FI con amplitud constante. En una simulación digital, recortar la onda genera armónicos que se pliegan sobre la señal, así que se divide la FI por su amplitud, medida con un detector de ley cuadrática: A = √(2·pasabajos(FI²)). La amplitud nunca se toma menor a 0.3, como un limitador real, que tiene ganancia finita.
+2. **Detector de pendiente (derivador).** Es un FIR derivador de 63 coeficientes. Al derivar cos θ(t), la amplitud queda proporcional a dθ/dt = 2π f_i: convierte la FM en AM.
+3. **Detector de envolvente.** Es de ley cuadrática: √(2·pasabajos(d²)) = 2π f_i. Dividiendo entre 2π y restando f_FI queda la desviación k_f·m(t).
 
-Es la versión digital de f_i = (1/2π)·dφ/dt y no necesita limitador. Después viene el filtro posdetección (diap. 376), de 120 kHz, que deja solo el multiplex.
+Sin limitador no funciona: la salida sería amplitud × frecuencia, y el ruido de amplitud se multiplicaría por toda la FI.
+
+Después viene el filtro posdetección (diap. 376), de 120 kHz, que deja solo el multiplex.
+
+*Alternativas probadas* (`comparacion_demoduladores.md`):
+- **PLL** (diap. 347–354): con ruido moderado da lo mismo y aguanta unos dB más antes del umbral, pero con canal ideal distorsiona más (34–48 dB).
+- **Detector de cuadratura:** da 57–60 dB, pero no se vio en el curso.
 
 **Demultiplexor.** Para cada canal: pasabanda → oscilador local 2cos(2π f_k (t − τ_k)) → detector coherente (diap. 230) → pasabajos de 15 kHz.
 
@@ -129,7 +137,7 @@ Sin ruido, los dos filtros se cancelan y no cambian nada. Con ruido, el prénfas
 |---|---|---|
 | −5.8 dB | −1.3 dB | +2.0 dB |
 
-Mejora el canal más ruidoso a costa del que tenía SNR de sobra, y la diferencia entre canales baja de unos 13 dB a unos 6 dB. **Medido en Simulink** (`analisis_awgn`, fuentes de ruido, (SNR)_C de 20 a 40 dB): −5.7 / −1.1 / +2.0 dB, igual a la teoría. La diferencia entre el canal 1 y el canal 3 baja de 14.3 a 6.5 dB. Con canal ideal el SDR no cambia (60.3 / 59.7 / 60.0 dB con y sin prénfasis).
+Mejora el canal más ruidoso a costa del que tenía SNR de sobra. **Medido en Simulink** (`analisis_awgn`, discriminador, (SNR)_C de 20 a 40 dB): −5.4 / −1.1 / +2.0 dB, casi igual a la teoría. La diferencia entre el canal 1 y el canal 3 baja de unos 13 a unos 6 dB. Con canal ideal el SDR no cambia.
 
 ### 3.8 Canal AWGN
 
@@ -182,39 +190,40 @@ Ningún bloque tiene números escritos a mano: todos leen la estructura `P` de `
 
 **Canal ideal:**
 
-- La salida de Simulink coincide con una versión del mismo sistema escrita en MATLAB, con diferencias menores a 10⁻⁹.
-- Audios recuperados: SDR de 60.3 / 59.4 / 57.1 dB, con ganancia ≈ 1.
-- Con la GUI a 10 MHz el LO queda en 8.30 MHz; a 11 MHz, en 9.30 MHz. En los dos casos el SDR es de 69 dB (fuente demo).
+- El transmisor, el canal y el receptor hasta la FI se verificaron contra una versión del mismo sistema escrita en MATLAB, con diferencias menores a 10⁻⁹.
+- Audios recuperados (`graficas_sistema`): SDR de 43.3 / 52.2 / 54.4 dB. Los audios recuperados se superponen con los originales.
+- Con la GUI a 10 MHz el LO queda en 8.30 MHz; a 11 MHz, en 9.30 MHz.
 - Con 600 kHz de desintonía, la señal cae fuera de la FI y el SDR baja a 0.9 dB. Esto muestra que el receptor sí selecciona la portadora.
 
-**Canal AWGN** (SDR en dB):
+**Canal AWGN** (`analisis_awgn`, discriminador, SDR en dB):
 
 | (SNR)_C | CNR en Carson | Canal 1 | Canal 2 | Canal 3 |
 |---|---|---|---|---|
-| 40 dB | 33.5 dB | 41.9 | 31.2 | 27.7 |
-| 30 dB | 23.5 dB | 32.0 | 21.3 | 17.7 |
-| 20 dB | 13.5 dB | 21.9 | 11.5 | 8.2 |
-| 16 dB | 9.5 dB | 11.9 | 6.6 | 4.4 |
-| 14 dB | 7.5 dB | 4.1 | 2.7 | 2.1 |
-| 10 dB | 3.5 dB | 0.4 | 0.2 | 0.3 |
+| 40 dB | 33.5 dB | 39.7 | 31.2 | 27.6 |
+| 30 dB | 23.5 dB | 31.6 | 21.3 | 17.7 |
+| 25 dB | 18.5 dB | 26.7 | 16.3 | 12.8 |
+| 20 dB | 13.5 dB | 18.4 | 10.9 | 8.0 |
+| 18 dB | 11.5 dB | 10.3 | 7.1 | 5.4 |
+| 16 dB | 9.5 dB | 3.9 | 2.9 | 2.4 |
+| 14 dB | 7.5 dB | 1.3 | 0.9 | 0.9 |
 
-- **Sobre el umbral:** los resultados quedan a menos de 1 dB de la fórmula teórica.
+- **Sobre el umbral:** los resultados quedan cerca de la fórmula teórica (a 1–3 dB).
 - **Diferencia entre canales:** el canal 3 queda unos 14 dB por debajo del canal 1, por el ruido que crece con f².
-- **Umbral FM:** por debajo de una CNR de unos 11 dB en el ancho de Carson, la calidad cae de golpe (diap. 381–382).
-- **Sin preselector:** con (SNR)_C = 25 dB, el SDR baja unos 3 dB, porque también entra el ruido de la banda imagen.
+- **Umbral FM:** por debajo de una CNR de unos 14 dB en el ancho de Carson ((SNR)_C ≈ 20 dB), la calidad cae rápido (diap. 381–382). Un PLL aguanta unos 3–4 dB más (ver `comparacion_demoduladores.md`).
+- **Sin preselector:** con (SNR)_C = 25 dB, el SDR baja unos 3 dB, porque también entra el ruido de la banda imagen. Se midió con la versión anterior del demodulador; el efecto no depende del demodulador.
 
 **Prénfasis** (f₀ = 30 kHz, misma (SNR)_C y mismo ruido, SDR en dB):
 
 | (SNR)_C | Sin: c1 / c2 / c3 | Con: c1 / c2 / c3 |
 |---|---|---|
-| 40 dB | 41.9 / 31.2 / 27.7 | 36.3 / 30.1 / 29.8 |
-| 30 dB | 32.0 / 21.3 / 17.7 | 26.3 / 20.2 / 19.8 |
-| 25 dB | 27.0 / 16.3 / 12.8 | 21.3 / 15.2 / 14.8 |
-| 20 dB | 21.9 / 11.5 / 8.2 | 16.2 / 10.4 / 10.0 |
-| 18 dB | 17.5 / 9.6 / 6.4 | 13.7 / 8.2 / 8.1 |
-| 16 dB | 11.9 / 6.6 / 4.4 | 7.7 / 5.6 / 6.1 |
+| 40 dB | 39.7 / 31.2 / 27.6 | 35.6 / 30.1 / 29.7 |
+| 30 dB | 31.6 / 21.3 / 17.7 | 26.1 / 20.2 / 19.8 |
+| 25 dB | 26.7 / 16.3 / 12.8 | 21.1 / 15.2 / 14.8 |
+| 20 dB | 18.4 / 10.9 / 8.0 | 12.2 / 9.7 / 9.8 |
+| 18 dB | 10.3 / 7.1 / 5.4 | 5.3 / 5.6 / 6.8 |
+| 16 dB | 3.9 / 2.9 / 2.4 | 1.1 / 2.0 / 3.2 |
 
-Sobre el umbral, el preénfasis cambia el SDR en −5.7 / −1.1 / +2.0 dB, lo mismo que predice la teoría (−5.8 / −1.3 / +2.0). Cerca del umbral el canal 3 sigue ganando unos +1.7 dB. Con canal ideal no cambia nada.
+Sobre el umbral, el preénfasis cambia el SDR en −5.4 / −1.1 / +2.0 dB, casi lo mismo que predice la teoría (−5.8 / −1.3 / +2.0). Con canal ideal no cambia nada (44.8 / 55.9 / 58.5 dB con preénfasis).
 
 **Audios reales:** pendiente (`probar_audio_real`).
 

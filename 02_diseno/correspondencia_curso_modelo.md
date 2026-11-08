@@ -78,18 +78,17 @@ El nivel de ruido sale de la (SNR)_C del curso (diap. 377). Con nivel 0, el cana
 - «Multiplicar por 3» deshace la normalización del transmisor.
 - Bajar tasa es *de simulación*.
 
-## 6. Demodulador FM (diap. 342, 309)
+## 6. Demodulador FM: discriminador (diap. 342–345, 375)
 
-El curso explica que un discriminador entrega una salida proporcional a la frecuencia instantánea, f_i = f_c + (1/2π)·dφ/dt. Nuestro demodulador calcula exactamente eso, en forma digital:
+| Curso | Modelo | Qué hace |
+|---|---|---|
+| Limitador (diap. 375) | **Limitador** | Divide la FI por su amplitud, medida con ley cuadrática y con mínimo 0.3. Queda amplitud constante = 1 |
+| Discriminador / detector de pendiente (diap. 342–345) | **Detector de pendiente (derivador)** | Derivador FIR: la amplitud queda proporcional a 2π f_i (FM → AM) |
+| Detector de envolvente | **Detector de envolvente** | Ley cuadrática: √(2·pasabajos(d²)) = 2π f_i |
+| f_i = f_c + k_f·m(t) (diap. 309) | **Convertir a desviación** | Divide entre 2π y resta f_FI: sale k_f·m(t) en Hz |
 
-| Idea | Bloque del modelo |
-|---|---|
-| Separar la FI en dos componentes: en fase y en cuadratura (diap. 174) | Rama en fase (I), Rama en cuadratura (Q) |
-| Cuánto gira la fase entre una muestra y la siguiente (≈ dφ/dt) | Giro de fase entre muestras |
-| Pasar de ángulo a frecuencia: f_i = (f_s/2π)·Δφ | Convertir a frecuencia |
-
-- **Por qué no se usa un limitador** (diap. 375): el ángulo no depende de la amplitud, así que el limitador no hace falta.
-- **Por qué no se usa el discriminador clásico** (limitador → derivador → envolvente): se probó y dio peor calidad (36–45 dB contra 60 dB).
+- **Por qué el limitador divide en vez de recortar:** recortar o rectificar genera armónicos que se pliegan sobre la señal al muestrear a 4.8 MHz.
+- **Alternativas probadas:** PLL y detector de cuadratura (`comparacion_demoduladores.md`).
 
 ## 7. Demultiplexor FDM (diap. 230, 237, 264)
 
@@ -111,5 +110,5 @@ El oscilador local de cada canal tiene la fase corregida por el retardo de los f
 | Interpolación (x10), Interpolación (x100) | Transmisor y modulador | Subir la frecuencia de muestreo para representar señales más altas (Nyquist, diap. 391–397) |
 | Bajar tasa 10 a 1, Filtro antitraslape | Sección de FI, posdetección, demultiplexor | Bajar la frecuencia de muestreo sin traslape (diap. 398–400) |
 | Normalización, Dividir entre kf, Multiplicar por 3 | Transmisor y receptor | Escalas de amplitud: \|m\| ≤ 1 y Δf = k_f·m (diap. 309–310) |
-| Ramas I y Q, Giro de fase | Demodulador FM | Forma digital de f_i = (1/2π)·dφ/dt |
+| Retardo para alinear, Amplitud mínima, No negativo, ×2, Raíz | Demodulador FM | Piezas del limitador y del detector de envolvente digitales (ley cuadrática) |
 | Guardar … | Nivel principal | Guardar señales para las gráficas |

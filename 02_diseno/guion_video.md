@@ -96,7 +96,7 @@ Las partes están repartidas entre los dos, pero cada uno debería poder explica
 **Texto:**
 > El modelo tiene cinco subsistemas, uno por cada parte: transmisor FDM, modulador FM, canal, receptor superheterodino y demultiplexor FDM. Las señales llevan los nombres del curso: m(t) es el multiplex que entra al modulador, s(t) es la señal FM y x(t), que es s(t) más el ruido w(t), es lo que llega al receptor. Solo usa bloques básicos de Simulink, con solver discreto de paso fijo, y todos los valores salen de un archivo de parámetros.
 >
-> Dentro del receptor están los bloques del esquema del curso: sección de RF, oscilador local, mezclador, sección de FI, demodulador FM y filtro posdetección. Algunos, como la sección de FI, tienen adentro piezas extra que solo existen porque la simulación es digital y cada etapa usa su propia frecuencia de muestreo. El demodulador FM trabaja en cuadratura: bajamos la FI a cero con un coseno y un seno, y medimos cuánto gira la fase entre una muestra y la siguiente. Ese giro es la frecuencia instantánea.
+> Dentro del receptor están los bloques del esquema del curso: sección de RF, oscilador local, mezclador, sección de FI, demodulador FM y filtro posdetección. Algunos, como la sección de FI, tienen adentro piezas extra que solo existen porque la simulación es digital y cada etapa usa su propia frecuencia de muestreo. El demodulador FM es el discriminador del curso. Primero, un limitador deja la FI con amplitud constante. Después, un detector de pendiente, que es un derivador, convierte la FM en AM: al derivar, la amplitud queda proporcional a la frecuencia instantánea. Por último, un detector de envolvente saca esa amplitud, y restándole la FI queda el mensaje.
 >
 > En el demultiplexor, cada canal tiene un pasabanda, su oscilador local, un detector coherente y un pasabajos de 15 kHz. Aquí hay un detalle: los filtros retrasan la señal, y en DSB-SC un desfase en la subportadora multiplica la salida por el coseno de ese desfase. Sin corregirlo, el canal 1 quedaba con una ganancia de 0.09, casi nada. Por eso calculamos el retardo de los filtros y desfasamos la subportadora del receptor en esa misma cantidad.
 
@@ -117,7 +117,7 @@ Las partes están repartidas entre los dos, pero cada uno debería poder explica
 
 *(Reproducir los tres audios recuperados. Si son audios reales, usar los `recuperado1..3.wav` de `probar_audio_real`.)*
 
-> Con canal ideal, el SDR de los audios recuperados es de unos 60 dB. [PENDIENTE: SDR con audio real.]
+> Con canal ideal, el SDR de los audios recuperados es de 43 a 54 dB, según el canal. [PENDIENTE: SDR con audio real.]
 >
 > Si desintonizamos el receptor 600 kHz, la señal cae fuera de la FI y el audio se pierde: el SDR baja a casi 0 dB. Eso muestra que el receptor de verdad selecciona la portadora.
 
@@ -130,11 +130,11 @@ Las partes están repartidas entre los dos, pero cada uno debería poder explica
 **Texto:**
 > Ahora agregamos ruido blanco. Usamos la definición del curso de relación señal a ruido del canal, y la variamos de 40 a 14 dB.
 >
-> Primero, mientras el ruido no es muy fuerte, los resultados quedan a menos de 1 dB de la fórmula teórica. Segundo, el canal 3 siempre sale unos 14 dB peor que el canal 1. La razón es que, a la salida del discriminador FM, el ruido crece con el cuadrado de la frecuencia, y el canal 3 está en la subportadora más alta. Tercero, por debajo de unos 11 dB de relación portadora a ruido en el ancho de Carson, la calidad se cae de golpe: es el efecto umbral de la FM.
+> Primero, mientras el ruido no es muy fuerte, los resultados quedan cerca de la fórmula teórica. Segundo, el canal 3 siempre sale unos 14 dB peor que el canal 1. La razón es que, a la salida del discriminador FM, el ruido crece con el cuadrado de la frecuencia, y el canal 3 está en la subportadora más alta. Tercero, cuando la relación portadora a ruido en el ancho de Carson baja de unos 14 dB, la calidad se cae rápido: es el efecto umbral de la FM. También probamos un PLL como demodulador: con ruido moderado da lo mismo, aguanta unos dB más antes del umbral, pero con canal ideal distorsiona más, por eso nos quedamos con el discriminador.
 >
 > Aquí entra el prénfasis. Como dice el curso, va antes del modulador FM y el deénfasis va después del demodulador. En el modelo son el «Filtro de preénfasis», al final del transmisor, y el «Filtro de deénfasis», después del filtro posdetección. Filtramos el multiplex completo con un filtro de primer orden que sube las frecuencias altas, y en el receptor aplicamos el filtro inverso. Sin ruido, los dos filtros se cancelan y no cambia nada. En la radio se activan con una casilla.
 >
-> Con ruido, el canal 3 mejora unos 2 dB y el canal 1 pierde unos 6 dB, justo lo que predice la teoría. Es decir, el prénfasis no quita ruido en total: lo reparte. Y eso nos sirve, porque el canal 3 era el que limitaba la calidad, y el canal 1 tenía calidad de sobra. La diferencia entre canales baja de 14 a unos 6.5 dB.
+> Con ruido, el canal 3 mejora unos 2 dB y el canal 1 pierde unos 5 dB, como predice la teoría. Es decir, el prénfasis no quita ruido en total: lo reparte. Y eso nos sirve, porque el canal 3 era el que limitaba la calidad, y el canal 1 tenía calidad de sobra. La diferencia entre canales baja de 14 a unos 6 dB.
 
 ---
 
