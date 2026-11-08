@@ -9,7 +9,7 @@
 - **Se muestra:** los demás números, en la tabla o figura que esté en pantalla.
 - Todos salen de `decisiones_cuantitativas.md`. Si el profesor pregunta por uno que no se dijo, está ahí.
 
-Son unas 1100 palabras habladas, unos 8 minutos. Con la demostración de la radio y las pausas en las figuras queda en 10 minutos.
+Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radio queda en 10.5–11 minutos. Si al ensayar se pasan de 11, acorten el párrafo del limitador (sección 5) y el del retardo (sección 4).
 
 ---
 
