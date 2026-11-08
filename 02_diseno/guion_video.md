@@ -11,7 +11,7 @@
 
 Se dice el razonamiento y la cifra que decide. Los demás números están en la consola o en la radio, y todos tienen su origen en `decisiones_cuantitativas.md` por si el profesor pregunta.
 
-Son unas 1420 palabras habladas, unos 10 minutos. Con los cambios de ventana y la demostración se acerca a los 12 minutos del máximo, así que conviene recortar al ensayar. Lo primero que se puede quitar: el párrafo del limitador (sección 5) y el del retardo (sección 4), unos 140 palabras, cerca de 1 minuto.
+Son unas 1480 palabras habladas, unos 10.5 minutos. Con los cambios de ventana y la demostración se acerca a los 12 minutos del máximo, así que conviene recortar al ensayar. Lo primero que se puede quitar: el párrafo del limitador (sección 5) y el del retardo (sección 4), unos 140 palabras, cerca de 1 minuto.
 
 ---
 
