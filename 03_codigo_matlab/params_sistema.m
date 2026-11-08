@@ -143,6 +143,19 @@ function P = params_sistema(fc_nom_Hz, opciones)
     end
     [P.h.post,     P.fi_info.post]     = disenar_fir_kaiser('lp', P.fs_m, [150 200], A, 1);
 
+    %% ---------------- Demodulador FM: discriminador (diap. 342-345, 375) ----------------
+    % limitador -> detector de pendiente (derivador) -> detector de envolvente (ley cuadrática)
+    % Derivador: FIR ideal h[n] = cos(pi n)/n (n ~= 0) con ventana de Kaiser, por fs para dar rad/s.
+    % Los dos detectores de ley cuadrática usan el mismo pasabajos que P.h.iq (400 / 950 kHz).
+    Nd = 63;  beta_d = 6;  n = (0:Nd-1) - (Nd-1)/2;
+    hder = zeros(1, Nd);  hder(n ~= 0) = cos(pi*n(n ~= 0)) ./ n(n ~= 0);
+    wk = besseli(0, beta_d*sqrt(1 - (2*(0:Nd-1)/(Nd-1) - 1).^2)) / besseli(0, beta_d);
+    P.disc.h_der = hder .* wk * P.fs_fi;
+    P.disc.amin  = 0.3;                          % el limitador no considera amplitudes menores (amplitud normal = 1)
+    P.disc.d_env = (numel(P.h.iq) - 1) / 2;      % retardo del pasabajos de amplitud, en muestras (para alinear la FI)
+    % retardo total del discriminador: limitador + derivador + detector de envolvente
+    P.disc.retardo_s = (P.disc.d_env + (Nd-1)/2 + (numel(P.h.iq)-1)/2) / P.fs_fi;
+
     %% ---------------- Retardo tau_k y fase de las subportadoras del RX ----------------
     % En DSB-SC, si la subportadora del receptor tiene un error de fase phi, la salida queda
     % multiplicada por cos(phi) (diap. 237-238). Los filtros retrasan la señal, así que el RX
@@ -153,7 +166,7 @@ function P = params_sistema(fc_nom_Hz, opciones)
     P.rt_retardo = 1;
     tau_comun = P.rt_retardo / P.fs_m + I.interp2a.retardo_s + P.rt_retardo / P.fs_fi + I.interp2b.retardo_s + ...
                 I.presel.retardo_s + I.fi_lpf.retardo_s + I.fi.retardo_s + ...
-                I.iq.retardo_s + 0.5 / P.fs_fi + I.mux.retardo_s;      % 0.5 muestra: demodulador
+                P.disc.retardo_s + I.mux.retardo_s;                  % discriminador: limitador + derivador + envolvente
     for k = 1:3
         P.tau(k) = tau_comun + I.canal{k}.retardo_s;
     end
@@ -260,6 +273,7 @@ function imprimir_tabla(P)
         s = P.fi_info.canal{k};
         fprintf('  canal %d    N = %4d   A = %5.1f dB   retardo = %8.3f ms sim\n', k, s.N, s.A_medida_dB, s.retardo_s*1e3);
     end
+    fprintf('\nDemodulador: discriminador (limitador -> derivador de %d coef. -> detector de envolvente), amplitud mínima %.1f\n', numel(P.disc.h_der), P.disc.amin);
     fprintf('\nRetardo hasta el detector de cada canal (tau_k) y ganancia si NO se compensara:\n');
     for k = 1:3
         fprintf('  canal %d: tau = %7.2f us nom  -> cos(2 pi f_k tau) = %+.2f\n', k, P.tau(k)*1e6/K, P.ganancia_sin_compensar(k));
