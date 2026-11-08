@@ -44,7 +44,7 @@ Esta rama usa el discriminador del curso como demodulador. Los pasos de prueba e
   - Efecto del prénfasis: −5.5 / −1.3 / +1.9 dB (teoría −5.8 / −1.3 / +2.0).
   - 10 y 11 MHz dan lo mismo (±0.1 dB): la sintonía funciona en las dos portadoras.
   - Los valores absolutos son más altos que los de `analisis_awgn` (26.7 / 16.3 / 12.8) porque la fuente es otra: `analisis_awgn` usa ruido que llena toda la banda de 15 kHz, y la fuente demo usa senoides, que tienen más potencia para el mismo pico.
-- **Audios grabados con ruido (fuente audio, 11 MHz, con prénfasis, (SNR)_C = 25 dB, valor por defecto de la barra; confirmar):** 12.7 / 10.2 / 7.7 dB. Con la fuente demo fue 28.7 / 24.5 / 17.8 dB. La diferencia (16 / 14 / 10 dB) se explica por la relación pico/rms: unos 17–18 dB en las grabaciones, frente a 3 dB de una senoide (ver pregunta 31b en `02_diseno/preguntas_profesor.md`).
+- **Audios grabados con ruido (fuente audio, 11 MHz, con prénfasis, (SNR)_C = 25 dB):** 12.7 / 10.2 / 7.7 dB. Con la fuente demo fue 28.7 / 24.5 / 17.8 dB. La diferencia (16 / 14 / 10 dB) se explica por la relación pico/rms: unos 17–18 dB en las grabaciones, frente a 3 dB de una senoide (ver pregunta 31b en `02_diseno/preguntas_profesor.md`).
 
 ### Revisar el modelo (`sistema_fdm_fm.slx`)
 
