@@ -191,8 +191,9 @@ Barrido AWGN (`verificar_etapa8`, SDR en dB, canales 1/2/3):
 - Etapas 0–8 **completas y verificadas** en MATLAB R2026a (ver documento de diseño).
 - Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, nombres de bloques, scripts nuevos) **todavía no se han corrido en MATLAB**: seguir `PENDIENTES_MATLAB.md`.
 - Prénfasis/deénfasis **medido en Simulink**: −5.7 / −1.1 / +2.0 dB (teoría −5.8 / −1.3 / +2.0); con canal ideal no cambia el SDR.
-- El guion del video y las preguntas probables están en `02_diseno/`; falta solo el dato de audio real ([PENDIENTE] en el guion).
-- Faltan los tres audios reales (`03_codigo_matlab/audios/audio1..3.wav`).
+- El guion del video y las preguntas probables están en `02_diseno/`.
+- Audios reales probados con el discriminador: SDR de unos 44 / 56 / 54 dB con canal ideal (`03_codigo_matlab/audios/recuperado1..3.wav`).
+- Los diagramas del modelo con discriminador están en `Diagramas Discriminador.pdf`, explicados en `06_guia_estudio/diagramas_explicados.html`.
 
 ### Sugerencia de orden para la revisión
 

@@ -117,7 +117,7 @@ Las partes están repartidas entre los dos, pero cada uno debería poder explica
 
 *(Reproducir los tres audios recuperados. Si son audios reales, usar los `recuperado1..3.wav` de `probar_audio_real`.)*
 
-> Con canal ideal, el SDR de los audios recuperados es de 43 a 54 dB, según el canal. [PENDIENTE: SDR con audio real.]
+> Con canal ideal, el SDR de los audios recuperados es de 43 a 54 dB, según el canal. Con los audios que grabamos sale parecido: unos 44, 56 y 54 dB.
 >
 > Si desintonizamos el receptor 600 kHz, la señal cae fuera de la FI y el audio se pierde: el SDR baja a casi 0 dB. Eso muestra que el receptor de verdad selecciona la portadora.
 
@@ -155,7 +155,7 @@ Las partes están repartidas entre los dos, pero cada uno debería poder explica
 
 ## Antes de grabar
 
-- [ ] Completar los [PENDIENTE] con los resultados de `analisis_awgn` y `probar_audio_real`.
+- [x] Completar los [PENDIENTE] con los resultados de `analisis_awgn` y `probar_audio_real`.
 - [ ] Tener a mano las figuras: `graficas_sistema` las guarda en `03_codigo_matlab/figuras/` y `analisis_awgn` guarda `fig_awgn.png`.
 - [ ] Grabar la demostración de la GUI por separado (cada simulación tarda), o tener ya simulado lo que se va a mostrar.
 - [ ] Ensayar con cronómetro: si se pasa de 10 min, recortar primero 3c (inyección inferior) y 4a (detalle del retardo).

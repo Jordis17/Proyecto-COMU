@@ -176,7 +176,7 @@ x(t) → Sección de RF (preselector) → Mezclador → Sección de FI → Demod
 
 ## Demodulador FM: discriminador del curso
 
-> Los números de página de esta sección y las siguientes cambian con el PDF de diagramas de la versión con discriminador.
+> Páginas del PDF `Diagramas Discriminador.pdf`: Demodulador FM en la 11, Convertir a desviación en la 12, Detector de envolvente en la 13 y Limitador en la 14. Las demás páginas no cambian.
 
 ```
 señal de FI → Limitador → Detector de pendiente (derivador) → Detector de envolvente → Convertir a desviación → frecuencia instantánea
