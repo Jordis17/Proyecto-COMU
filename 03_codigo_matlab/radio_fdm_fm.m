@@ -117,6 +117,7 @@ function radio_fdm_fm()
         end
     end
 
+    function simular()
         bt_sim.Enable = 'off';
         try
             T = ed_T.Value;
