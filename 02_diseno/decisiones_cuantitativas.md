@@ -123,8 +123,9 @@ Bajar f₀ de 30 a 10 kHz le da al audio 3 solo 0.4 dB más, pero le quita 3.1 d
 |---|---|---|---|
 | `analisis_awgn`, (SNR)_C de 20 a 40 dB | −5.4 dB | −1.1 dB | +2.0 dB |
 | GUI, fuente demo, 25 dB, 10 y 11 MHz | −5.5 dB | −1.3 dB | +1.9 dB |
+| GUI, grabaciones (WAV), 25 dB, 10 MHz: de 18.3 / 11.3 / 6.1 a 12.7 / 10.2 / 7.7 dB | −5.6 dB | −1.1 dB | +1.6 dB |
 
-- A 25 dB, la diferencia entre el audio 1 y el audio 3 baja de **13.9 dB** (26.7 frente a 12.8) a **6.3 dB** (21.1 frente a 14.8).
+- A 25 dB, la diferencia entre el audio 1 y el audio 3 baja de **13.9 dB** (26.7 frente a 12.8) a **6.3 dB** (21.1 frente a 14.8). Con las grabaciones baja de **12.2 dB** a **5.0 dB**.
 - **Decisión:** se deja como opción en la GUI. Mejora el audio que limita la calidad del sistema sin cambiar la desviación ni el ancho de Carson.
 
 ## 10. Resumen
