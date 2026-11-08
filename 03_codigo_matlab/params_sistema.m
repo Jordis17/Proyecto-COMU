@@ -143,6 +143,24 @@ function P = params_sistema(fc_nom_Hz, opciones)
     end
     [P.h.post,     P.fi_info.post]     = disenar_fir_kaiser('lp', P.fs_m, [150 200], A, 1);
 
+    %% ---------------- Demodulador FM: PLL (diap. 347-354) ----------------
+    % Lazo de segundo orden: detector de fase (multiplicador) -> filtro PI -> VCO.
+    % Frecuencia natural f_n = 200 kHz y amortiguamiento 0.707: lo bastante rápido para seguir
+    % un multiplex de 115 kHz con 150 kHz de desviación (probado en
+    % 04_verificacion_python/comparar_demoduladores.py).
+    P.pll.fn   = 200e3 / K;
+    P.pll.zeta = 0.707;
+    wn = 2*pi*P.pll.fn;
+    P.pll.Kp = 2*P.pll.zeta*wn / (2*pi);       % ganancia proporcional [Hz por rad]
+    P.pll.Ki = wn^2 / (2*pi);                   % ganancia integral [Hz por rad por s]
+    % respuesta del lazo en cada subportadora (modelo lineal discreto, con el VCO de Euler hacia adelante)
+    zi = exp(-1j*2*pi*P.f_sc/P.fs_fi);          % z^-1 en cada f_k
+    F  = P.pll.Kp + (P.pll.Ki/P.fs_fi)./(1 - zi);
+    G  = (2*pi/P.fs_fi)*zi./(1 - zi);
+    Hpll = F.*(2*pi/P.fs_fi)./(1 - zi)./(1 + F.*G);
+    P.pll.H = Hpll;
+    P.pll.retardo_eq = -angle(Hpll)./(2*pi*P.f_sc);
+
     %% ---------------- Retardo tau_k y fase de las subportadoras del RX ----------------
     % En DSB-SC, si la subportadora del receptor tiene un error de fase phi, la salida queda
     % multiplicada por cos(phi) (diap. 237-238). Los filtros retrasan la señal, así que el RX
@@ -152,10 +170,12 @@ function P = params_sistema(fc_nom_Hz, opciones)
     I = P.fi_info;
     P.rt_retardo = 1;
     tau_comun = P.rt_retardo / P.fs_m + I.interp2a.retardo_s + P.rt_retardo / P.fs_fi + I.interp2b.retardo_s + ...
-                I.presel.retardo_s + I.fi_lpf.retardo_s + I.fi.retardo_s + ...
-                I.iq.retardo_s + 0.5 / P.fs_fi + I.mux.retardo_s;      % 0.5 muestra: demodulador
+                I.presel.retardo_s + I.fi_lpf.retardo_s + I.fi.retardo_s + I.mux.retardo_s;
+    % El PLL también desfasa un poco cada subportadora. Su respuesta (de la desviación de
+    % frecuencia de entrada a la salida del filtro de lazo) se calcula con el modelo lineal del
+    % lazo discreto y se convierte en un retardo equivalente en cada f_k.
     for k = 1:3
-        P.tau(k) = tau_comun + I.canal{k}.retardo_s;
+        P.tau(k) = tau_comun + P.pll.retardo_eq(k) + I.canal{k}.retardo_s;
     end
     P.fase_rx = -2 * pi * P.f_sc .* P.tau;      % cos(2*pi*f_k*t + fase_rx) = cos(2*pi*f_k*(t - tau_k))
     P.ganancia_sin_compensar = cos(2 * pi * P.f_sc .* P.tau);
@@ -260,6 +280,8 @@ function imprimir_tabla(P)
         s = P.fi_info.canal{k};
         fprintf('  canal %d    N = %4d   A = %5.1f dB   retardo = %8.3f ms sim\n', k, s.N, s.A_medida_dB, s.retardo_s*1e3);
     end
+    fprintf('\nDemodulador PLL: f_n = %.0f kHz, zeta = %.3f, Kp = %.4g, Ki = %.4g\n', P.pll.fn*K/1e3, P.pll.zeta, P.pll.Kp, P.pll.Ki);
+    fprintf('  respuesta del lazo en f_k: |H| = %.3f / %.3f / %.3f, fase = %+.1f / %+.1f / %+.1f grados\n', abs(P.pll.H), angle(P.pll.H)*180/pi);
     fprintf('\nRetardo hasta el detector de cada canal (tau_k) y ganancia si NO se compensara:\n');
     for k = 1:3
         fprintf('  canal %d: tau = %7.2f us nom  -> cos(2 pi f_k tau) = %+.2f\n', k, P.tau(k)*1e6/K, P.ganancia_sin_compensar(k));

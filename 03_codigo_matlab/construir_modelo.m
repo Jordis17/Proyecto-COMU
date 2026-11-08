@@ -291,7 +291,7 @@ function construir_receptor(rx)
     dem = [rx '/Demodulador_FM'];
     add_block('built-in/Subsystem', dem, 'Position', caja(650, 55, 120, 55));
     construir_demodulador_fm(dem);
-    set_param(dem, 'Description', 'Cuadratura: z = FI * exp(-j 2 pi f_FI t), LPF, f_i = fs/(2 pi) * atan2(Im, Re) de z[n] z*[n-1]');
+    set_param(dem, 'Description', 'PLL: detector de fase -> filtro de lazo PI -> VCO. La salida del filtro de lazo es la desviación de frecuencia.');
     add_block('simulink/Math Operations/Gain', [rx '/Escala_1_kf'], 'Gain', '1/P.kf', ...
         'Position', caja(800, 67, 50, 30));
     add_block('simulink/Discrete/Discrete Filter', [rx '/Filtro_posdeteccion'], ...
@@ -331,61 +331,50 @@ function construir_receptor(rx)
 end
 
 function construir_demodulador_fm(dem)
-% I = FI*cos(w t), Q = -FI*sin(w t), filtrados; z[n] z*[n-1] = (I I1 + Q Q1) + j (Q I1 - I Q1)
-% f_i = fs_fi/(2 pi) * atan2(Q I1 - I Q1, I I1 + Q Q1)
-    add_block('built-in/Inport', [dem '/fi'], 'Position', caja(20, 120, 30, 14));
-    add_block('simulink/Sources/Sine Wave', [dem '/cos_FI'], 'SineType', 'Time based', ...
-        'Amplitude', '1', 'Frequency', '2*pi*P.f_FI', 'Phase', 'pi/2', 'Bias', '0', ...
-        'SampleTime', '1/P.fs_fi', 'Position', caja(20, 40, 50, 30));
-    add_block('simulink/Sources/Sine Wave', [dem '/menos_sen_FI'], 'SineType', 'Time based', ...
-        'Amplitude', '-1', 'Frequency', '2*pi*P.f_FI', 'Phase', '0', 'Bias', '0', ...
-        'SampleTime', '1/P.fs_fi', 'Position', caja(20, 190, 50, 30));
-    add_block('simulink/Math Operations/Product', [dem '/Mezcla_I'], 'Position', caja(110, 50, 30, 40));
-    add_block('simulink/Math Operations/Product', [dem '/Mezcla_Q'], 'Position', caja(110, 170, 30, 40));
-    add_block('simulink/Discrete/Discrete Filter', [dem '/LPF_I'], 'Numerator', 'P.h.iq', ...
-        'Denominator', '1', 'SampleTime', '-1', 'Position', caja(170, 55, 70, 30));
-    add_block('simulink/Discrete/Discrete Filter', [dem '/LPF_Q'], 'Numerator', 'P.h.iq', ...
-        'Denominator', '1', 'SampleTime', '-1', 'Position', caja(170, 175, 70, 30));
-    add_block('simulink/Discrete/Unit Delay', [dem '/Retardo_I'], 'InitialCondition', '0', ...
-        'SampleTime', '-1', 'Position', caja(270, 100, 40, 30));
-    add_block('simulink/Discrete/Unit Delay', [dem '/Retardo_Q'], 'InitialCondition', '0', ...
-        'SampleTime', '-1', 'Position', caja(270, 230, 40, 30));
-    add_block('simulink/Math Operations/Product', [dem '/I_I1'], 'Position', caja(350, 30, 30, 40));
-    add_block('simulink/Math Operations/Product', [dem '/Q_Q1'], 'Position', caja(350, 90, 30, 40));
-    add_block('simulink/Math Operations/Product', [dem '/Q_I1'], 'Position', caja(350, 160, 30, 40));
-    add_block('simulink/Math Operations/Product', [dem '/I_Q1'], 'Position', caja(350, 220, 30, 40));
-    add_block('simulink/Math Operations/Add', [dem '/Re'], 'Inputs', '++', 'Position', caja(420, 50, 30, 50));
-    add_block('simulink/Math Operations/Add', [dem '/Im'], 'Inputs', '+-', 'Position', caja(420, 180, 30, 50));
-    add_block('simulink/Math Operations/Trigonometric Function', [dem '/atan2'], 'Operator', 'atan2', ...
-        'Position', caja(490, 110, 50, 50));
-    add_block('simulink/Math Operations/Gain', [dem '/fs_sobre_2pi'], 'Gain', 'P.fs_fi/(2*pi)', ...
-        'Position', caja(570, 120, 60, 30));
-    add_block('built-in/Outport', [dem '/f_inst'], 'Position', caja(670, 128, 30, 14));
+% PLL (lazo de enganche de fase, diap. 347-354):
+%   detector de fase: e[n] = FI[n] * (-2 sin(theta_vco[n]))  ~ sin(fase FI - fase VCO)
+%   filtro de lazo PI: v[n] = Kp e[n] + Ki * suma(e)          [Hz]  -> es la desviación de frecuencia
+%   VCO: theta_vco[n+1] = theta_vco[n] + 2 pi (f_FI + v[n]) / fs
+% Cuando el lazo está enganchado, el VCO sigue a la FI y v[n] = k_f * m(t): la salida del filtro
+% de lazo es el mensaje.
+    add_block('built-in/Inport', [dem '/fi'], 'Position', caja(20, 63, 30, 14));
+    add_block('simulink/Math Operations/Product', [dem '/Detector de fase'], 'Position', caja(100, 55, 40, 40));
+    % filtro de lazo PI
+    add_block('simulink/Math Operations/Gain', [dem '/Proporcional (Kp)'], 'Gain', 'P.pll.Kp', ...
+        'Position', caja(200, 30, 70, 30));
+    add_block('simulink/Math Operations/Gain', [dem '/Integral (Ki)'], 'Gain', 'P.pll.Ki', ...
+        'Position', caja(200, 90, 70, 30));
+    add_block('simulink/Discrete/Discrete-Time Integrator', [dem '/Integrador del lazo'], ...
+        'IntegratorMethod', 'Integration: Backward Euler', 'gainval', '1', 'InitialCondition', '0', ...
+        'SampleTime', '1/P.fs_fi', 'Position', caja(300, 90, 50, 30));
+    add_block('simulink/Math Operations/Add', [dem '/Suma del lazo'], 'Inputs', '++', 'Position', caja(390, 50, 30, 60));
+    % VCO
+    add_block('simulink/Sources/Constant', [dem '/Frecuencia de reposo (fFI)'], 'Value', 'P.f_FI', ...
+        'Position', caja(390, 210, 90, 30));
+    add_block('simulink/Math Operations/Add', [dem '/Frecuencia del VCO'], 'Inputs', '++', 'Position', caja(510, 170, 30, 60));
+    add_block('simulink/Math Operations/Gain', [dem '/2 pi'], 'Gain', '2*pi', 'Position', caja(570, 185, 50, 30));
+    add_block('simulink/Discrete/Discrete-Time Integrator', [dem '/Fase del VCO'], ...
+        'IntegratorMethod', 'Integration: Forward Euler', 'gainval', '1', 'InitialCondition', '0', ...
+        'SampleTime', '1/P.fs_fi', 'Position', caja(650, 185, 50, 30));
+    add_block('simulink/Math Operations/Trigonometric Function', [dem '/sin'], 'Operator', 'sin', ...
+        'Position', caja(730, 185, 40, 30));
+    add_block('simulink/Math Operations/Gain', [dem '/Por -2'], 'Gain', '-2', 'Position', caja(800, 185, 40, 30));
+    add_block('built-in/Outport', [dem '/f_inst'], 'Position', caja(480, 73, 30, 14));
 
-    add_line(dem, 'fi/1', 'Mezcla_I/1', 'autorouting', 'on');
-    add_line(dem, 'cos_FI/1', 'Mezcla_I/2', 'autorouting', 'on');
-    add_line(dem, 'fi/1', 'Mezcla_Q/1', 'autorouting', 'on');
-    add_line(dem, 'menos_sen_FI/1', 'Mezcla_Q/2', 'autorouting', 'on');
-    add_line(dem, 'Mezcla_I/1', 'LPF_I/1', 'autorouting', 'on');
-    add_line(dem, 'Mezcla_Q/1', 'LPF_Q/1', 'autorouting', 'on');
-    add_line(dem, 'LPF_I/1', 'Retardo_I/1', 'autorouting', 'on');
-    add_line(dem, 'LPF_Q/1', 'Retardo_Q/1', 'autorouting', 'on');
-    add_line(dem, 'LPF_I/1', 'I_I1/1', 'autorouting', 'on');
-    add_line(dem, 'Retardo_I/1', 'I_I1/2', 'autorouting', 'on');
-    add_line(dem, 'LPF_Q/1', 'Q_Q1/1', 'autorouting', 'on');
-    add_line(dem, 'Retardo_Q/1', 'Q_Q1/2', 'autorouting', 'on');
-    add_line(dem, 'LPF_Q/1', 'Q_I1/1', 'autorouting', 'on');
-    add_line(dem, 'Retardo_I/1', 'Q_I1/2', 'autorouting', 'on');
-    add_line(dem, 'LPF_I/1', 'I_Q1/1', 'autorouting', 'on');
-    add_line(dem, 'Retardo_Q/1', 'I_Q1/2', 'autorouting', 'on');
-    add_line(dem, 'I_I1/1', 'Re/1', 'autorouting', 'on');
-    add_line(dem, 'Q_Q1/1', 'Re/2', 'autorouting', 'on');
-    add_line(dem, 'Q_I1/1', 'Im/1', 'autorouting', 'on');
-    add_line(dem, 'I_Q1/1', 'Im/2', 'autorouting', 'on');
-    add_line(dem, 'Im/1', 'atan2/1', 'autorouting', 'on');
-    add_line(dem, 'Re/1', 'atan2/2', 'autorouting', 'on');
-    add_line(dem, 'atan2/1', 'fs_sobre_2pi/1', 'autorouting', 'on');
-    add_line(dem, 'fs_sobre_2pi/1', 'f_inst/1', 'autorouting', 'on');
+    add_line(dem, 'fi/1', 'Detector de fase/1', 'autorouting', 'on');
+    add_line(dem, 'Detector de fase/1', 'Proporcional (Kp)/1', 'autorouting', 'on');
+    add_line(dem, 'Detector de fase/1', 'Integral (Ki)/1', 'autorouting', 'on');
+    add_line(dem, 'Integral (Ki)/1', 'Integrador del lazo/1', 'autorouting', 'on');
+    add_line(dem, 'Proporcional (Kp)/1', 'Suma del lazo/1', 'autorouting', 'on');
+    add_line(dem, 'Integrador del lazo/1', 'Suma del lazo/2', 'autorouting', 'on');
+    add_line(dem, 'Suma del lazo/1', 'f_inst/1', 'autorouting', 'on');
+    add_line(dem, 'Suma del lazo/1', 'Frecuencia del VCO/1', 'autorouting', 'on');
+    add_line(dem, 'Frecuencia de reposo (fFI)/1', 'Frecuencia del VCO/2', 'autorouting', 'on');
+    add_line(dem, 'Frecuencia del VCO/1', '2 pi/1', 'autorouting', 'on');
+    add_line(dem, '2 pi/1', 'Fase del VCO/1', 'autorouting', 'on');
+    add_line(dem, 'Fase del VCO/1', 'sin/1', 'autorouting', 'on');
+    add_line(dem, 'sin/1', 'Por -2/1', 'autorouting', 'on');
+    add_line(dem, 'Por -2/1', 'Detector de fase/2', 'autorouting', 'on');
 end
 
 function construir_demux(dm)
@@ -506,22 +495,6 @@ function nombres_del_curso(mdl)
         [rx '/fi'],                     'señal de FI';
         [rx '/mezcla'],                 'salida del mezclador';
         [dem '/fi'],                    'señal de FI';
-        [dem '/cos_FI'],                'cos(2 pi fFI t)';
-        [dem '/menos_sen_FI'],          '-sen(2 pi fFI t)';
-        [dem '/Mezcla_I'],              'Mezcla en fase (I)';
-        [dem '/Mezcla_Q'],              'Mezcla en cuadratura (Q)';
-        [dem '/LPF_I'],                 'Pasabajos I';
-        [dem '/LPF_Q'],                 'Pasabajos Q';
-        [dem '/Retardo_I'],             'Muestra anterior de I';
-        [dem '/Retardo_Q'],             'Muestra anterior de Q';
-        [dem '/I_I1'],                  'I por I anterior';
-        [dem '/Q_Q1'],                  'Q por Q anterior';
-        [dem '/Q_I1'],                  'Q por I anterior';
-        [dem '/I_Q1'],                  'I por Q anterior';
-        [dem '/Re'],                    'Parte real';
-        [dem '/Im'],                    'Parte imaginaria';
-        [dem '/atan2'],                 'Ángulo girado (atan2)';
-        [dem '/fs_sobre_2pi'],          'Convertir a frecuencia';
         [dem '/f_inst'],                'frecuencia instantánea';
         dem,                            'Demodulador FM';
         [dm '/m_hat'],                  'm(t) recuperado';
@@ -574,11 +547,10 @@ function agrupar_como_el_curso(mdl)
     renombrar([rx '/Filtro posdetección'], 'Pasabajos 120 kHz');
     agrupar(rx, {'Dividir entre kf', 'Pasabajos 120 kHz', 'Bajar tasa 10 a 1 (multiplex)', 'Multiplicar por 3'}, ...
         'Filtro posdetección', {'frecuencia instantánea'}, {'m(t) recuperado'});
-    agrupar(dem, {'cos(2 pi fFI t)', 'Mezcla en fase (I)', 'Pasabajos I'}, 'Rama en fase (I)', {'señal de FI'}, {'I'});
-    agrupar(dem, {'-sen(2 pi fFI t)', 'Mezcla en cuadratura (Q)', 'Pasabajos Q'}, 'Rama en cuadratura (Q)', {'señal de FI'}, {'Q'});
-    agrupar(dem, {'Muestra anterior de I', 'Muestra anterior de Q', 'I por I anterior', 'Q por Q anterior', ...
-        'Q por I anterior', 'I por Q anterior', 'Parte real', 'Parte imaginaria', 'Ángulo girado (atan2)'}, ...
-        'Giro de fase entre muestras', 'por_origen', {'giro de fase'});
+    agrupar(dem, {'Proporcional (Kp)', 'Integral (Ki)', 'Integrador del lazo', 'Suma del lazo'}, ...
+        'Filtro de lazo', {'error de fase'}, {'desviación de frecuencia'});
+    agrupar(dem, {'Frecuencia de reposo (fFI)', 'Frecuencia del VCO', '2 pi', 'Fase del VCO', 'sin', 'Por -2'}, ...
+        'VCO', {'desviación de frecuencia'}, {'-2 sen(fase del VCO)'});
 end
 
 function agrupar(sys, nombres, nombre_nuevo, nombres_in, nombres_out)

@@ -3,6 +3,10 @@
 Los cambios de la revisión (prénfasis/deénfasis, limpieza del código, nombres de bloques y señales, scripts nuevos) se escribieron sin poder ejecutar MATLAB. Hay que correr esto en orden, desde `03_codigo_matlab/`. Si algo falla, guardar el mensaje de error **completo** (con archivo y línea).
 
 
+## 0b. RAMA PLL (`claude/version-pll`)
+
+Esta rama usa un PLL como demodulador. Los pasos de prueba están en `02_diseno/version_pll.md`.
+
 ## 0. Esta es la VERSIÓN AGRUPADA (rama `claude/version-agrupada`)
 
 - [x] En GitHub Desktop, cambiar a la rama `claude/version-agrupada` (Current branch). La versión anterior sigue intacta en `claude/affectionate-bardeen-qmc9v9`.

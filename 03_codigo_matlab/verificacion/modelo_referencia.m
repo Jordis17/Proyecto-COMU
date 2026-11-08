@@ -57,12 +57,16 @@ function R = modelo_referencia(P, X)
     v  = filter(P.h.fi_lpf, 1, v);                        % pasabajos anti-aliasing (quita suma)
     v  = v(1:P.M1:end);                                   % decimación -> fs_fi
     fi = filter(P.h.fi, 1, v);                            % sección de FI (pasabanda selectivo)
-    n_fi = 0:numel(fi)-1;
 
-    % demodulador FM en cuadratura: f_i = fs/(2 pi) * arg(z[n] z*[n-1])
-    z = fi .* exp(-1j*2*pi*P.f_FI*n_fi/P.fs_fi);
-    z = filter(P.h.iq, 1, z);
-    finst = [0, angle(z(2:end) .* conj(z(1:end-1)))] * P.fs_fi / (2*pi);
+    % demodulador FM con PLL: detector de fase -> filtro de lazo PI -> VCO (igual que el modelo)
+    finst = zeros(size(fi));  th = 0;  integ = 0;  Ts = 1/P.fs_fi;
+    for i = 1:numel(fi)
+        e = fi(i) * (-2*sin(th));                 % detector de fase
+        integ = integ + Ts*P.pll.Ki*e;            % integrador del lazo (Euler hacia atrás)
+        v = P.pll.Kp*e + integ;                   % filtro de lazo PI -> desviación [Hz]
+        finst(i) = v;
+        th = th + Ts*2*pi*(P.f_FI + v);           % VCO (Euler hacia adelante)
+    end
     m_hat = filter(P.h.mux, 1, finst / P.kf);             % filtro posdetección (120 kHz nom)
     m_hat = m_hat(1:P.M2:end) * P.normalizacion;          % -> fs_m, deshace /3
     m_hat = filter(P.enf.num_rx, P.enf.den_rx, m_hat);   % deénfasis (cable si P.enfasis = false)
