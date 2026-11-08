@@ -4,29 +4,55 @@ function radio_fdm_fm()
 %
 %   DOS SELECCIONES INDEPENDIENTES:
 %     1) SINTONÍA RF (dial de 9 a 11 MHz y botones de ±0.1 MHz): fija la portadora. Al
-%        moverla se recalculan al instante el LO (f_c - 1.7 MHz), la imagen y el preselector;
+%        moverla se recalculan al instante el LO (f_c - 1.7 MHz), la imagen y el preselector,
+%        y el PLAN DE FRECUENCIAS se redibuja mientras se arrastra el dial, sin simular.
 %        "Sintonizar y simular" ejecuta el modelo Simulink con esos parámetros.
-%     2) AUDIO 1 / 2 / 3: elige qué salida del demultiplexor FDM se grafica y se escucha.
-%        NO vuelve a simular ni toca el LO (la selección ocurre después de la demodulación).
-%   Cada simulación queda guardada: al volver a una combinación ya simulada (ruido,
-%   prénfasis, portadora...) se muestra al instante. "Simular las 4 combinaciones" deja
-%   listas la de canal ideal y la de ruido, cada una sin y con prénfasis.
-%   Todas las frecuencias se muestran en valores NOMINALES (simulado x K): el escalamiento
-%   es transparente para el usuario. Solo usa MATLAB básico (uifigure) + Simulink.
+%     2) AUDIO 1 / 2 / 3 (botones de presintonía): elige qué salida del demultiplexor FDM se
+%        grafica y se escucha. NO vuelve a simular ni toca el LO (la selección ocurre después
+%        de la demodulación).
+%
+%   GRÁFICAS (dos pestañas):
+%     Receptor superheterodino : plan de frecuencias (en vivo), espectro RF con la respuesta
+%                                de la sección de RF, salida del mezclador con el pasabajos de
+%                                la sección de FI, y la FI filtrada con su ancho medido.
+%     Demultiplexación y audio : multiplex transmitido y recuperado, SDR de los tres audios
+%                                (con la teoría si hay ruido) y el audio elegido en el tiempo
+%                                y en frecuencia.
+%
+%   Cada simulación queda guardada: al volver a una combinación ya simulada (ruido, prénfasis,
+%   portadora...) se muestra al instante. La lámpara dice si las gráficas corresponden a los
+%   controles marcados. Todas las frecuencias se muestran en valores NOMINALES (simulado x K):
+%   el escalamiento es transparente para el usuario. Solo usa MATLAB básico (uifigure) + Simulink.
 
     mdl = 'sistema_fdm_fm';
-    S = struct();                 % estado: parámetros, fuentes, resultados
-    S.P = [];  S.fuente = [];  S.out = [];  S.fuente_sim = [];  S.P_sim = [];
+    P0 = params_sistema(10e6, struct('imprimir', false));   % constantes del diseño (no dependen de f_c)
+    K  = P0.K;
+    S = struct('P', [], 'R', [], 'P_sim', [], 'fuente_sim', [], 'sdr', [], ...
+        'clave_mostrada', '', 'texto_mostrado', '', 'player', []);
     S.memo = containers.Map();    % simulaciones ya hechas: se vuelven a mostrar sin simular
+    H = struct();                 % objetos gráficos del plan de frecuencias
+
+    % colores (los mismos en todas las gráficas)
+    C.rf     = [0.00 0.45 0.74];      % señal RF y sección de RF
+    C.lo     = [0.85 0.15 0.15];      % oscilador local
+    C.im     = [0.60 0.20 0.70];      % frecuencia imagen
+    C.fi     = [0.15 0.60 0.25];      % FI
+    C.suma   = [0.93 0.55 0.10];      % producto suma del mezclador
+    C.filtro = [0.30 0.30 0.30];      % respuesta |H| de los filtros
+    C.orig   = [0.65 0.65 0.65];      % señales originales
+    C.canal  = [0.00 0.45 0.74;       % audio 1
+                0.85 0.40 0.05;       % audio 2
+                0.47 0.20 0.60];      % audio 3
 
     %% ---------------- ventana ----------------
-    fig = uifigure('Name', 'Radio FM superheterodina - FDM de 3 canales', 'Position', [40 40 1360 760]);
-    g = uigridlayout(fig, [1 2]);
+    fig = uifigure('Name', 'Radio FM superheterodina - FDM de 3 canales', 'Position', [40 40 1400 820]);
+    fig.CloseRequestFcn = @(~,~) cerrar();
+    g = uigridlayout(fig, [1 2], 'ColumnSpacing', 8);
     g.ColumnWidth = {390, '1x'};
 
     % ---- columna de controles: cuatro bloques (se desplaza si la pantalla es pequeña)
     gc = uigridlayout(g, [5 1], 'Scrollable', 'on', 'RowSpacing', 8, 'Padding', [4 4 4 4]);
-    gc.RowHeight = {220, 195, 105, 125, '1x'};
+    gc.RowHeight = {220, 195, 128, 160, 70};
 
     % 1) Sintonía: pantalla, dial y valores que se recalculan al sintonizar
     p1 = uipanel(gc, 'Title', 'Sintonía', 'FontWeight', 'bold');
@@ -37,14 +63,15 @@ function radio_fdm_fm()
         'ButtonPushedFcn', @(~,~) paso(-0.1));
     bt_menos.Layout.Row = 1; bt_menos.Layout.Column = 1;
     lcd = uilabel(g1, 'Text', '10.0 MHz', 'FontName', 'Consolas', 'FontSize', 30, 'FontWeight', 'bold', ...
-        'HorizontalAlignment', 'center', 'FontColor', [0.40 1.00 0.55], 'BackgroundColor', [0.06 0.10 0.08]);
+        'HorizontalAlignment', 'center', 'FontColor', [0.40 1.00 0.55], 'BackgroundColor', [0.06 0.10 0.08], ...
+        'Tooltip', 'Portadora del transmisor (valor nominal)');
     lcd.Layout.Row = 1; lcd.Layout.Column = [2 3];
     bt_mas = uibutton(g1, 'Text', char(9654), 'FontSize', 18, 'Tooltip', 'Subir 0.1 MHz', ...
         'ButtonPushedFcn', @(~,~) paso(0.1));
     bt_mas.Layout.Row = 1; bt_mas.Layout.Column = 4;
     % dial de la radio: escala de 9 a 11 MHz, como la banda de un receptor analógico
     dial = uislider(g1, 'Limits', [9 11], 'Value', 10, 'MajorTicks', 9:0.5:11, ...
-        'MinorTicks', 9:0.1:11, 'ValueChangingFcn', @(~,ev) mostrar_fc(ev.Value), ...
+        'MinorTicks', 9:0.1:11, 'ValueChangingFcn', @(~,ev) arrastre_dial(ev.Value), ...
         'ValueChangedFcn', @(~,~) cambio_sintonia());
     dial.Layout.Row = 2; dial.Layout.Column = [1 4];
     par(g1, 3, 1, 'f_LO:');     lbl_lo = par(g1, 3, 2);
@@ -53,6 +80,7 @@ function radio_fdm_fm()
     par(g1, 4, 3, 'Δf / B_T:'); lbl_bw = par(g1, 4, 4);
     par(g1, 5, [1 2], 'Desintonía RX [kHz]:');
     ed_des = uieditfield(g1, 'numeric', 'Value', 0, 'Limits', [-1000 1000], ...
+        'Tooltip', 'Corre la sintonía del receptor respecto a la portadora (0 = sintonizado)', ...
         'ValueChangedFcn', @(~,~) cambio_sintonia());
     ed_des.Layout.Row = 5; ed_des.Layout.Column = [3 4];
 
@@ -62,7 +90,8 @@ function radio_fdm_fm()
     g2.RowHeight = {22, 22, 22, 42, 22};
     g2.ColumnWidth = {130, '1x'};
     par(g2, 1, 1, 'Fuente de audio:');
-    dd_fuente = uidropdown(g2, 'Items', {'demo', 'tonos', 'audio'}, 'Value', 'demo', ...
+    dd_fuente = uidropdown(g2, 'Items', {'demo', 'tonos', 'ruido', 'audio'}, 'Value', 'demo', ...
+        'Tooltip', 'demo: arpegio, sirena y pitidos | tonos: 1, 3 y 7 kHz | ruido: banda completa | audio: WAV de la carpeta audios', ...
         'ValueChangedFcn', @(~,~) mostrar_guardada());
     dd_fuente.Layout.Row = 1; dd_fuente.Layout.Column = 2;
     par(g2, 2, 1, 'Duración [s reales]:');
@@ -79,70 +108,107 @@ function radio_fdm_fm()
         'MinorTicks', 10:1:40, 'Enable', 'off', ...
         'ValueChangingFcn', @(~,ev) mostrar_snr(ev.Value), 'ValueChangedFcn', @(~,~) cambio_ruido());
     sl_snr.Layout.Row = 4; sl_snr.Layout.Column = [1 2];
-    cb_enf = uicheckbox(g2, 'Text', 'Prénfasis / deénfasis', 'Value', false, ...
-        'ValueChangedFcn', @(~,~) mostrar_guardada());
+    cb_enf = uicheckbox(g2, 'Text', sprintf('Prénfasis / deénfasis (f0 = %.0f kHz)', P0.vista.f0_enf_kHz), ...
+        'Value', false, 'ValueChangedFcn', @(~,~) mostrar_guardada());
     cb_enf.Layout.Row = 5; cb_enf.Layout.Column = [1 2];
 
     % 3) Simular
     p3 = uipanel(gc, 'Title', 'Simulación', 'FontWeight', 'bold');
-    g3 = uigridlayout(p3, [2 1], 'RowSpacing', 6, 'Padding', [8 6 8 6]);
-    g3.RowHeight = {32, 28};
+    g3 = uigridlayout(p3, [3 1], 'RowSpacing', 6, 'Padding', [8 6 8 6]);
+    g3.RowHeight = {32, 28, 22};
     bt_sim = uibutton(g3, 'Text', 'Sintonizar y simular', 'FontWeight', 'bold', 'FontSize', 14, ...
         'BackgroundColor', [0.85 0.92 1.00], 'ButtonPushedFcn', @(~,~) simular());
     bt_4 = uibutton(g3, 'Text', 'Simular las 4 combinaciones', ...
         'Tooltip', 'Ideal y con ruido, sin y con prénfasis. Después se cambia entre ellas sin simular.', ...
         'ButtonPushedFcn', @(~,~) simular_cuatro());
+    g3b = uigridlayout(g3, [1 2], 'Padding', [0 0 0 0], 'ColumnSpacing', 6);
+    g3b.ColumnWidth = {18, '1x'};
+    lamp = uilamp(g3b, 'Color', [0.6 0.6 0.6]);
+    lbl_lamp = uilabel(g3b, 'Text', 'Todavía no hay simulación');
 
-    % 4) Salida: qué audio se grafica y se escucha
-    p4 = uipanel(gc, 'Title', 'Salida', 'FontWeight', 'bold');
-    g4 = uigridlayout(p4, [3 2], 'RowSpacing', 6, 'Padding', [8 6 8 6]);
-    g4.RowHeight = {22, 24, 28};
-    g4.ColumnWidth = {'1x', '1x'};
-    par(g4, 1, 1, 'Audio de salida:');
-    dd_canal = uidropdown(g4, 'Items', {'Audio 1', 'Audio 2', 'Audio 3'}, 'Value', 'Audio 1', ...
-        'ValueChangedFcn', @(~,~) graficar_canal());
-    dd_canal.Layout.Row = 1; dd_canal.Layout.Column = 2;
-    lbl_sdr = uilabel(g4, 'Text', 'SDR: -', 'FontWeight', 'bold', 'FontSize', 14);
-    lbl_sdr.Layout.Row = 2; lbl_sdr.Layout.Column = [1 2];
-    bt_rx = uibutton(g4, 'Text', 'Escuchar recuperado', 'ButtonPushedFcn', @(~,~) escuchar(true));
+    % 4) Salida: presintonías de audio, SDR y botones de escucha
+    p4 = uipanel(gc, 'Title', 'Salida: audio de interés (no vuelve a simular)', 'FontWeight', 'bold');
+    g4 = uigridlayout(p4, [3 3], 'RowSpacing', 6, 'Padding', [8 6 8 6]);
+    g4.RowHeight = {56, 22, 28};
+    g4.ColumnWidth = {'1x', '1x', '1x'};
+    bg = uibuttongroup(g4, 'BorderType', 'none', 'SelectionChangedFcn', @(~,~) graficar_canal());
+    bg.Layout.Row = 1; bg.Layout.Column = [1 3];
+    tb = gobjects(1, 3);
+    for ic = 1:3
+        banda = (P0.f_sc(ic) + [-1 1] * P0.Wa) * K / 1e3;
+        tb(ic) = uitogglebutton(bg, 'Text', sprintf('Audio %d', ic), 'FontWeight', 'bold', 'FontSize', 13, ...
+            'FontColor', C.canal(ic,:), 'Position', [2 + 115*(ic-1), 4, 108, 48], ...
+            'Tooltip', sprintf('Subportadora %.0f kHz (banda de %.0f a %.0f kHz)', P0.f_sc(ic)*K/1e3, banda));
+        try    % etiqueta de dos líneas: nombre y subportadora
+            tb(ic).Text = {sprintf('Audio %d', ic), sprintf('%.0f kHz', P0.f_sc(ic)*K/1e3)};
+        catch
+        end
+    end
+    lbl_sdr = uilabel(g4, 'Text', 'SDR: -', 'FontWeight', 'bold', 'FontSize', 14, ...
+        'HorizontalAlignment', 'center');
+    lbl_sdr.Layout.Row = 2; lbl_sdr.Layout.Column = [1 3];
+    bt_rx = uibutton(g4, 'Text', [char(9654) ' Recuperado'], 'ButtonPushedFcn', @(~,~) escuchar(true));
     bt_rx.Layout.Row = 3; bt_rx.Layout.Column = 1;
-    bt_tx = uibutton(g4, 'Text', 'Escuchar original', 'ButtonPushedFcn', @(~,~) escuchar(false));
+    bt_tx = uibutton(g4, 'Text', [char(9654) ' Original'], 'ButtonPushedFcn', @(~,~) escuchar(false));
     bt_tx.Layout.Row = 3; bt_tx.Layout.Column = 2;
+    bt_stop = uibutton(g4, 'Text', [char(9632) ' Detener'], 'ButtonPushedFcn', @(~,~) detener());
+    bt_stop.Layout.Row = 3; bt_stop.Layout.Column = 3;
 
     % 5) Estado
-    lbl_estado = uilabel(gc, 'Text', 'Listo. Elija la portadora y presione "Sintonizar y simular".', ...
-        'WordWrap', 'on', 'VerticalAlignment', 'top');
+    lbl_estado = uilabel(gc, 'Text', ['Listo. Mueva el dial: el plan de frecuencias se actualiza solo. ' ...
+        'Luego presione "Sintonizar y simular".'], 'WordWrap', 'on', 'VerticalAlignment', 'top');
 
+    %% ---------------- gráficas en pestañas ----------------
+    tg = uitabgroup(g);
+    t1 = uitab(tg, 'Title', 'Receptor superheterodino');
+    t2 = uitab(tg, 'Title', 'Demultiplexación y audio');
+    ga1 = uigridlayout(t1, [2 2]);
+    ax_plan = uiaxes(ga1);  ax_rf = uiaxes(ga1);  ax_mez = uiaxes(ga1);  ax_fi = uiaxes(ga1);
+    ga2 = uigridlayout(t2, [2 2]);
+    ax_mux = uiaxes(ga2);  ax_sdr = uiaxes(ga2);  ax_t = uiaxes(ga2);  ax_af = uiaxes(ga2);
     % controles que se bloquean mientras se simula
     controles = {bt_menos, bt_mas, dial, ed_des, dd_fuente, ed_T, cb_awgn, sl_snr, cb_enf, ...
-        bt_sim, bt_4, dd_canal, bt_rx, bt_tx};
+        bt_sim, bt_4, bg, bt_rx, bt_tx, bt_stop};
 
-    % ---- gráficas
-    ga = uigridlayout(g, [2 2]);
-    ax_rf  = uiaxes(ga); title(ax_rf,  'Espectro RF recibido');
-    ax_mez = uiaxes(ga); title(ax_mez, 'Salida del mezclador');
-    ax_mux = uiaxes(ga); title(ax_mux, 'Multiplex FDM recuperado');
-    ax_t   = uiaxes(ga); title(ax_t,   'Audio seleccionado');
-
+    marcador(ax_rf,  'Espectro RF recibido');
+    marcador(ax_mez, 'Salida del mezclador');
+    marcador(ax_fi,  'FI filtrada');
+    marcador(ax_mux, 'Multiplex FDM recuperado');
+    marcador(ax_sdr, 'SDR de los tres audios');
+    marcador(ax_t,   'Audio elegido en el tiempo');
+    marcador(ax_af,  'Audio elegido en frecuencia');
+    iniciar_plan();
     cambio_sintonia();
 
     %% ================= funciones internas =================
+    % ---------- sintonía ----------
     function cambio_sintonia()
-        % Se ejecuta al mover el dial: recalcula LO, imagen, preselector (sin simular).
+        % Se ejecuta al soltar el dial: recalcula LO, imagen, preselector y filtros (sin simular).
         fc = round(dial.Value * 10) / 10;           % pasos de 0.1 MHz
         dial.Value = fc;
-        S.P = params_sistema(fc * 1e6, struct('imprimir', false, 'desintonia', ed_des.Value * 1e3));
-        V = S.P.vista;
-        mostrar_fc(V.fc_MHz);
-        lbl_lo.Text = sprintf('%.2f MHz', V.fLO_MHz);
-        lbl_fi.Text = sprintf('%.1f MHz', V.fFI_MHz);
-        lbl_im.Text = sprintf('%.2f MHz', V.fimagen_MHz);
-        lbl_bw.Text = sprintf('%.0f / %.0f kHz', V.df_kHz, V.carson_kHz);
-        if ~isempty(S.out), mostrar_guardada(); end
+        try
+            S.P = params_sistema(fc * 1e6, struct('imprimir', false, 'desintonia', ed_des.Value * 1e3));
+        catch err
+            estado(['Error en los parámetros: ' err.message]);
+        end
+        mostrar_valores(fc, ed_des.Value);
+        mostrar_guardada();
     end
 
-    function mostrar_fc(v)
-        lcd.Text = sprintf('%.1f MHz', round(v * 10) / 10);
+    function arrastre_dial(v)
+        % Mientras se arrastra el dial: pantalla, valores y plan de frecuencias al instante.
+        mostrar_valores(round(v * 10) / 10, ed_des.Value);
+    end
+
+    function mostrar_valores(fc, des_kHz)
+        % Mismas ecuaciones que params_sistema: f_LO = f_RX - f_FI (inyección inferior).
+        FI = P0.f_FI * K / 1e6;  frx = fc + des_kHz / 1e3;
+        lcd.Text = sprintf('%.1f MHz', fc);
+        lbl_lo.Text = sprintf('%.2f MHz', frx - FI);
+        lbl_fi.Text = sprintf('%.1f MHz', FI);
+        lbl_im.Text = sprintf('%.2f MHz', frx - 2*FI);
+        lbl_bw.Text = sprintf('%.0f / %.0f kHz', P0.vista.df_kHz, P0.vista.carson_kHz);
+        actualizar_plan(fc, des_kHz / 1e3);
     end
 
     function paso(df)
@@ -150,14 +216,65 @@ function radio_fdm_fm()
         cambio_sintonia();
     end
 
-    function bloquear(si)
-        % Mientras se simula no se puede cambiar nada: así lo que se ve coincide con lo marcado.
-        for c = 1:numel(controles)
-            controles{c}.Enable = ~si;
-        end
-        if ~si, sl_snr.Enable = cb_awgn.Value; end
+    % ---------- plan de frecuencias (no necesita simular) ----------
+    function iniciar_plan()
+        ax = ax_plan;
+        hold(ax, 'on');
+        H.pre  = patch(ax, nan(1,4), nan(1,4), 'w', 'FaceColor', 'none', 'EdgeColor', C.rf, ...
+            'LineStyle', '--', 'LineWidth', 1.2);
+        H.fib  = patch(ax, nan(1,4), nan(1,4), 'w', 'FaceColor', 'none', 'EdgeColor', C.fi, ...
+            'LineStyle', '--', 'LineWidth', 1.2);
+        H.rf   = patch(ax, nan(1,4), nan(1,4), C.rf, 'EdgeColor', 'none');
+        H.dif  = patch(ax, nan(1,4), nan(1,4), C.fi, 'EdgeColor', 'none');
+        H.suma = patch(ax, nan(1,4), nan(1,4), C.suma, 'EdgeColor', 'none', 'FaceAlpha', 0.6);
+        H.lo   = plot(ax, nan(1,2), nan(1,2), '-', 'Color', C.lo, 'LineWidth', 2.5);
+        H.im   = plot(ax, nan(1,2), nan(1,2), ':', 'Color', C.im, 'LineWidth', 2.5);
+        H.t_rf = text(ax, 0, 0, '', 'Color', C.rf);
+        H.t_lo = text(ax, 0, 0, '', 'Color', C.lo);
+        H.t_im = text(ax, 0, 0, '', 'Color', C.im);
+        H.t_fi = text(ax, 0, 0, '', 'Color', C.fi);
+        H.t_su = text(ax, 0, 0, '', 'Color', C.suma);
+        set([H.t_rf H.t_lo H.t_im H.t_fi H.t_su], 'HorizontalAlignment', 'center', ...
+            'VerticalAlignment', 'bottom', 'FontWeight', 'bold');
+        hold(ax, 'off');
+        xlim(ax, [0 22]);  ylim(ax, [0 1.75]);  ax.YTick = [];  ax.XTick = 0:2:22;
+        grid(ax, 'on');  box(ax, 'on');
+        xlabel(ax, 'f nominal [MHz]');
+        legend(ax, [H.rf H.pre H.lo H.im H.dif H.fib H.suma], {'señal FM (ancho de Carson)', ...
+            'paso de la sección de RF', 'oscilador local', 'frecuencia imagen', ...
+            'f_c − f_{LO} (va a la FI)', 'paso de la sección de FI', 'f_c + f_{LO} (se elimina)'}, ...
+            'Location', 'northoutside', 'NumColumns', 3, 'FontSize', 8);
     end
 
+    function actualizar_plan(fc, des)
+        % fc y des en MHz nominales. Dibuja dónde queda cada frecuencia del superheterodino.
+        FI = P0.f_FI * K / 1e6;  HW = P0.HW * K / 1e6;  b2 = P0.B_carson * K / 1e6 / 2;
+        frx = fc + des;  flo = frx - FI;  fim = frx - 2*FI;  fsu = fc + flo;  fdi = abs(fc - flo);
+        poner_caja(H.rf,   fc,  b2, 1.00);
+        poner_caja(H.pre,  frx, HW, 1.12);
+        poner_caja(H.dif,  fdi, b2, 0.80);
+        poner_caja(H.fib,  FI,  HW, 0.92);
+        poner_caja(H.suma, fsu, b2, 0.80);
+        set(H.lo, 'XData', [flo flo], 'YData', [0 1.00]);
+        set(H.im, 'XData', [fim fim], 'YData', [0 0.60]);
+        set(H.t_rf, 'Position', [fc  1.14 0], 'String', sprintf('f_c %.1f', fc));
+        set(H.t_lo, 'Position', [flo 1.02 0], 'String', sprintf('LO %.2f', flo));
+        set(H.t_im, 'Position', [fim 0.62 0], 'String', sprintf('imagen %.2f', fim));
+        set(H.t_fi, 'Position', [fdi 0.94 0], 'String', sprintf('f_c−f_{LO} %.2f', fdi));
+        set(H.t_su, 'Position', [fsu 0.82 0], 'String', sprintf('suma %.2f', fsu));
+        if abs(fdi - FI) > HW
+            title(ax_plan, sprintf(['Desintonía de %+.0f kHz: la señal cae en %.2f MHz, ' ...
+                'fuera del paso de FI'], des*1e3, fdi), 'Color', [0.80 0 0]);
+        elseif abs(fdi - FI) + b2 > HW
+            title(ax_plan, sprintf(['Desintonía de %+.0f kHz: parte del ancho de Carson ' ...
+                'queda fuera del paso de FI'], des*1e3), 'Color', [0.85 0.45 0]);
+        else
+            title(ax_plan, sprintf('Plan de frecuencias (en vivo): LO = f_c − FI = %.2f MHz', flo), ...
+                'Color', [0 0 0]);
+        end
+    end
+
+    % ---------- ruido y combinaciones guardadas ----------
     function mostrar_snr(v)
         lbl_snr.Text = sprintf('(SNR)_C = %d dB', round(v));
     end
@@ -166,7 +283,7 @@ function radio_fdm_fm()
         % La barra queda en valores enteros y solo se activa con el canal AWGN.
         sl_snr.Value = round(sl_snr.Value);
         mostrar_snr(sl_snr.Value);
-        sl_snr.Enable = cb_awgn.Value;
+        sl_snr.Enable = ternario(cb_awgn.Value, 'on', 'off');
         lbl_snr.FontColor = ternario(cb_awgn.Value, [0 0 0], [0.5 0.5 0.5]);
         mostrar_guardada();
     end
@@ -175,52 +292,81 @@ function radio_fdm_fm()
         snr = Inf;  if cb_awgn.Value, snr = sl_snr.Value; end
     end
 
-    function c = clave(snr, enf)
-        % Identifica una simulación por todo lo que cambia su resultado.
-        c = sprintf('%.1f|%g|%s|%g|%g|%d', dial.Value, ed_des.Value, dd_fuente.Value, ...
-            ed_T.Value, snr, enf);
+    function cfg = cfg_actual()
+        % Todo lo que cambia el resultado de una simulación.
+        cfg = struct('fc', round(dial.Value * 10) / 10, 'des', ed_des.Value, ...
+            'fuente', dd_fuente.Value, 'T', ed_T.Value, 'snr', snr_elegida(), 'enf', logical(cb_enf.Value));
     end
 
     function mostrar_guardada()
-        % Si esta combinación ya se simuló, la muestra al instante; si no, avisa.
-        if isempty(S.out), return; end
-        c = clave(snr_elegida(), cb_enf.Value);
-        if isKey(S.memo, c)
-            r = S.memo(c);
-            S.out = r.out;  S.P_sim = r.P;  S.fuente_sim = r.fuente;
-            graficar_todo();
-            lbl_estado.Text = ['Resultado guardado (sin volver a simular): ' r.texto];
+        % Si la combinación marcada ya se simuló, la muestra al instante; si no, avisa.
+        if ~isempty(S.R)
+            c = clave_de(cfg_actual());
+            if strcmp(c, S.clave_mostrada)
+                estado(['Mostrando: ' S.texto_mostrado]);
+            elseif isKey(S.memo, c)
+                mostrar_resultado(c);
+                estado(['Resultado guardado (sin volver a simular): ' S.texto_mostrado]);
+            else
+                estado(['Esta combinación todavía no se ha simulado. Presione "Sintonizar y simular". ' ...
+                    'Las gráficas y el audio siguen siendo los de la simulación anterior.']);
+            end
+        end
+        actualizar_lampara();
+    end
+
+    function actualizar_lampara()
+        if isempty(S.R)
+            lamp.Color = [0.6 0.6 0.6];   lbl_lamp.Text = 'Todavía no hay simulación';
+        elseif strcmp(clave_de(cfg_actual()), S.clave_mostrada)
+            lamp.Color = [0.20 0.75 0.20]; lbl_lamp.Text = 'Las gráficas corresponden a los controles';
         else
-            lbl_estado.Text = ['Esta combinación todavía no se ha simulado. Presione "Sintonizar y simular". ' ...
-                'Las gráficas y el audio siguen siendo los de la simulación anterior.'];
+            lamp.Color = [0.95 0.65 0.10]; lbl_lamp.Text = 'Cambió un parámetro: falta simular';
         end
     end
 
+    function mostrar_resultado(c)
+        r = S.memo(c);
+        S.R = r.R;  S.P_sim = r.P;  S.fuente_sim = r.fuente;  S.sdr = r.sdr;
+        S.clave_mostrada = c;  S.texto_mostrado = r.texto;
+        graficar_todo();
+        actualizar_lampara();
+    end
+
+    % ---------- simulación ----------
     function simular()
-        correr({snr_elegida()}, {cb_enf.Value});
+        correr({snr_elegida()}, {logical(cb_enf.Value)});
     end
 
     function simular_cuatro()
         % Canal ideal y con ruido (el de la barra), cada uno sin y con prénfasis.
         % Las casillas no se tocan: al terminar se muestra la combinación que esté marcada.
         correr({Inf, Inf, sl_snr.Value, sl_snr.Value}, {false, true, false, true});
-        mostrar_guardada();
     end
 
     function correr(snrs, enfs)
+        detener();
         bloquear(true);
+        n = numel(snrs);
+        dlg = uiprogressdlg(fig, 'Title', 'Simulando en Simulink', 'Indeterminate', 'on', ...
+            'Message', 'Preparando el modelo...', 'Cancelable', ternario(n > 1, 'on', 'off'));
+        if n > 1, dlg.CancelText = 'Parar después de esta'; end
+        hechas = 0;  fallo = false;  t_sim = 0;  texto = '';  c = '';
         try
-            T = ed_T.Value;  fc = dial.Value;  n = numel(snrs);
             if exist('modelo_al_dia', 'file'), modelo_al_dia(mdl); end
             load_system(mdl);
             for i = 1:n
-                snr = snrs{i};  enf = enfs{i};
-                P = params_sistema(fc * 1e6, struct('imprimir', false, 'T_real', T, 'snr_c_dB', snr, ...
-                    'desintonia', ed_des.Value * 1e3, 'log_rf_max', 2^18, 'enfasis', enf));
+                if n > 1 && dlg.CancelRequested, break; end
+                cfg = cfg_actual();  cfg.snr = snrs{i};  cfg.enf = enfs{i};
+                P = params_sistema(cfg.fc * 1e6, struct('imprimir', false, 'T_real', cfg.T, ...
+                    'snr_c_dB', cfg.snr, 'desintonia', cfg.des * 1e3, 'log_rf_max', 2^18, ...
+                    'enfasis', cfg.enf));
                 rng(1);
-                fuente = generar_fuentes(P, dd_fuente.Value);
-                lbl_estado.Text = sprintf(['Simulando %d de %d (%.2f s reales)... En modo acelerado ' ...
-                    'tarda unos %.0f s cada una (más la 1.ª vez, que compila).'], i, n, T, 270*T);
+                fuente = generar_fuentes(P, cfg.fuente);
+                dlg.Message = sprintf(['Simulación %d de %d: %s%s.\n%.2f s reales = %.0f s simulados. ' ...
+                    'En modo acelerado tarda unos %.0f s (más la primera vez, que compila).'], i, n, ...
+                    ternario(isinf(cfg.snr), 'canal ideal', sprintf('(SNR)_C = %g dB', cfg.snr)), ...
+                    ternario(cfg.enf, ', con prénfasis', ''), cfg.T, P.T_sim, 270*cfg.T);
                 drawnow;
                 assignin('base', 'P', P);
                 assignin('base', 'fuente', fuente);
@@ -232,81 +378,190 @@ function radio_fdm_fm()
                     tic; out = sim(mdl);
                 end
                 t_sim = toc;
-                pico = max(abs(out.sim_m_n(:)));       % pico de m_n = desviación usada / Df
+                R = reducir(out);
+                sdr = sdr_tres(R, P, fuente);
                 texto = sprintf('f_c = %.1f MHz, LO = %.2f MHz%s%s. Desviación pico usada: %.0f %% de %.0f kHz.', ...
-                    P.vista.fc_MHz, P.vista.fLO_MHz, ternario(isinf(snr), ', canal ideal', sprintf(', (SNR)_C = %g dB', snr)), ...
-                    ternario(P.enfasis, ', con prénfasis', ''), 100*pico, P.vista.df_kHz);
-                S.memo(clave(snr, enf)) = struct('out', out, 'P', P, 'fuente', fuente, 'texto', texto);
-                S.out = out;  S.P_sim = P;  S.fuente_sim = fuente;
-            end
-            graficar_todo();
-            if n == 1
-                lbl_estado.Text = sprintf('Simulación lista en %.1f s. %s', t_sim, texto);
+                    P.vista.fc_MHz, P.vista.fLO_MHz, ...
+                    ternario(isinf(cfg.snr), ', canal ideal', sprintf(', (SNR)_C = %g dB', cfg.snr)), ...
+                    ternario(cfg.enf, ', con prénfasis', ''), 100*R.pico, P.vista.df_kHz);
+                c = clave_de(cfg);
+                S.memo(c) = struct('R', R, 'P', P, 'fuente', fuente, 'sdr', sdr, 'texto', texto);
+                hechas = hechas + 1;
             end
         catch err
-            lbl_estado.Text = ['Error: ' err.message];
+            fallo = true;
+            estado(['Error: ' err.message]);
         end
+        if isvalid(dlg), close(dlg); end
         bloquear(false);
+        if hechas > 0
+            c_act = clave_de(cfg_actual());
+            if isKey(S.memo, c_act), mostrar_resultado(c_act); else, mostrar_resultado(c); end
+            if ~fallo
+                if n == 1
+                    estado(sprintf('Simulación lista en %.1f s. %s', t_sim, texto));
+                else
+                    estado(sprintf(['Listas %d de %d simulaciones. Cambie las casillas de ruido y ' ...
+                        'prénfasis para verlas sin volver a simular.'], hechas, n));
+                end
+            end
+        end
+        actualizar_lampara();
     end
 
-    function graficar_todo()
-        P = S.P_sim;  K = P.K;  out = S.out;
-        % espectro RF (muestras finales registradas)
-        % señal recibida r = s (+ ruido, si hay AWGN), últimas muestras registradas
-        [f, D] = graficar_espectro(out.sim_r(:).', P.fs_rf, K, struct('nfft', 2^14));
-        cla(ax_rf); plot(ax_rf, f/1e6, D); hold(ax_rf, 'on');
-        yl = [-100 5];
-        plot(ax_rf, P.fc_rx*K/1e6*[1 1], yl, 'r--');
-        plot(ax_rf, P.f_imagen*K/1e6*[1 1], yl, 'm:');
-        hold(ax_rf, 'off'); grid(ax_rf, 'on'); ylim(ax_rf, yl);
-        xlim(ax_rf, [P.fc*K/1e6 - 4.5, P.fc*K/1e6 + 2]);
-        xlabel(ax_rf, 'f [MHz]'); ylabel(ax_rf, 'DEP [dB]');
-        legend(ax_rf, {'señal', 'sintonía RX', 'imagen'}, 'Location', 'northwest');
-        title(ax_rf, sprintf('RF: portadora %.1f MHz', P.vista.fc_MHz));
+    function bloquear(si)
+        % Mientras se simula no se puede cambiar nada: así lo que se ve coincide con lo marcado.
+        habilitar = ternario(si, 'off', 'on');
+        for q = 1:numel(controles)
+            controles{q}.Enable = habilitar;
+        end
+        if ~si, sl_snr.Enable = ternario(cb_awgn.Value, 'on', 'off'); end
+    end
 
-        [f, D] = graficar_espectro(out.sim_mezcla(:).', P.fs_rf, K, struct('nfft', 2^14));
-        cla(ax_mez); plot(ax_mez, f/1e6, D); hold(ax_mez, 'on');
-        plot(ax_mez, P.f_FI*K/1e6*[1 1], yl, 'r--'); plot(ax_mez, P.f_suma*K/1e6*[1 1], yl, 'm--');
-        hold(ax_mez, 'off'); grid(ax_mez, 'on'); ylim(ax_mez, yl); xlim(ax_mez, [0 24]);
-        xlabel(ax_mez, 'f [MHz]'); ylabel(ax_mez, 'DEP [dB]');
-        legend(ax_mez, {'mezcla', 'FI 1.7 MHz', 'f_c + f_{LO}'}, 'Location', 'northeast');
-        title(ax_mez, sprintf('Mezclador: LO = %.2f MHz', P.vista.fLO_MHz));
+    % ---------- gráficas ----------
+    function graficar_todo()
+        graficar_receptor();
         graficar_canal();
+    end
+
+    function graficar_receptor()
+        P = S.P_sim;  R = S.R;  yl = [-100 5];  fc = P.vista.fc_MHz;
+
+        % espectro RF recibido (últimas muestras registradas) y |H| de la sección de RF
+        [f, D] = graficar_espectro(R.r, P.fs_rf, K, struct('nfft', 2^14));
+        cla(ax_rf, 'reset');  hold(ax_rf, 'on');
+        h1 = plot(ax_rf, f/1e6, D, 'Color', C.rf);
+        h2 = plot(ax_rf, f/1e6, resp_db(P.h.presel, P.fs_rf, f/K), '--', 'Color', C.filtro, 'LineWidth', 1.2);
+        h3 = plot(ax_rf, P.fc_rx*K/1e6*[1 1], yl, '-.', 'Color', C.lo, 'LineWidth', 1.2);
+        h4 = plot(ax_rf, P.f_imagen*K/1e6*[1 1], yl, ':', 'Color', C.im, 'LineWidth', 1.5);
+        hold(ax_rf, 'off');  grid(ax_rf, 'on');  ylim(ax_rf, yl);  xlim(ax_rf, fc + [-4.5 2]);
+        xlabel(ax_rf, 'f nominal [MHz]');  ylabel(ax_rf, 'DEP [dB]');
+        legend(ax_rf, [h1 h2 h3 h4], {'señal recibida', '|H| sección de RF', 'sintonía del RX', 'imagen'}, ...
+            'Location', 'northwest');
+        title(ax_rf, sprintf('Espectro RF recibido (portadora %.1f MHz)', fc));
+
+        % salida del mezclador y |H| del pasabajos de la sección de FI (quita el producto suma)
+        [f, D] = graficar_espectro(R.mezcla, P.fs_rf, K, struct('nfft', 2^14));
+        cla(ax_mez, 'reset');  hold(ax_mez, 'on');
+        h1 = plot(ax_mez, f/1e6, D, 'Color', C.rf);
+        h2 = plot(ax_mez, f/1e6, resp_db(P.h.fi_lpf, P.fs_rf, f/K), '--', 'Color', C.filtro, 'LineWidth', 1.2);
+        h3 = plot(ax_mez, P.f_FI*K/1e6*[1 1], yl, '-', 'Color', C.fi, 'LineWidth', 1.2);
+        h4 = plot(ax_mez, P.f_suma*K/1e6*[1 1], yl, '--', 'Color', C.suma, 'LineWidth', 1.2);
+        hold(ax_mez, 'off');  grid(ax_mez, 'on');  ylim(ax_mez, yl);  xlim(ax_mez, [0 24]);
+        xlabel(ax_mez, 'f nominal [MHz]');  ylabel(ax_mez, 'DEP [dB]');
+        legend(ax_mez, [h1 h2 h3 h4], {'salida del mezclador', '|H| pasabajos de la sección de FI', ...
+            'FI = 1.7 MHz', 'f_c + f_{LO} (producto suma)'}, 'Location', 'north');
+        title(ax_mez, sprintf('Mezclador: LO = %.2f MHz, |f_c − f_{LO}| = %.2f MHz', ...
+            P.vista.fLO_MHz, abs(P.fc - P.f_LO)*K/1e6));
+
+        % FI filtrada, |H| del pasabanda de FI y ancho de Carson
+        [f, D] = graficar_espectro(R.fi, P.fs_fi, K, struct('nfft', 2^13));
+        fFI = P.f_FI*K/1e6;  bc = P.B_carson*K/1e6/2;
+        cla(ax_fi, 'reset');  hold(ax_fi, 'on');
+        h1 = plot(ax_fi, f/1e6, D, 'Color', C.fi);
+        h2 = plot(ax_fi, f/1e6, resp_db(P.h.fi, P.fs_fi, f/K), '--', 'Color', C.filtro, 'LineWidth', 1.2);
+        h3 = plot(ax_fi, [fFI-bc fFI-bc NaN fFI+bc fFI+bc], [yl NaN yl], ':', 'Color', [0 0 0], 'LineWidth', 1.2);
+        hold(ax_fi, 'off');  grid(ax_fi, 'on');  ylim(ax_fi, yl);  xlim(ax_fi, fFI + [-0.7 0.7]);
+        xlabel(ax_fi, 'f nominal [MHz]');  ylabel(ax_fi, 'DEP [dB]');
+        legend(ax_fi, [h1 h2 h3], {'FI filtrada', '|H| pasabanda de FI', 'ancho de Carson'}, 'Location', 'south');
+        if isinf(P.snr_c_dB)
+            % ancho que contiene el 99 % de la potencia, dentro del paso de FI
+            v = abs(f - P.f_FI*K) <= P.HW*K;  p = 10.^(D(v)/10);  cp = cumsum(p) / sum(p);  fv = f(v);
+            B99 = (fv(find(cp >= 0.995, 1)) - fv(find(cp >= 0.005, 1))) / 1e3;
+            title(ax_fi, sprintf('FI en %.1f MHz: ancho medido (99 %%) = %.0f kHz, Carson = %.0f kHz', ...
+                fFI, B99, 2*bc*1e3));
+        else
+            title(ax_fi, sprintf('FI en %.1f MHz con ruido (Carson = %.0f kHz)', fFI, 2*bc*1e3));
+        end
     end
 
     function graficar_canal()
         % Selección del audio: solo cambia la salida mostrada (no simula, no toca el LO).
-        if isempty(S.out), return; end
-        P = S.P_sim;  K = P.K;  out = S.out;  k = canal();
-        mh = out.sim_m_hat(:).';
-        [f, D] = graficar_espectro(mh, P.fs_m, K, struct('nfft', 4096));
-        cla(ax_mux); hold(ax_mux, 'on');
-        b = (P.f_sc(k) + [-1 1]*P.Wa) * K / 1e3;
-        patch(ax_mux, [b(1) b(2) b(2) b(1)], [-100 -100 5 5], [1 0.9 0.6], 'EdgeColor', 'none');
-        plot(ax_mux, f/1e3, D, 'k');
-        hold(ax_mux, 'off'); grid(ax_mux, 'on'); ylim(ax_mux, [-100 5]); xlim(ax_mux, [0 240]);
-        xlabel(ax_mux, 'f [kHz]'); ylabel(ax_mux, 'DEP [dB]');
-        title(ax_mux, sprintf('Multiplex recuperado: canal %d resaltado (%d-%d kHz)', k, round(b(1)), round(b(2))));
+        if isempty(S.R), return; end
+        P = S.P_sim;  R = S.R;  k = canal();
 
-        y = out.(sprintf('sim_y%d', k))(:).';
-        x = S.fuente_sim.X(k,:);
-        n = min(numel(x), numel(y));
-        [sdr, ~] = comparar_senales(x(1:n), y(1:n), P.retardo_audio(k), P.fs_a);
-        lbl_sdr.Text = sprintf('SDR del audio %d: %.1f dB', k, sdr);
+        % multiplex transmitido y recuperado, con las tres bandas FDM
+        [f, D1] = graficar_espectro(R.m, P.fs_m, K, struct('nfft', 4096));
+        [~, D2] = graficar_espectro(R.m_hat, P.fs_m, K, struct('nfft', 4096));
+        cla(ax_mux, 'reset');  hold(ax_mux, 'on');
+        for j = 1:3
+            b = (P.f_sc(j) + [-1 1]*P.Wa) * K / 1e3;
+            patch(ax_mux, b([1 2 2 1]), [-100 -100 15 15], C.canal(j,:), 'EdgeColor', 'none', ...
+                'FaceAlpha', ternario(j == k, 0.30, 0.08));
+            text(ax_mux, mean(b), 9, sprintf('Audio %d', j), 'HorizontalAlignment', 'center', ...
+                'Color', C.canal(j,:), 'FontWeight', ternario(j == k, 'bold', 'normal'));
+        end
+        h1 = plot(ax_mux, f/1e3, D1, 'Color', C.orig, 'LineWidth', 2);
+        h2 = plot(ax_mux, f/1e3, D2, 'k');
+        hold(ax_mux, 'off');  grid(ax_mux, 'on');  ylim(ax_mux, [-100 15]);  xlim(ax_mux, [0 240]);
+        xlabel(ax_mux, 'f nominal [kHz]');  ylabel(ax_mux, 'DEP [dB]');
+        legend(ax_mux, [h1 h2], {'multiplex transmitido m(t)', 'multiplex recuperado'}, 'Location', 'northeast');
+        b = (P.f_sc(k) + [-1 1]*P.Wa) * K / 1e3;
+        title(ax_mux, sprintf('Multiplex FDM a la salida del demodulador (audio %d: %.0f a %.0f kHz)', k, b));
+
+        % SDR de los tres audios (separación de canales); con ruido, también la teoría
+        sdr = S.sdr;  ymax = max([70, sdr + 8]);
+        col = C.canal;
+        for j = 1:3, if j ~= k, col(j,:) = 0.35*col(j,:) + 0.65; end, end
+        cla(ax_sdr, 'reset');  hold(ax_sdr, 'on');
+        hb = bar(ax_sdr, 1:3, sdr, 0.6, 'FaceColor', 'flat', 'EdgeColor', 'none');
+        hb.CData = col;
+        text(ax_sdr, 1:3, sdr, compose('%.1f dB', sdr), 'HorizontalAlignment', 'center', ...
+            'VerticalAlignment', 'bottom', 'FontWeight', 'bold');
+        if isinf(P.snr_c_dB)
+            title(ax_sdr, 'Separación de los tres audios (canal ideal)');
+        else
+            % (SNR)_k = (SNR)_C W Df^2 Px / [18 Wa (f_k^2 + Wa^2/3)]  (la misma de analisis_awgn)
+            Px = mean(S.fuente_sim.X.^2, 2).';
+            teo = P.snr_c_dB + 10*log10(P.W * P.df^2 * Px ./ (18 * P.Wa * (P.f_sc.^2 + P.Wa^2/3)));
+            if P.enfasis, teo = teo + P.enf.mejora_dB; end
+            ht = plot(ax_sdr, [1:3; 1:3] + [-0.35; 0.35], [teo; teo], 'k--', 'LineWidth', 1.5);
+            legend(ax_sdr, ht(1), {'teoría (válida sobre el umbral)'}, 'Location', 'northeast');
+            ymax = max([ymax, teo + 8]);
+            title(ax_sdr, sprintf('(SNR)_C = %g dB, CNR en B_T = %.1f dB%s', P.snr_c_dB, P.cnr_BT_dB, ...
+                ternario(P.cnr_BT_dB < 14, ': zona del umbral FM', '')));
+        end
+        hold(ax_sdr, 'off');  grid(ax_sdr, 'on');
+        ax_sdr.XTick = 1:3;  ax_sdr.XTickLabel = {'Audio 1', 'Audio 2', 'Audio 3'};
+        xlim(ax_sdr, [0.4 3.6]);  ylim(ax_sdr, [min(0, min(sdr) - 5), ymax]);
+        ylabel(ax_sdr, 'SDR [dB]');
+
+        % audio elegido: original y recuperado en el tiempo (retardo descontado)
+        x = S.fuente_sim.X(k,:);  y = R.y{k};
+        n = min(numel(x), numel(y));  x = x(1:n);  y = y(1:n);
         tr = (0:n-1) / P.fs_a / K * 1e3;               % ms reales
         t0 = min(20, max(tr) / 2);  v = tr >= t0 & tr <= t0 + 5;
         ty = tr - P.retardo_audio(k) / K * 1e3;  vy = ty >= t0 & ty <= t0 + 5;
-        cla(ax_t); plot(ax_t, tr(v), x(v), 'Color', [0.6 0.6 0.6], 'LineWidth', 2); hold(ax_t, 'on');
-        plot(ax_t, ty(vy), y(vy), 'k'); hold(ax_t, 'off'); grid(ax_t, 'on');
-        xlabel(ax_t, 'tiempo real [ms]'); legend(ax_t, {'original', 'recuperado'});
-        title(ax_t, sprintf('Audio %d: original vs recuperado (retardo descontado)', k));
+        cla(ax_t, 'reset');  hold(ax_t, 'on');
+        plot(ax_t, tr(v), x(v), 'Color', C.orig, 'LineWidth', 2.5);
+        plot(ax_t, ty(vy), y(vy), 'Color', C.canal(k,:));
+        hold(ax_t, 'off');  grid(ax_t, 'on');
+        xlabel(ax_t, 'tiempo real [ms]');  legend(ax_t, {'original', 'recuperado'}, 'Location', 'northeast');
+        title(ax_t, sprintf('Audio %d en el tiempo (retardo del sistema descontado)', k));
+
+        % audio elegido en frecuencia
+        [f, Dx] = graficar_espectro(x, P.fs_a, K, struct('nfft', 1024));
+        [~, Dy] = graficar_espectro(y, P.fs_a, K, struct('nfft', 1024));
+        cla(ax_af, 'reset');  hold(ax_af, 'on');
+        plot(ax_af, f/1e3, Dx, 'Color', C.orig, 'LineWidth', 2.5);
+        plot(ax_af, f/1e3, Dy, 'Color', C.canal(k,:));
+        plot(ax_af, P.Wa*K/1e3*[1 1], [-90 5], 'k:', 'LineWidth', 1.2);
+        hold(ax_af, 'off');  grid(ax_af, 'on');  xlim(ax_af, [0 24]);  ylim(ax_af, [-90 5]);
+        xlabel(ax_af, 'f nominal [kHz]');  ylabel(ax_af, 'DEP [dB]');
+        legend(ax_af, {'original', 'recuperado', 'W_a = 15 kHz'}, 'Location', 'northeast');
+        title(ax_af, sprintf('Audio %d en frecuencia', k));
+
+        % texto del SDR
+        lbl_sdr.Text = sprintf('SDR del audio %d: %.1f dB', k, sdr(k));
     end
 
+    % ---------- audio ----------
     function escuchar(recuperado)
-        if isempty(S.out), lbl_estado.Text = 'Primero simule.'; return; end
+        if isempty(S.R), estado('Primero simule.'); return; end
+        detener();
         k = canal();
         if recuperado
-            y = S.out.(sprintf('sim_y%d', k))(:).';
+            y = S.R.y{k};
             % se quita el retardo del sistema: ahí está el chasquido de arranque de los filtros,
             % que si no se quita fija el pico de la normalización y deja la voz muy baja
             n0 = round(S.P_sim.retardo_audio(k) * S.P_sim.fs_a);
@@ -315,12 +570,87 @@ function radio_fdm_fm()
             y = S.fuente_sim.X(k,:);
         end
         if max(abs(y)) > 0, y = 0.9 * y / max(abs(y)); end
-        sound(y, S.P_sim.fs_audio_real);    % 48 kHz reales: deshace el escalamiento K
+        try
+            S.player = audioplayer(y, S.P_sim.fs_audio_real);   % 48 kHz reales: deshace el escalamiento K
+            play(S.player);
+        catch
+            sound(y, S.P_sim.fs_audio_real);
+        end
+    end
+
+    function detener()
+        try
+            if ~isempty(S.player) && isplaying(S.player), stop(S.player); end
+        catch
+        end
     end
 
     function k = canal()
-        k = find(strcmp(dd_canal.Items, dd_canal.Value));
+        k = find(tb == bg.SelectedObject, 1);
+        if isempty(k), k = 1; end
     end
+
+    % ---------- otros ----------
+    function estado(txt)
+        lbl_estado.Text = txt;
+    end
+
+    function cerrar()
+        detener();
+        delete(fig);
+    end
+end
+
+% =========================================================================
+function c = clave_de(cfg)
+% Identifica una simulación por todo lo que cambia su resultado.
+    c = sprintf('%.1f|%g|%s|%g|%g|%d', cfg.fc, cfg.des, cfg.fuente, cfg.T, cfg.snr, cfg.enf);
+end
+
+function R = reducir(out)
+% Guarda solo lo que usa la radio (las señales a 48 MHz ya vienen limitadas por log_rf_max).
+    R.r      = out.sim_r(:).';
+    R.mezcla = out.sim_mezcla(:).';
+    fi       = out.sim_fi(:).';
+    R.fi     = fi(max(1, numel(fi) - 2^19 + 1):end);
+    R.m      = out.sim_m(:).';
+    R.m_hat  = out.sim_m_hat(:).';
+    R.pico   = max(abs(out.sim_m_n(:)));       % pico de m_n = desviación usada / Df
+    R.y      = cell(1, 3);
+    for k = 1:3
+        R.y{k} = out.(sprintf('sim_y%d', k))(:).';
+    end
+end
+
+function sdr = sdr_tres(R, P, fuente)
+% SDR de los tres audios recuperados frente a los originales.
+    sdr = zeros(1, 3);
+    for k = 1:3
+        x = fuente.X(k,:);  y = R.y{k};
+        n = min(numel(x), numel(y));
+        sdr(k) = comparar_senales(x(1:n), y(1:n), P.retardo_audio(k), P.fs_a);
+    end
+end
+
+function Hdb = resp_db(h, fs, f)
+% |H(f)| en dB del FIR h (tasa fs) en las frecuencias f [Hz simulados], 0 dB en el máximo.
+    h = h(:);
+    Hf = exp(-1j*2*pi*f(:)*(0:numel(h)-1)/fs) * h;
+    Hdb = 20*log10(abs(Hf).' + eps);
+    Hdb = Hdb - max(Hdb);
+end
+
+function poner_caja(h, centro, medio, alto)
+    set(h, 'XData', centro + medio*[-1 1 1 -1], 'YData', [0 0 alto alto]);
+end
+
+function marcador(ax, titulo)
+% Eje vacío con una indicación, antes de la primera simulación.
+    cla(ax, 'reset');
+    title(ax, titulo);
+    ax.XTick = [];  ax.YTick = [];  box(ax, 'on');
+    text(ax, 0.5, 0.5, 'Presione "Sintonizar y simular"', 'Units', 'normalized', ...
+        'HorizontalAlignment', 'center', 'Color', [0.55 0.55 0.55], 'FontSize', 12);
 end
 
 function l = par(gl, fila, col, texto)
@@ -332,6 +662,7 @@ function l = par(gl, fila, col, texto)
     end
     l.Layout.Row = fila;  l.Layout.Column = col;
 end
+
 function v = ternario(c, a, b)
     if c, v = a; else, v = b; end
 end
