@@ -119,6 +119,7 @@ Son unas 1250 palabras habladas, unos 9 minutos. Con la demostración de la radi
 
 ## Antes de grabar
 
+- [ ] Presentación lista: `02_diseno/presentacion_video.pptx` tiene las figuras y tablas en el orden del guion, y el texto de cada parte en las notas del presentador. Falta pegar en la diapositiva 2 una captura del nivel principal del `.slx`.
 - [ ] Figuras a mano:
   - `03_codigo_matlab/figuras/` (las de `graficas_sistema`);
   - `fig_awgn.png` (de `analisis_awgn`);

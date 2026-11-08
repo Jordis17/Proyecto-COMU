@@ -14,8 +14,8 @@ GRIS = "#f2f2f2"
 
 
 def tabla(nombre, titulo, columnas, filas, resaltar=(), nota="", anchos=None):
-    alto = 0.45 * (len(filas) + 1) + (0.6 if nota else 0.3)
-    fig, ax = plt.subplots(figsize=(12, alto))
+    alto = 0.45 * (len(filas) + 1) + (0.4 if nota else 0.1)
+    fig, ax = plt.subplots(figsize=(10, alto))
     ax.axis("off")
     t = ax.table(cellText=filas, colLabels=columnas, loc="upper center", cellLoc="center",
                  colWidths=anchos)
@@ -30,7 +30,7 @@ def tabla(nombre, titulo, columnas, filas, resaltar=(), nota="", anchos=None):
         elif r - 1 in resaltar:
             celda.set_facecolor(AZUL)
             celda.set_text_props(weight="bold")
-    ax.set_title(titulo, fontsize=16, pad=12)
+    # el título va en la diapositiva; aquí solo la tabla
     if nota:
         fig.text(0.5, 0.0, nota, ha="center", va="top", fontsize=12, color="#444444")
     fig.tight_layout()
