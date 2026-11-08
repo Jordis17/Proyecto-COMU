@@ -117,7 +117,7 @@ Las partes están repartidas entre los dos, pero cada uno debería poder explica
 
 *(Reproducir los tres audios recuperados. Si son audios reales, usar los `recuperado1..3.wav` de `probar_audio_real`.)*
 
-> Con canal ideal, el SDR de los audios recuperados es de 43 a 54 dB, según el canal. Con los audios que grabamos sale parecido: unos 44, 56 y 54 dB.
+> Con canal ideal, el SDR de los audios recuperados es de 43 a 54 dB, según el canal. Con los audios que grabamos sale 49.1, 63.4 y 55.2 dB.
 >
 > Si desintonizamos el receptor 600 kHz, la señal cae fuera de la FI y el audio se pierde: el SDR baja a casi 0 dB. Eso muestra que el receptor de verdad selecciona la portadora.
 

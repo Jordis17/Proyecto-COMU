@@ -70,7 +70,7 @@ El diagrama se ordena solo con el «Auto Arrange» de Simulink. Revisar que se v
 
 - [x] Poner `audio1.wav`, `audio2.wav` y `audio3.wav` en `audios/` (ver `audios/LEEME.txt`).
 - [x] Anotar el SDR de cada audio y escuchar los archivos `recuperado1..3.wav`: ¿se reconocen?
-- **Hecho (discriminador, canal ideal):** se subieron `original1..3.wav` y `recuperado1..3.wav`. El SDR calculado desde esos WAV es de unos 44.1 / 55.6 / 53.7 dB, cerca del de los tonos de prueba (43.3 / 52.2 / 54.4). Falta confirmarlo con las líneas «Audio k: SDR = …» de la consola de MATLAB.
+- **Hecho (discriminador, canal ideal):** se subieron `original1..3.wav` y `recuperado1..3.wav`. Consola de MATLAB: SDR = 49.1 / 63.4 / 55.2 dB (simulación de 2 s en 283 s). Con los tonos de prueba fue 43.3 / 52.2 / 54.4 dB.
 - Opcional: repetir con `snr_c = 25` y con `enfasis = true` (variables al inicio del script).
 
 ## 5. `preparar_entrega` (al final, < 1 min)
