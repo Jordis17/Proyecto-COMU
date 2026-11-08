@@ -94,11 +94,11 @@ Son unas 1170 palabras habladas, unos 8.3 minutos. Con los cambios de ventana y 
 
 > Sin ruido, los tres audios salen con más de 43 dB, también con nuestras grabaciones.
 >
-> Si corremos el receptor 600 kHz de la portadora, la señal se sale de la FI y el audio se pierde. O sea, el receptor solo recupera la emisora que tiene sintonizada.
+> Si corremos el receptor 600 kHz de la portadora, la señal se sale de la FI y el audio se pierde. O sea, el receptor solo recupera la emisora que tiene sintonizada. Hasta aquí todo fue con canal ideal; ahora veamos qué pasa con ruido.
 
 ---
 
-## 7. Ruido y prénfasis (7:45–9:15) · Abner
+## 7. Ruido y prénfasis (7:45–9:15) · Jordi
 
 **Pantalla:** la radio con la fuente «Ruido de 0.3 a 15 kHz» y la barra en 25 dB. Primero sin prénfasis y después con prénfasis (ya simulados con «Simular las 4 combinaciones»). La gráfica «SDR por audio» muestra los tres audios y la teoría.
 
@@ -110,18 +110,16 @@ Son unas 1170 palabras habladas, unos 8.3 minutos. Con los cambios de ventana y 
 
 ---
 
-## 8. Conclusiones (9:15–10:15) · Jordi y Abner
+## 8. Conclusiones (9:15–10:15) · Abner
 
 **Pantalla:** la radio, pestaña «Demultiplexación y audio», con el SDR de los tres audios.
 
-**Jordi:**
-> Para cerrar, volvemos a los objetivos del proyecto.
+> Gracias, Jordi. Para cerrar, volvemos a los objetivos del proyecto.
 >
 > Diseñamos un plan FDM que mete los tres audios en 120 kHz, con guardas de 10 kHz, y en el receptor los tres se separan con más de 43 dB. El transmisor FM se dimensionó con el criterio de Carson, 530 kHz, y en la simulación la potencia quedó dentro de ese ancho.
 >
 > El receptor superheterodino hace la conversión y el filtrado como se pidió: cualquier portadora entre 9 y 11 MHz se baja a la misma FI de 1.7 MHz, y si el receptor no está sintonizado, el audio se pierde. Para demodular, el discriminador del curso rindió igual que un PLL en condiciones normales.
-
-**Abner:**
+>
 > Analizar las señales en tiempo y en frecuencia nos permitió comparar el original con el recuperado y explicar con la teoría lo que pasa con ruido: el audio 3 sale unos 14 dB peor porque el ruido crece con la frecuencia, y con prénfasis esa diferencia baja a 6 dB.
 >
 > La radio cumple lo que se pedía de la interfaz: se elige la portadora y el audio, se ve la FI, y todo se recalcula solo al mover el dial. Y escalar todo entre 100 fue lo que nos permitió simular el sistema sin perder las proporciones reales.
