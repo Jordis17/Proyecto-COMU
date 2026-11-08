@@ -3,9 +3,9 @@ function radio_fdm_fm()
 %   >> radio_fdm_fm      (o ejecutar main.m)
 %
 %   DOS SELECCIONES INDEPENDIENTES:
-%     1) SINTONÍA RF (perilla): fija la portadora de 9 a 11 MHz. Al moverla se recalculan
-%        al instante el LO (f_c - 1.7 MHz), la imagen y el preselector; "Sintonizar y
-%        simular" ejecuta el modelo Simulink con esos parámetros.
+%     1) SINTONÍA RF (dial de 9 a 11 MHz y botones de ±0.1 MHz): fija la portadora. Al
+%        moverla se recalculan al instante el LO (f_c - 1.7 MHz), la imagen y el preselector;
+%        "Sintonizar y simular" ejecuta el modelo Simulink con esos parámetros.
 %     2) AUDIO 1 / 2 / 3: elige qué salida del demultiplexor FDM se grafica y se escucha.
 %        NO vuelve a simular ni toca el LO (la selección ocurre después de la demodulación).
 %   Cada simulación queda guardada: al volver a una combinación ya simulada (ruido,
@@ -20,73 +20,102 @@ function radio_fdm_fm()
     S.memo = containers.Map();    % simulaciones ya hechas: se vuelven a mostrar sin simular
 
     %% ---------------- ventana ----------------
-    fig = uifigure('Name', 'Radio FM superheterodina - FDM de 3 canales', 'Position', [60 60 1320 780]);
+    fig = uifigure('Name', 'Radio FM superheterodina - FDM de 3 canales', 'Position', [40 40 1360 760]);
     g = uigridlayout(fig, [1 2]);
-    g.ColumnWidth = {330, '1x'};
+    g.ColumnWidth = {390, '1x'};
 
-    % ---- panel de controles
-    pc = uipanel(g, 'Title', 'Radio');
-    gl = uigridlayout(pc, [20 2]);
-    gl.RowHeight = {150, 22, 22, 22, 22, 22, 22, 10, 22, 28, 10, 22, 22, 22, 45, 22, 30, 30, 30, '1x'};
-    gl.ColumnWidth = {150, '1x'};
+    % ---- columna de controles: cuatro bloques (se desplaza si la pantalla es pequeña)
+    gc = uigridlayout(g, [5 1], 'Scrollable', 'on', 'RowSpacing', 8, 'Padding', [4 4 4 4]);
+    gc.RowHeight = {220, 195, 105, 125, '1x'};
 
-    perilla = uiknob(gl, 'continuous', 'Limits', [9 11], 'Value', 10, ...
-        'MajorTicks', 9:0.5:11, 'MinorTicks', 9:0.1:11, 'ValueChangedFcn', @(~,~) cambio_sintonia());
-    perilla.Layout.Row = 1; perilla.Layout.Column = [1 2];
-
-    etiqueta(gl, 2, 'Portadora f_c:');        lbl_fc  = valor(gl, 2);
-    etiqueta(gl, 3, 'Oscilador local f_LO:'); lbl_lo  = valor(gl, 3);
-    etiqueta(gl, 4, 'Frecuencia intermedia:'); lbl_fi = valor(gl, 4);
-    etiqueta(gl, 5, 'Frecuencia imagen:');    lbl_im  = valor(gl, 5);
-    etiqueta(gl, 6, 'Desviación / Carson:');  lbl_bw  = valor(gl, 6);
-    etiqueta(gl, 7, 'Desintonía RX [kHz]:');
-    ed_des = uieditfield(gl, 'numeric', 'Value', 0, 'Limits', [-1000 1000], ...
+    % 1) Sintonía: pantalla, dial y valores que se recalculan al sintonizar
+    p1 = uipanel(gc, 'Title', 'Sintonía', 'FontWeight', 'bold');
+    g1 = uigridlayout(p1, [5 4], 'RowSpacing', 4, 'Padding', [8 6 8 6]);
+    g1.RowHeight = {52, 50, 20, 20, 24};
+    g1.ColumnWidth = {'1x', '1x', '1x', '1x'};
+    bt_menos = uibutton(g1, 'Text', char(9664), 'FontSize', 18, 'Tooltip', 'Bajar 0.1 MHz', ...
+        'ButtonPushedFcn', @(~,~) paso(-0.1));
+    bt_menos.Layout.Row = 1; bt_menos.Layout.Column = 1;
+    lcd = uilabel(g1, 'Text', '10.0 MHz', 'FontName', 'Consolas', 'FontSize', 30, 'FontWeight', 'bold', ...
+        'HorizontalAlignment', 'center', 'FontColor', [0.40 1.00 0.55], 'BackgroundColor', [0.06 0.10 0.08]);
+    lcd.Layout.Row = 1; lcd.Layout.Column = [2 3];
+    bt_mas = uibutton(g1, 'Text', char(9654), 'FontSize', 18, 'Tooltip', 'Subir 0.1 MHz', ...
+        'ButtonPushedFcn', @(~,~) paso(0.1));
+    bt_mas.Layout.Row = 1; bt_mas.Layout.Column = 4;
+    % dial de la radio: escala de 9 a 11 MHz, como la banda de un receptor analógico
+    dial = uislider(g1, 'Limits', [9 11], 'Value', 10, 'MajorTicks', 9:0.5:11, ...
+        'MinorTicks', 9:0.1:11, 'ValueChangingFcn', @(~,ev) mostrar_fc(ev.Value), ...
         'ValueChangedFcn', @(~,~) cambio_sintonia());
-    ed_des.Layout.Row = 7; ed_des.Layout.Column = 2;
+    dial.Layout.Row = 2; dial.Layout.Column = [1 4];
+    par(g1, 3, 1, 'f_LO:');     lbl_lo = par(g1, 3, 2);
+    par(g1, 3, 3, 'FI:');       lbl_fi = par(g1, 3, 4);
+    par(g1, 4, 1, 'Imagen:');   lbl_im = par(g1, 4, 2);
+    par(g1, 4, 3, 'Δf / B_T:'); lbl_bw = par(g1, 4, 4);
+    par(g1, 5, [1 2], 'Desintonía RX [kHz]:');
+    ed_des = uieditfield(g1, 'numeric', 'Value', 0, 'Limits', [-1000 1000], ...
+        'ValueChangedFcn', @(~,~) cambio_sintonia());
+    ed_des.Layout.Row = 5; ed_des.Layout.Column = [3 4];
 
-    etiqueta(gl, 9, 'Audio de salida:');
-    dd_canal = uidropdown(gl, 'Items', {'Audio 1', 'Audio 2', 'Audio 3'}, 'Value', 'Audio 1', ...
-        'ValueChangedFcn', @(~,~) graficar_canal());
-    dd_canal.Layout.Row = 9; dd_canal.Layout.Column = 2;
-    lbl_sdr = uilabel(gl, 'Text', 'SDR: -', 'FontWeight', 'bold');
-    lbl_sdr.Layout.Row = 10; lbl_sdr.Layout.Column = [1 2];
-
-    etiqueta(gl, 12, 'Fuente de audio:');
-    dd_fuente = uidropdown(gl, 'Items', {'demo', 'tonos', 'audio'}, 'Value', 'demo', ...
+    % 2) Señal y canal
+    p2 = uipanel(gc, 'Title', 'Señal y canal', 'FontWeight', 'bold');
+    g2 = uigridlayout(p2, [5 2], 'RowSpacing', 6, 'Padding', [8 6 8 6]);
+    g2.RowHeight = {22, 22, 22, 42, 22};
+    g2.ColumnWidth = {130, '1x'};
+    par(g2, 1, 1, 'Fuente de audio:');
+    dd_fuente = uidropdown(g2, 'Items', {'demo', 'tonos', 'audio'}, 'Value', 'demo', ...
         'ValueChangedFcn', @(~,~) mostrar_guardada());
-    dd_fuente.Layout.Row = 12; dd_fuente.Layout.Column = 2;
-    etiqueta(gl, 13, 'Duración [s reales]:');
-    ed_T = uieditfield(gl, 'numeric', 'Value', 0.3, 'Limits', [0.02 3], ...
+    dd_fuente.Layout.Row = 1; dd_fuente.Layout.Column = 2;
+    par(g2, 2, 1, 'Duración [s reales]:');
+    ed_T = uieditfield(g2, 'numeric', 'Value', 0.3, 'Limits', [0.02 3], ...
         'ValueChangedFcn', @(~,~) mostrar_guardada());
-    ed_T.Layout.Row = 13; ed_T.Layout.Column = 2;
-    cb_awgn = uicheckbox(gl, 'Text', 'Canal AWGN', 'Value', false, ...
+    ed_T.Layout.Row = 2; ed_T.Layout.Column = 2;
+    cb_awgn = uicheckbox(g2, 'Text', 'Canal AWGN', 'Value', false, ...
         'ValueChangedFcn', @(~,~) cambio_ruido());
-    cb_awgn.Layout.Row = 14; cb_awgn.Layout.Column = 1;
-    lbl_snr = uilabel(gl, 'Text', '(SNR)_C = 25 dB');
-    lbl_snr.Layout.Row = 15; lbl_snr.Layout.Column = 1;
+    cb_awgn.Layout.Row = 3; cb_awgn.Layout.Column = 1;
+    lbl_snr = uilabel(g2, 'Text', '(SNR)_C = 25 dB', 'FontColor', [0.5 0.5 0.5]);
+    lbl_snr.Layout.Row = 3; lbl_snr.Layout.Column = 2;
     % barra de ruido: 10 dB (mucho ruido, bajo el umbral) a 40 dB (poco ruido), de 1 en 1 dB
-    sl_snr = uislider(gl, 'Limits', [10 40], 'Value', 25, 'MajorTicks', 10:5:40, ...
+    sl_snr = uislider(g2, 'Limits', [10 40], 'Value', 25, 'MajorTicks', 10:5:40, ...
         'MinorTicks', 10:1:40, 'Enable', 'off', ...
         'ValueChangingFcn', @(~,ev) mostrar_snr(ev.Value), 'ValueChangedFcn', @(~,~) cambio_ruido());
-    sl_snr.Layout.Row = 15; sl_snr.Layout.Column = 2;
-    cb_enf = uicheckbox(gl, 'Text', 'Prénfasis / deénfasis', 'Value', false, ...
+    sl_snr.Layout.Row = 4; sl_snr.Layout.Column = [1 2];
+    cb_enf = uicheckbox(g2, 'Text', 'Prénfasis / deénfasis', 'Value', false, ...
         'ValueChangedFcn', @(~,~) mostrar_guardada());
-    cb_enf.Layout.Row = 16; cb_enf.Layout.Column = [1 2];
+    cb_enf.Layout.Row = 5; cb_enf.Layout.Column = [1 2];
 
-    bt_sim = uibutton(gl, 'Text', 'Sintonizar y simular', 'FontWeight', 'bold', ...
-        'ButtonPushedFcn', @(~,~) simular());
-    bt_sim.Layout.Row = 17; bt_sim.Layout.Column = [1 2];
-    bt_4 = uibutton(gl, 'Text', 'Simular las 4 combinaciones', ...
+    % 3) Simular
+    p3 = uipanel(gc, 'Title', 'Simulación', 'FontWeight', 'bold');
+    g3 = uigridlayout(p3, [2 1], 'RowSpacing', 6, 'Padding', [8 6 8 6]);
+    g3.RowHeight = {32, 28};
+    bt_sim = uibutton(g3, 'Text', 'Sintonizar y simular', 'FontWeight', 'bold', 'FontSize', 14, ...
+        'BackgroundColor', [0.85 0.92 1.00], 'ButtonPushedFcn', @(~,~) simular());
+    bt_4 = uibutton(g3, 'Text', 'Simular las 4 combinaciones', ...
         'Tooltip', 'Ideal y con ruido, sin y con prénfasis. Después se cambia entre ellas sin simular.', ...
         'ButtonPushedFcn', @(~,~) simular_cuatro());
-    bt_4.Layout.Row = 18; bt_4.Layout.Column = [1 2];
-    bt_rx = uibutton(gl, 'Text', 'Escuchar recuperado', 'ButtonPushedFcn', @(~,~) escuchar(true));
-    bt_rx.Layout.Row = 19; bt_rx.Layout.Column = 1;
-    bt_tx = uibutton(gl, 'Text', 'Escuchar original', 'ButtonPushedFcn', @(~,~) escuchar(false));
-    bt_tx.Layout.Row = 19; bt_tx.Layout.Column = 2;
-    lbl_estado = uilabel(gl, 'Text', 'Listo. Elija la portadora y presione "Sintonizar y simular".', ...
+
+    % 4) Salida: qué audio se grafica y se escucha
+    p4 = uipanel(gc, 'Title', 'Salida', 'FontWeight', 'bold');
+    g4 = uigridlayout(p4, [3 2], 'RowSpacing', 6, 'Padding', [8 6 8 6]);
+    g4.RowHeight = {22, 24, 28};
+    g4.ColumnWidth = {'1x', '1x'};
+    par(g4, 1, 1, 'Audio de salida:');
+    dd_canal = uidropdown(g4, 'Items', {'Audio 1', 'Audio 2', 'Audio 3'}, 'Value', 'Audio 1', ...
+        'ValueChangedFcn', @(~,~) graficar_canal());
+    dd_canal.Layout.Row = 1; dd_canal.Layout.Column = 2;
+    lbl_sdr = uilabel(g4, 'Text', 'SDR: -', 'FontWeight', 'bold', 'FontSize', 14);
+    lbl_sdr.Layout.Row = 2; lbl_sdr.Layout.Column = [1 2];
+    bt_rx = uibutton(g4, 'Text', 'Escuchar recuperado', 'ButtonPushedFcn', @(~,~) escuchar(true));
+    bt_rx.Layout.Row = 3; bt_rx.Layout.Column = 1;
+    bt_tx = uibutton(g4, 'Text', 'Escuchar original', 'ButtonPushedFcn', @(~,~) escuchar(false));
+    bt_tx.Layout.Row = 3; bt_tx.Layout.Column = 2;
+
+    % 5) Estado
+    lbl_estado = uilabel(gc, 'Text', 'Listo. Elija la portadora y presione "Sintonizar y simular".', ...
         'WordWrap', 'on', 'VerticalAlignment', 'top');
-    lbl_estado.Layout.Row = 20; lbl_estado.Layout.Column = [1 2];
+
+    % controles que se bloquean mientras se simula
+    controles = {bt_menos, bt_mas, dial, ed_des, dd_fuente, ed_T, cb_awgn, sl_snr, cb_enf, ...
+        bt_sim, bt_4, dd_canal, bt_rx, bt_tx};
 
     % ---- gráficas
     ga = uigridlayout(g, [2 2]);
@@ -99,17 +128,34 @@ function radio_fdm_fm()
 
     %% ================= funciones internas =================
     function cambio_sintonia()
-        % Se ejecuta al mover la perilla: recalcula LO, imagen, preselector (sin simular).
-        fc = round(perilla.Value * 10) / 10;           % pasos de 0.1 MHz
-        perilla.Value = fc;
+        % Se ejecuta al mover el dial: recalcula LO, imagen, preselector (sin simular).
+        fc = round(dial.Value * 10) / 10;           % pasos de 0.1 MHz
+        dial.Value = fc;
         S.P = params_sistema(fc * 1e6, struct('imprimir', false, 'desintonia', ed_des.Value * 1e3));
         V = S.P.vista;
-        lbl_fc.Text = sprintf('%.1f MHz', V.fc_MHz);
+        mostrar_fc(V.fc_MHz);
         lbl_lo.Text = sprintf('%.2f MHz', V.fLO_MHz);
         lbl_fi.Text = sprintf('%.1f MHz', V.fFI_MHz);
         lbl_im.Text = sprintf('%.2f MHz', V.fimagen_MHz);
         lbl_bw.Text = sprintf('%.0f / %.0f kHz', V.df_kHz, V.carson_kHz);
         if ~isempty(S.out), mostrar_guardada(); end
+    end
+
+    function mostrar_fc(v)
+        lcd.Text = sprintf('%.1f MHz', round(v * 10) / 10);
+    end
+
+    function paso(df)
+        dial.Value = min(max(round((dial.Value + df) * 10) / 10, 9), 11);
+        cambio_sintonia();
+    end
+
+    function bloquear(si)
+        % Mientras se simula no se puede cambiar nada: así lo que se ve coincide con lo marcado.
+        for c = 1:numel(controles)
+            controles{c}.Enable = ~si;
+        end
+        if ~si, sl_snr.Enable = cb_awgn.Value; end
     end
 
     function mostrar_snr(v)
@@ -121,6 +167,7 @@ function radio_fdm_fm()
         sl_snr.Value = round(sl_snr.Value);
         mostrar_snr(sl_snr.Value);
         sl_snr.Enable = cb_awgn.Value;
+        lbl_snr.FontColor = ternario(cb_awgn.Value, [0 0 0], [0.5 0.5 0.5]);
         mostrar_guardada();
     end
 
@@ -130,7 +177,7 @@ function radio_fdm_fm()
 
     function c = clave(snr, enf)
         % Identifica una simulación por todo lo que cambia su resultado.
-        c = sprintf('%.1f|%g|%s|%g|%g|%d', perilla.Value, ed_des.Value, dd_fuente.Value, ...
+        c = sprintf('%.1f|%g|%s|%g|%g|%d', dial.Value, ed_des.Value, dd_fuente.Value, ...
             ed_T.Value, snr, enf);
     end
 
@@ -155,16 +202,15 @@ function radio_fdm_fm()
 
     function simular_cuatro()
         % Canal ideal y con ruido (el de la barra), cada uno sin y con prénfasis.
-        cb_awgn.Value = true;  sl_snr.Enable = 'on';
+        % Las casillas no se tocan: al terminar se muestra la combinación que esté marcada.
         correr({Inf, Inf, sl_snr.Value, sl_snr.Value}, {false, true, false, true});
-        cb_awgn.Value = false;  sl_snr.Enable = 'off';  cb_enf.Value = false;
         mostrar_guardada();
     end
 
     function correr(snrs, enfs)
-        bt_sim.Enable = 'off';  bt_4.Enable = 'off';
+        bloquear(true);
         try
-            T = ed_T.Value;  fc = perilla.Value;  n = numel(snrs);
+            T = ed_T.Value;  fc = dial.Value;  n = numel(snrs);
             if exist('modelo_al_dia', 'file'), modelo_al_dia(mdl); end
             load_system(mdl);
             for i = 1:n
@@ -200,7 +246,7 @@ function radio_fdm_fm()
         catch err
             lbl_estado.Text = ['Error: ' err.message];
         end
-        bt_sim.Enable = 'on';  bt_4.Enable = 'on';
+        bloquear(false);
     end
 
     function graficar_todo()
@@ -273,11 +319,14 @@ function radio_fdm_fm()
     end
 end
 
-function etiqueta(gl, fila, texto)
-    l = uilabel(gl, 'Text', texto);  l.Layout.Row = fila;  l.Layout.Column = 1;
-end
-function l = valor(gl, fila)
-    l = uilabel(gl, 'Text', '-', 'FontWeight', 'bold');  l.Layout.Row = fila;  l.Layout.Column = 2;
+function l = par(gl, fila, col, texto)
+% Etiqueta en (fila, col). Sin texto, es un valor en negrita que se llena después.
+    if nargin < 4
+        l = uilabel(gl, 'Text', '-', 'FontWeight', 'bold');
+    else
+        l = uilabel(gl, 'Text', texto);
+    end
+    l.Layout.Row = fila;  l.Layout.Column = col;
 end
 function v = ternario(c, a, b)
     if c, v = a; else, v = b; end
