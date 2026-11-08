@@ -641,11 +641,10 @@ function R = a_single(R)
 end
 
 function f = firma_archivos(carpeta)
-% Fecha de modificación de todo lo que cambia el resultado guardado (incluida esta radio,
-% porque aquí se decide qué tramo de cada señal se guarda).
+% Fecha de modificación de lo que cambia el resultado de una simulación: modelo, parámetros,
+% fuentes, filtros y WAV. La radio no cuenta: cambiar cómo se ve no obliga a volver a simular.
     lista = [dir(fullfile(carpeta, 'sistema_fdm_fm.slx')); dir(fullfile(carpeta, 'params_sistema.m')); ...
              dir(fullfile(carpeta, 'generar_fuentes.m')); dir(fullfile(carpeta, 'disenar_fir_kaiser.m')); ...
-             dir(fullfile(carpeta, 'radio_fdm_fm.m')); ...
              dir(fullfile(carpeta, 'audios', 'audio*.wav'))];
     f = sprintf('%s|', lista.name);
     f = [f sprintf('%.6f|', [lista.datenum])];
@@ -657,11 +656,20 @@ function memo = cargar_memo(archivo, firma)
     if ~exist(archivo, 'file'), return; end
     try
         d = load(archivo, 'memo', 'firma');
-        if strcmp(d.firma, firma) && isa(d.memo, 'containers.Map')
+        % las versiones anteriores incluían radio_fdm_fm.m en la firma: se ignora esa entrada
+        if isa(d.memo, 'containers.Map') && (strcmp(d.firma, firma) || strcmp(sin_radio(d.firma), firma))
             memo = d.memo;
         end
     catch
     end
+end
+
+function f = sin_radio(f)
+% Quita radio_fdm_fm.m de una firma guardada ('nombres|...|fechas|...').
+    p = strsplit(f, '|');  p = p(1:end-1);  n = numel(p) / 2;
+    if n ~= round(n), return; end
+    nombres = p(1:n);  fechas = p(n+1:end);  q = ~strcmp(nombres, 'radio_fdm_fm.m');
+    f = [sprintf('%s|', nombres{q}) sprintf('%s|', fechas{q})];
 end
 
 function sdr = sdr_tres(R, P, fuente)
