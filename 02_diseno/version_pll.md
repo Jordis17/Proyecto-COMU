@@ -24,15 +24,27 @@ Lo calcula `params_sistema.m`. El lazo tiene que ser rápido para seguir un mult
 
 **Compensación de fase:** el PLL desfasa un poco cada subportadora (+1.4°, +2.6° y 0°). `params_sistema.m` lo calcula con el modelo lineal del lazo y lo suma a τ_k.
 
-## Qué esperar (de `04_verificacion_python/comparar_demoduladores.py`)
+## Resultados en Simulink (MATLAB R2026a)
 
-| | Cuadratura (rama principal) | PLL (esta rama) |
+**Canal ideal** (`graficas_sistema`): SDR = **47.6 / 38.7 / 34.0 dB**, contra 60.3 / 59.4 / 57.1 dB del detector de cuadratura. Los audios se reconocen bien, pero en el espectro del multiplex recuperado (`fig4_receptor.png`) se ve que la distorsión del PLL sube el piso de las guardas de −75 a −60 dB.
+
+**Canal AWGN** (`analisis_awgn`, SDR en dB, sin preénfasis):
+
+| (SNR)_C | Cuadratura (rama principal) | PLL (esta rama) |
 |---|---|---|
-| Canal ideal | ≈ 60–63 dB | ≈ 38 / 57 / 36 dB |
-| (SNR)_C 25–40 dB | Casi igual en los dos | Casi igual en los dos |
-| (SNR)_C 14–18 dB (umbral) | — | **Mejor**, por la extensión del umbral |
+| 40 dB | 41.9 / 31.2 / 27.7 | 40.7 / 30.5 / 26.6 |
+| 30 dB | 32.0 / 21.3 / 17.7 | 31.7 / 21.1 / 17.4 |
+| 20 dB | 21.9 / 11.5 / 8.2 | 21.6 / 11.3 / 8.0 |
+| 18 dB | 17.5 / 9.6 / 6.4 | **19.5** / 9.4 / 6.3 |
+| 16 dB | 11.9 / 6.6 / 4.4 | **16.7 / 7.3 / 4.7** |
+| 14 dB | 4.1 / 2.7 / 2.1 | **9.6 / 4.8 / 3.0** |
 
-En Simulink los números pueden variar un poco, porque la fuente de prueba es distinta.
+- **Con ruido moderado (20–40 dB)**, los dos son prácticamente iguales: los dos siguen la teoría de FM.
+- **Cerca del umbral, el PLL es mejor.** A 16 dB, el canal 1 sale con 16.7 dB contra 11.9: es la extensión del umbral.
+- **Con preénfasis** el comportamiento es el mismo que en la rama principal: el canal 3 mejora y el canal 1 empeora.
+- **Canal ideal:** el PLL distorsiona más.
+
+Coincide con lo previsto en Python (`04_verificacion_python/comparar_demoduladores.py`).
 
 ## Cómo probarla
 

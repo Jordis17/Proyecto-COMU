@@ -23,6 +23,17 @@ Probamos tres formas de demodular la FM, con la misma señal (multiplex de 3 can
 | 16 dB | 10.9 / 7.7 / 5.2 | **17.1 / 9.4 / 5.7** | 0 |
 | 14 dB | 3.6 / 3.1 / 2.8 | **12.4 / 6.9 / 3.9** | 0 |
 
+## Confirmación en Simulink (PLL contra cuadratura)
+
+| | Cuadratura | PLL |
+|---|---|---|
+| Canal ideal | 60.3 / 59.4 / 57.1 dB | 47.6 / 38.7 / 34.0 dB |
+| (SNR)_C = 30 dB | 32.0 / 21.3 / 17.7 | 31.7 / 21.1 / 17.4 |
+| (SNR)_C = 16 dB | 11.9 / 6.6 / 4.4 | **16.7 / 7.3 / 4.7** |
+| (SNR)_C = 14 dB | 4.1 / 2.7 / 2.1 | **9.6 / 4.8 / 3.0** |
+
+El PLL se probó en el modelo completo (rama `claude/version-pll`, ver `version_pll.md`). Confirma lo de Python: con ruido moderado son iguales, el PLL es mejor cerca del umbral y distorsiona más con canal ideal. El discriminador no se pasó a Simulink.
+
 ## Qué se ve
 
 - **Con ruido moderado (25–40 dB), los tres dan casi lo mismo.** Lo que limita es el ruido, no el demodulador, y los tres siguen la teoría de FM del curso.
