@@ -1,17 +1,12 @@
 # Guion del video (~10 min)
 
-**Texto** es una base para hablar, no para leer. Lo importante es la secuencia de ideas de cada parte: problema → qué revisamos o probamos → qué decidimos → qué resultó. Cada uno lo dice con sus palabras.
+**Texto** es una base para hablar, no para leer. Cada parte sigue la misma idea: qué problema había, qué probamos y qué decidimos. Díganlo con sus palabras.
 
-**Pantalla** es lo que se muestra mientras se habla.
+**Pantalla** es lo que se muestra mientras se habla. Todo sale del propio proyecto, sin presentación: la consola de `main`, la radio y el modelo `sistema_fdm_fm.slx`.
 
-**Qué se muestra:** solo el propio proyecto, sin presentación.
-- **`main`:** imprime en la consola la tabla de diseño, con cada frecuencia en su valor real y simulado, y abre la radio.
-- **La radio.**
-- **El modelo `sistema_fdm_fm.slx`.**
+En voz alta se dice el razonamiento y la cifra que decide. Los demás números se ven en la consola o en la radio, y su origen está en `decisiones_cuantitativas.md` por si el profesor pregunta.
 
-Se dice el razonamiento y la cifra que decide. Los demás números están en la consola o en la radio, y todos tienen su origen en `decisiones_cuantitativas.md` por si el profesor pregunta.
-
-Son unas 1480 palabras habladas, unos 10.5 minutos. Con los cambios de ventana y la demostración se acerca a los 12 minutos del máximo, así que conviene recortar al ensayar. Lo primero que se puede quitar: el párrafo del limitador (sección 5) y el del retardo (sección 4), unos 140 palabras, cerca de 1 minuto.
+Son unas 930 palabras habladas, unos 6.5 minutos. Con los cambios de ventana y la demostración de la radio queda en unos 9–10 minutos.
 
 ---
 
@@ -19,9 +14,11 @@ Son unas 1480 palabras habladas, unos 10.5 minutos. Con los cambios de ventana y
 
 **Pantalla:** nivel principal de `sistema_fdm_fm.slx`.
 
-> Hola, somos Jordi y Abner. Nuestro proyecto transmite tres audios por un mismo canal. Los tres se juntan con multiplexación por división de frecuencia dentro de 120 kHz, ese multiplex se modula en FM con una portadora de 10 MHz, y en el receptor usamos un superheterodino con una FI de 1.7 MHz para recuperar los tres audios y escuchar el que uno elija.
+> Hola, somos Jordi y Abner. Nuestro proyecto manda tres audios por un mismo canal.
 >
-> Antes de poder simular esto tuvimos que resolver un problema con las frecuencias, y eso lo va a explicar Abner.
+> Primero los juntamos con multiplexación por división de frecuencia, dentro de 120 kHz. Después ese multiplex se modula en FM a 10 MHz. En el receptor, un superheterodino con FI de 1.7 MHz recupera los tres audios.
+>
+> Antes de poder simular tuvimos que resolver un problema con las frecuencias. Eso lo explica Abner.
 
 ---
 
@@ -31,17 +28,17 @@ Son unas 1480 palabras habladas, unos 10.5 minutos. Con los cambios de ventana y
 
 **Pantalla:** consola de `main`, tabla «DISEÑO DEL SISTEMA (escala K = 100)»: columna del valor real y columna del simulado.
 
-> Sí. El enunciado pide simular con las frecuencias escaladas y da una tabla de referencia. Cuando revisamos esa tabla vimos que bajaba la portadora y la FI, pero dejaba igual el ancho del multiplex. Hicimos el cálculo con nuestra señal FM y, con esos valores, el espectro quedaba tan ancho comparado con la portadora que llegaba a cruzar el cero. Además, la FI quedaba por debajo del propio mensaje.
+> Sí. Para poder simular hay que bajar las frecuencias, y el enunciado da una tabla para eso. El problema es que esa tabla baja la portadora a 100 kHz, pero deja el multiplex en 120 kHz. Así, la señal FM queda más ancha que su propia portadora y llega a cruzar el cero.
 >
-> El mismo enunciado dice que hay que mantener las proporciones, así que decidimos dividir todas las frecuencias del sistema entre 100: el audio, las subportadoras, la desviación, la portadora y la FI. Así las relaciones entre frecuencias son las mismas del sistema real. En la consola se ve: el audio de 15 kHz queda en 150 Hz, la portadora de 10 MHz en 100 kHz y la FI en 17 kHz. Las muestras del audio no cambian; solo se leen 100 veces más despacio, y para escucharlo se reproducen otra vez a 48 kHz. En la radio siempre se muestran los valores reales.
+> Por eso dividimos todas las frecuencias entre 100, sin excepción. Así se mantienen las proporciones del sistema real. En la consola se ve: el audio de 15 kHz pasa a 150 Hz y la portadora de 10 MHz pasa a 100 kHz. En la radio siempre vemos los valores reales.
 
 ### Muestreo · Jordi
 
 **Pantalla:** la radio a 11 MHz, plan de frecuencias y salida del mezclador (producto suma); luego la consola de `main` (filas «Producto suma» y «Muestreo de la RF»).
 
-> Con las frecuencias ya escaladas había que definir el muestreo. El enunciado recomienda trabajar entre 5 y 10 veces el ancho de banda. Cuando revisamos etapa por etapa, vimos que en una señal pasabanda lo que importa es la frecuencia más alta que aparece, y que después del mezclador esa regla no alcanza. El mezclador genera la suma de la portadora y el oscilador local, que llega a unos 20 MHz. Para no tener aliasing hay que muestrear a más del doble, así que en esa parte usamos 48 MHz.
+> Después había que escoger el muestreo. El enunciado recomienda de 5 a 10 veces el ancho de banda. Pero aquí lo que manda es la frecuencia más alta que aparece, y esa sale del mezclador: la suma de la portadora y el oscilador llega a unos 20 MHz. Por Nyquist necesitamos más del doble, así que usamos 48 MHz.
 >
-> Como no tenía sentido simular todo a 48 MHz, cada etapa trabaja a la frecuencia de muestreo que necesita. En la consola se ven los valores de cada una.
+> Solo esa parte va tan rápido. Cada etapa usa el muestreo que necesita, y en la consola se ven todos.
 
 ---
 
@@ -49,9 +46,9 @@ Son unas 1480 palabras habladas, unos 10.5 minutos. Con los cambios de ventana y
 
 **Pantalla:** la radio, pestaña «Demultiplexación y audio» (multiplex con las tres bandas); luego el panel de sintonía, que dice «Δf / B_T: 150 / 530 kHz», y la gráfica de FI con las líneas de Carson.
 
-> En el transmisor, lo primero era repartir los tres audios dentro de los 120 kHz. Analizamos dos opciones, DSB-SC y SSB. SSB usa menos ancho de banda, pero un audio real tiene contenido casi desde 0 Hz, y para quedarse con una sola banda lateral haría falta un filtro casi ideal. Como con DSB-SC los tres canales cabían, con bandas de guarda entre ellos y usando cerca de tres cuartas partes del ancho disponible, nos quedamos con DSB-SC.
+> Para el multiplex usamos DSB-SC, con subportadoras en 20, 60 y 100 kHz. Pensamos en SSB, que ocupa menos, pero el audio real empieza casi en 0 Hz, y separar una sola banda lateral necesitaría un filtro casi ideal. Con DSB-SC los tres canales caben con espacio entre ellos.
 >
-> Después había que escoger la desviación de la FM. Aquí hay un compromiso: con más desviación mejora la relación señal a ruido, pero la señal ocupa más ancho de banda. Comparamos varios valores y nos quedamos con 150 kHz. Frente a 75 kHz eso da unos 6 dB más, y por Carson la señal ocupa 530 kHz, que todavía cabe con margen en el filtro de FI. Una cosa importante es que en Carson usamos la frecuencia máxima del multiplex y no la del audio, porque lo que entra al modulador es el multiplex completo.
+> Para la FM escogimos una desviación de 150 kHz. Más desviación da mejor calidad, pero también ocupa más ancho de banda. Con 150 kHz ganamos unos 6 dB frente a 75 kHz, y por Carson la señal ocupa 530 kHz, que cabe en el filtro de FI. En Carson usamos 115 kHz, que es lo máximo del multiplex, y no los 15 kHz del audio, porque lo que se modula es el multiplex completo.
 
 ---
 
@@ -59,13 +56,13 @@ Son unas 1480 palabras habladas, unos 10.5 minutos. Con los cambios de ventana y
 
 **Pantalla:** pestaña «Receptor superheterodino» de la radio; para el retardo, la consola de `main` (ganancias si no se compensara: −0.90 / +0.52 / −0.79).
 
-> Con el transmisor listo, faltaba ver que el receptor pudiera recuperar la señal. El enunciado pide un superheterodino, y la ventaja se ve en la radio: sin importar qué portadora sintonicemos, la señal siempre se baja a la misma FI de 1.7 MHz. Así, el filtro de FI y el demodulador se diseñan una sola vez, y lo único que cambia con la sintonía es el oscilador local. Esa FI además sirve: está por debajo de la portadora, por encima del mensaje de 115 kHz, y su banda no llega a 0 Hz.
+> Con el transmisor listo, pasamos al receptor. El superheterodino tiene una ventaja: cualquier portadora que sintonicemos se baja a la misma FI de 1.7 MHz. Así, el filtro de FI y el demodulador no cambian; lo único que cambia es el oscilador local.
 >
-> El oscilador local se calcula solo a partir de la portadora: es la portadora menos 1.7 MHz. Lo pusimos por debajo de la portadora porque, si lo poníamos por encima, la suma del mezclador ya no cabía en los 48 MHz de muestreo.
+> El oscilador es la portadora menos 1.7 MHz. Lo pusimos abajo de la portadora porque, si iba arriba, la suma del mezclador no cabía en el muestreo.
 >
-> En el superheterodino también hay que cuidar la frecuencia imagen, porque al mezclarse cae en la misma FI. Para eso está la sección de RF antes del mezclador. Probamos qué pasaba si la quitábamos: con ruido, la calidad del audio bajó unos 3 dB, porque entraba también el ruido de la banda imagen. Por eso la dejamos.
+> Antes del mezclador está la sección de RF, que quita la frecuencia imagen. Probamos quitarla y, con ruido, el audio empeoró unos 3 dB. Por eso se queda.
 >
-> En el demultiplexor hay otro detalle. Los filtros retrasan la señal, y en DSB-SC, si la subportadora del receptor queda desfasada, la salida se atenúa. Cuando calculamos ese efecto, cada audio quedaba multiplicado por un número distinto: el audio 2 bajaba a la mitad y los otros dos salían invertidos. Por eso la subportadora del receptor se atrasa lo mismo que los filtros.
+> Un detalle más: los filtros retrasan la señal, y eso desfasa las subportadoras. En la consola se ve qué pasaría sin corregirlo: el audio 2 baja a la mitad y los otros salen invertidos. Por eso el receptor atrasa sus subportadoras lo mismo que los filtros.
 
 ---
 
@@ -73,11 +70,11 @@ Son unas 1480 palabras habladas, unos 10.5 minutos. Con los cambios de ventana y
 
 **Pantalla:** «Demodulador FM» en el `.slx` (limitador, detector de pendiente, detector de envolvente).
 
-> Para demodular la FM, al investigar encontramos también el detector de cuadratura. Decidimos seguir con el discriminador porque es el que más conocemos del curso, y eso nos facilitaba implementarlo y relacionarlo con la teoría.
+> Para demodular la FM usamos el discriminador. Al investigar también vimos el detector de cuadratura, pero preferimos el discriminador porque es el que más conocemos del curso.
 >
-> La comparación que sí hicimos a fondo fue contra el PLL, que también es del curso. Probamos los dos en el mismo modelo y con el mismo ruido. Con ruido moderado dieron prácticamente lo mismo, porque ahí lo que limita es el ruido. Sin ruido, el PLL salió peor en dos de los tres audios: el audio 3 quedaba en 34 dB, porque el lazo no alcanza a seguir los cambios rápidos de frecuencia del multiplex, mientras que el discriminador da al menos 43 dB. El PLL solo aguantó más cerca del umbral, y ahí el audio 3 ya sale mal con cualquiera de los dos. Además, el PLL necesita diseñar el lazo y compensar su fase. Por eso nos quedamos con el discriminador.
+> Donde sí comparamos a fondo fue con el PLL, que también es del curso. Con ruido moderado, los dos dieron lo mismo. Sin ruido, el PLL salió peor: el audio 3 quedaba en 34 dB, y con el discriminador todos pasan de 43 dB. El PLL solo es mejor cerca del umbral, y ahí el audio ya sale mal con los dos. Además, el PLL es más complicado de ajustar. Por eso nos quedamos con el discriminador.
 >
-> El discriminador tiene un limitador, un derivador que convierte la FM en AM, y un detector de envolvente. Con el limitador tuvimos un problema. Al recortar la señal directamente, como en un limitador analógico, en la simulación aparecían componentes que se plegaban sobre la señal y empeoraban mucho el audio. Por eso lo implementamos normalizando la señal, o sea, dividiéndola entre su amplitud, con un valor mínimo para no dividir entre valores demasiado pequeños cuando hay ruido.
+> Por dentro tiene un limitador, un derivador y un detector de envolvente. El limitador no lo pudimos hacer recortando la señal, porque en la simulación eso dañaba el audio. Lo hicimos dividiendo la señal entre su amplitud.
 
 ---
 
@@ -85,17 +82,17 @@ Son unas 1480 palabras habladas, unos 10.5 minutos. Con los cambios de ventana y
 
 **Pantalla:** la radio, grabada con las simulaciones ya hechas.
 
-> Si nos vamos a la radio, con el dial elegimos la portadora. Ahora podemos ver que el oscilador local se mueve con ella y que la FI se queda siempre en 1.7 MHz.
+> Ahora la radio. Con el dial elegimos la portadora. Vean que el oscilador local cambia y la FI se queda en 1.7 MHz.
 
-*(Mover de 10 a 11 MHz y mostrar que el LO pasa de 8.3 a 9.3 MHz.)*
+*(Mover de 10 a 11 MHz: el LO pasa de 8.3 a 9.3 MHz.)*
 
-> Con estos botones elegimos qué audio escuchar. Esto no vuelve a simular: solo cambia qué salida del demultiplexor se escucha.
+> Con estos botones elegimos qué audio escuchar. Esto no vuelve a simular.
 
 *(Reproducir los tres audios. En pantalla queda el SDR de cada uno.)*
 
-> Con canal ideal, los tres audios salen con más de 43 dB, y con nuestras grabaciones también.
+> Sin ruido, los tres audios salen con más de 43 dB, también con nuestras grabaciones.
 >
-> También probamos desintonizar el receptor, o sea, dejarlo sintonizado 600 kHz al lado de la portadora. En ese caso la señal queda fuera del filtro de FI y el audio prácticamente se pierde. Con esto comprobamos en la simulación que el receptor solo recupera el audio cuando está sintonizado a la portadora correcta.
+> Si corremos el receptor 600 kHz de la portadora, la señal se sale de la FI y el audio se pierde. O sea, el receptor solo recupera la emisora que tiene sintonizada.
 
 ---
 
@@ -103,11 +100,11 @@ Son unas 1480 palabras habladas, unos 10.5 minutos. Con los cambios de ventana y
 
 **Pantalla:** la radio con la fuente «Ruido de 0.3 a 15 kHz» y la barra en 25 dB. Primero sin prénfasis y después con prénfasis (ya simulados con «Simular las 4 combinaciones»). La gráfica «SDR por audio» muestra los tres audios y la teoría.
 
-> Después agregamos el canal AWGN para ver cómo se comportaba el sistema cuando ya no era un canal ideal. Los resultados siguieron la tendencia que da la teoría del curso, pero al acercarnos al umbral de la FM la calidad empezó a caer bastante rápido.
+> Después agregamos ruido blanco. Los resultados siguen la teoría hasta llegar al umbral de la FM. Debajo de ese punto, la calidad cae muy rápido.
 >
-> También notamos que, con ruido moderado, el audio 3 salía unos 14 dB peor que el audio 1. La explicación está en la teoría: a la salida del discriminador el ruido crece con el cuadrado de la frecuencia, y el audio 3 está en la subportadora más alta. Con la fórmula del curso, usando la potencia que tenía cada audio, da también unos 14 dB.
+> Algo que notamos es que el audio 3 sale unos 14 dB peor que el audio 1. La teoría lo explica: a la salida del discriminador, el ruido crece con la frecuencia, y el audio 3 está en la subportadora más alta.
 >
-> Para compensar esa diferencia usamos prénfasis y deénfasis. El prénfasis no elimina el ruido, lo reparte: el audio 3 mejora a costa del audio 1, que tenía calidad de sobra. Para escoger la frecuencia de corte calculamos qué pasaba con varios valores. Si se baja mucho, el audio 3 casi no mejora más, pero el audio 1 pierde bastante. Por eso dejamos 30 kHz. En la simulación, el audio 3 mejoró unos 2 dB, y la diferencia entre el mejor y el peor audio bajó de 14 a unos 6 dB.
+> Para eso usamos prénfasis. No quita ruido, lo reparte: mejora el audio 3 y empeora el audio 1, que tenía calidad de sobra. Escogimos 30 kHz como frecuencia de corte, porque bajarla más casi no ayudaba al audio 3. Con eso, la diferencia entre el mejor y el peor audio bajó de 14 a unos 6 dB.
 
 ---
 
@@ -115,9 +112,9 @@ Son unas 1480 palabras habladas, unos 10.5 minutos. Con los cambios de ventana y
 
 **Pantalla:** la radio o el nivel principal del modelo.
 
-> En general, logramos integrar todo lo que pedía el proyecto: el FDM, la FM, el receptor superheterodino y la radio. Lo que más trabajo nos dio fue que todas las etapas fueran compatibles entre sí, y para eso tuvimos que ir probando y corrigiendo varias decisiones.
+> En resumen, logramos integrar el FDM, la FM, el receptor superheterodino y la radio. Lo más difícil fue que todas las etapas funcionaran juntas, y eso nos obligó a probar y corregir varias decisiones.
 >
-> También tiene limitaciones. La simulación no funciona en tiempo real, la fase de la subportadora se corrige usando un retardo que conocemos, cuando un receptor real usaría un tono piloto, y el canal solo tiene ruido blanco. Aun así, el modelo nos permitió comprobar el sistema completo y ver qué pasa al cambiar las condiciones del canal.
+> Como limitaciones: la simulación no es en tiempo real, la fase de las subportadoras se corrige con un retardo conocido en vez de un tono piloto, y el canal solo tiene ruido blanco.
 
 ---
 
