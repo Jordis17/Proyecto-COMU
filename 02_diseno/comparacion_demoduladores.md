@@ -23,16 +23,19 @@ Probamos tres formas de demodular la FM, con la misma señal (multiplex de 3 can
 | 16 dB | 10.9 / 7.7 / 5.2 | **17.1 / 9.4 / 5.7** | 0 |
 | 14 dB | 3.6 / 3.1 / 2.8 | **12.4 / 6.9 / 3.9** | 0 |
 
-## Confirmación en Simulink (PLL contra cuadratura)
+## Confirmación en Simulink (modelo completo, MATLAB R2026a)
 
-| | Cuadratura | PLL |
-|---|---|---|
-| Canal ideal | 60.3 / 59.4 / 57.1 dB | 47.6 / 38.7 / 34.0 dB |
-| (SNR)_C = 30 dB | 32.0 / 21.3 / 17.7 | 31.7 / 21.1 / 17.4 |
-| (SNR)_C = 16 dB | 11.9 / 6.6 / 4.4 | **16.7 / 7.3 / 4.7** |
-| (SNR)_C = 14 dB | 4.1 / 2.7 / 2.1 | **9.6 / 4.8 / 3.0** |
+| (SNR)_C | Cuadratura | PLL | Discriminador |
+|---|---|---|---|
+| Canal ideal | 60.3 / 59.4 / 57.1 | 47.6 / 38.7 / 34.0 | 43.3 / 52.2 / 54.4 |
+| 40 dB | 41.9 / 31.2 / 27.7 | 40.7 / 30.5 / 26.6 | 39.7 / 31.2 / 27.6 |
+| 30 dB | 32.0 / 21.3 / 17.7 | 31.7 / 21.1 / 17.4 | 31.6 / 21.3 / 17.7 |
+| 20 dB | 21.9 / 11.5 / 8.2 | 21.6 / 11.3 / 8.0 | 18.4 / 10.9 / 8.0 |
+| 18 dB | 17.5 / 9.6 / 6.4 | **19.5 / 9.4 / 6.3** | 10.3 / 7.1 / 5.4 |
+| 16 dB | 11.9 / 6.6 / 4.4 | **16.7 / 7.3 / 4.7** | 3.9 / 2.9 / 2.4 |
+| 14 dB | 4.1 / 2.7 / 2.1 | **9.6 / 4.8 / 3.0** | 1.3 / 0.9 / 0.9 |
 
-El PLL se probó en el modelo completo (rama `claude/version-pll`, ver `version_pll.md`). Confirma lo de Python: con ruido moderado son iguales, el PLL es mejor cerca del umbral y distorsiona más con canal ideal. El discriminador no se pasó a Simulink.
+Cada demodulador está en su rama: cuadratura en `claude/affectionate-bardeen-qmc9v9`, PLL en `claude/version-pll` y discriminador en `claude/version-discriminador`. En Simulink, el discriminador (con el limitador que normaliza la amplitud y tiene un mínimo de 0.3) salió mejor que en la prueba de Python con canal ideal y se degrada de forma gradual cerca del umbral.
 
 ## Qué se ve
 
@@ -41,7 +44,7 @@ El PLL se probó en el modelo completo (rama `claude/version-pll`, ver `version_
   - El **PLL** no sigue perfectamente los cambios rápidos de frecuencia del multiplex (hasta 115 kHz con 150 kHz de desviación). Esa diferencia genera distorsión, y los canales 1 y 3 quedan en 36–39 dB.
   - El **discriminador** queda en 42–45 dB: el derivador y el detector de envolvente no son perfectos.
 - **Cerca del umbral, el PLL es el mejor.** A 16 dB, el canal 1 sale con 17 dB contra 11 dB del detector de cuadratura. Es la conocida «extensión del umbral» de los PLL: el lazo sigue la fase aunque haya picos de ruido.
-- **El discriminador es el que antes se cae** (alrededor de 20 dB).
+- **El discriminador es el que antes entra en umbral** (alrededor de 20 dB).
   - Sin limitador no sirve: la salida es amplitud × frecuencia, así que el ruido de amplitud se multiplica por la FI completa y tapa la señal. Por eso el curso lo pone siempre con limitador (diap. 375).
   - El limitador «de verdad» (recortar la onda) y el rectificador no funcionan en una simulación digital a 4.8 MHz: generan armónicos que se pliegan sobre la señal y el resultado baja a 9–14 dB.
   - La versión que funciona divide por la amplitud medida, y cuando el ruido hace que la amplitud pase cerca de cero, esa división genera picos enormes.
