@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<style>
+  :root{--bg:#10263d;--bg2:#16324f;--ink:#ffffff;--mut:#9fb3c8;--a1:#3b8fd9;--a2:#f07c2a;--a3:#9a6ad6;--lcd:#7dff9a}
+  html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:var(--bg)}
+  body{font-family:Inter,sans-serif;color:var(--ink);position:relative}
+  .fondo{position:absolute;inset:0;background:
+      radial-gradient(1200px 700px at 78% 30%, #1d4268 0%, rgba(29,66,104,0) 70%),
+      linear-gradient(180deg,#132d48 0%,#0e2236 100%)}
+  .rejilla{position:absolute;inset:0;opacity:.07;background-image:
+      linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);
+      background-size:60px 60px}
+  .texto{position:absolute;left:120px;top:170px;width:860px}
+  .etq{font:600 26px Inter;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+  h1{font:800 92px/1.04 "Inter Display",Inter;margin:26px 0 0;letter-spacing:-.01em}
+  h1 .fm{color:var(--lcd)}
+  .sub{font:500 38px Inter;color:#d7e3ef;margin-top:34px}
+  .nombres{font:600 32px Inter;color:var(--mut);margin-top:16px}
+  .radio{position:absolute;right:120px;top:150px;width:700px;height:330px;border-radius:28px;
+      background:linear-gradient(180deg,#22405f,#1a324b);box-shadow:0 30px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08)}
+  .lcd{position:absolute;left:150px;top:44px;width:400px;height:110px;border-radius:12px;background:#07130c;
+      box-shadow:inset 0 0 0 2px #0f2a1a;display:flex;align-items:center;justify-content:center;
+      font:700 76px "JetBrains Mono";color:var(--lcd);text-shadow:0 0 18px rgba(125,255,154,.45)}
+  .boton{position:absolute;top:62px;width:74px;height:74px;border-radius:50%;background:#2c4c6e;
+      display:flex;align-items:center;justify-content:center;color:#cfe0f0;font-size:28px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+  svg{position:absolute}
+  .cadena{position:absolute;left:120px;bottom:92px;display:flex;align-items:center;gap:18px;font:600 27px Inter;color:#d7e3ef}
+  .cadena .b{padding:14px 22px;border-radius:12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}
+  .cadena .f{color:var(--mut);font-size:30px}
+</style></head><body>
+<div class="fondo"></div><div class="rejilla"></div>
+
+<div class="texto">
+  <div class="etq">Comunicaciones Eléctricas I · Proyecto final</div>
+  <h1>Sistema FDM + <span class="fm">FM</span> con receptor superheterodino</h1>
+  <div class="sub">Tres audios, una portadora, una radio</div>
+  <div class="nombres">Jordi y Abner</div>
+</div>
+
+<div class="radio">
+  <div class="boton" style="left:50px">&#9664;</div>
+  <div class="lcd">10.0 MHz</div>
+  <div class="boton" style="right:50px">&#9654;</div>
+  <svg id="dial" width="700" height="150" style="left:0;top:180px"></svg>
+</div>
+
+<svg id="espectro" width="860" height="390" style="right:100px;top:520px"></svg>
+
+<div class="cadena">
+  <span class="b">3 audios</span><span class="f">&#8594;</span>
+  <span class="b">FDM</span><span class="f">&#8594;</span>
+  <span class="b">FM · 10 MHz</span><span class="f">&#8594;</span>
+  <span class="b">Superheterodino · FI 1.7 MHz</span><span class="f">&#8594;</span>
+  <span class="b">3 audios</span>
+</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg";
+function el(svg,tag,at){const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);svg.appendChild(e);return e;}
+// ---- dial de 9 a 11 MHz ----
+const d=document.getElementById('dial'), x0=80, x1=620, y=60;
+el(d,'line',{x1:x0,y1:y,x2:x1,y2:y,stroke:'#7f9bb8','stroke-width':3});
+for(let i=0;i<=20;i++){const f=9+i*0.1,x=x0+(x1-x0)*i/20,big=i%5==0;
+  el(d,'line',{x1:x,y1:y,x2:x,y2:y+(big?26:13),stroke:'#9fb3c8','stroke-width':big?3:2});
+  if(big){const t=el(d,'text',{x:x,y:y+60,'text-anchor':'middle',fill:'#cfe0f0','font-family':'Inter','font-size':24,'font-weight':600});t.textContent=(f%1==0?f.toFixed(0):f.toFixed(1));}}
+const xn=x0+(x1-x0)*0.5;
+el(d,'line',{x1:xn,y1:y-38,x2:xn,y2:y+30,stroke:'#ff5a4e','stroke-width':4,'stroke-linecap':'round'});
+el(d,'circle',{cx:xn,cy:y-38,r:7,fill:'#ff5a4e'});
+// ---- espectro del multiplex: 0 a 120 kHz, bandas 5-35, 45-75, 85-115 kHz ----
+const s=document.getElementById('espectro'), L=70,R=830,T=40,B=300;
+const fx=f=>L+(R-L)*f/120, dy=db=>T+(B-T)*(-db)/70;
+el(s,'line',{x1:L,y1:B,x2:R,y2:B,stroke:'#7f9bb8','stroke-width':2});
+[0,20,40,60,80,100,120].forEach(f=>{el(s,'line',{x1:fx(f),y1:B,x2:fx(f),y2:B+10,stroke:'#7f9bb8','stroke-width':2});
+  const t=el(s,'text',{x:fx(f),y:B+38,'text-anchor':'middle',fill:'#9fb3c8','font-family':'Inter','font-size':22});t.textContent=f;});
+const tx=el(s,'text',{x:R,y:B+72,'text-anchor':'end',fill:'#9fb3c8','font-family':'Inter','font-size':22});tx.textContent='frecuencia [kHz]';
+// bandas de guarda
+[[35,45],[75,85]].forEach(([a,b])=>{el(s,'rect',{x:fx(a),y:T-10,width:fx(b)-fx(a),height:B-T+10,fill:'rgba(255,255,255,.05)'});
+  const t=el(s,'text',{x:(fx(a)+fx(b))/2,y:T-18,'text-anchor':'middle',fill:'#9fb3c8','font-family':'Inter','font-size':18});t.textContent='guarda';});
+// forma de cada banda: dos bandas laterales de audio alrededor de la subportadora
+function rnd(i){const v=Math.sin(i*12.9898)*43758.5453;return v-Math.floor(v);}
+[[20,'#3b8fd9'],[60,'#f07c2a'],[100,'#9a6ad6']].forEach(([fc,c],k)=>{
+  let pts=[], n=160;
+  for(let i=0;i<=n;i++){const f=fc-15+30*i/n, u=Math.abs(f-fc)/15;
+    let db=-8-18*u*u-4*rnd(i+k*500)-(u>0.93?60*(u-0.93)/0.07:0);
+    pts.push([fx(f),dy(Math.max(db,-70))]);}
+  const dpath='M'+fx(fc-15)+','+B+' L'+pts.map(p=>p.join(',')).join(' L')+' L'+fx(fc+15)+','+B+' Z';
+  el(s,'path',{d:dpath,fill:c,'fill-opacity':.35,stroke:c,'stroke-width':2.5});
+  const t=el(s,'text',{x:fx(fc),y:dy(-2)-8,'text-anchor':'middle',fill:c,'font-family':'Inter','font-size':22,'font-weight':700});t.textContent='Audio '+(k+1);
+});
+</script>
+</body></html>
