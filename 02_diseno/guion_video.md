@@ -114,17 +114,17 @@ Son unas 1170 palabras habladas, unos 8.3 minutos. Con los cambios de ventana y 
 
 **Pantalla:** la radio, pestaña «Demultiplexación y audio», con el SDR de los tres audios.
 
-> Gracias, Jordi. Para cerrar, volvemos a los objetivos del proyecto.
->
-> Diseñamos un plan FDM que mete los tres audios en 120 kHz, con guardas de 10 kHz, y en el receptor los tres se separan con más de 43 dB. El transmisor FM se dimensionó con el criterio de Carson, 530 kHz, y en la simulación la potencia quedó dentro de ese ancho.
->
-> El receptor superheterodino hace la conversión y el filtrado como se pidió: cualquier portadora entre 9 y 11 MHz se baja a la misma FI de 1.7 MHz, y si el receptor no está sintonizado, el audio se pierde. Para demodular, el discriminador del curso rindió igual que un PLL en condiciones normales.
->
-> Analizar las señales en tiempo y en frecuencia nos permitió comparar el original con el recuperado y explicar con la teoría lo que pasa con ruido: el audio 3 sale unos 14 dB peor porque el ruido crece con la frecuencia, y con prénfasis esa diferencia baja a 6 dB.
->
-> La radio cumple lo que se pedía de la interfaz: se elige la portadora y el audio, se ve la FI, y todo se recalcula solo al mover el dial. Y escalar todo entre 100 fue lo que nos permitió simular el sistema sin perder las proporciones reales.
->
-> Como limitaciones, la simulación no es en tiempo real, la fase de las subportadoras se corrige con un retardo conocido en vez de un tono piloto, y el canal solo tiene ruido blanco. Gracias.
+Gracias, Jordi. Para cerrar, destacamos los principales resultados del proyecto.
+
+Logramos transmitir los tres audios mediante FDM en un ancho de banda de 120 kHz, manteniendo una separación superior a 43 dB entre los canales. Además, el transmisor FM se dimensionó con un ancho de banda de 530 kHz, obteniendo resultados acordes con lo esperado.
+
+En el receptor superheterodino comprobamos que las diferentes portadoras pueden convertirse a una frecuencia intermedia fija de 1.7 MHz. También verificamos que tanto el discriminador como el PLL permiten recuperar el audio bajo condiciones normales.
+
+Por otra parte, identificamos que el tercer canal presenta mayor degradación por ruido, pero al incorporar prénfasis conseguimos reducir esa diferencia de 14 a 6 dB, mejorando la recuperación del audio.
+
+Finalmente, integramos las etapas en una interfaz que permite modificar la sintonización y visualizar los resultados. Como posibles mejoras, proponemos incorporar procesamiento en tiempo real, un tono piloto para sincronizar las subportadoras y modelos de canal más completos.
+
+Muchas gracias.
 
 ---
 
