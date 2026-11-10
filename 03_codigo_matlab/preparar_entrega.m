@@ -12,7 +12,7 @@ archivos = {'main.m', 'radio_fdm_fm.m', 'params_sistema.m', 'disenar_fir_kaiser.
 
 cd(origen);
 if bdIsLoaded(mdl), close_system(mdl, 0); end
-assert(exist(fullfile(origen, [mdl '.slx']), 'file') == 2, 'No se encontró %s.slx', mdl);
+assert(isfile(fullfile(origen, [mdl '.slx'])), 'No se encontró %s.slx', mdl);
 
 % copiar
 if exist(destino, 'dir'), rmdir(destino, 's'); end
