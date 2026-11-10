@@ -1,0 +1,4 @@
+Aquí van las tres grabaciones: audio1.wav, audio2.wav y audio3.wav.
+De preferencia a 48 kHz; si tienen otra frecuencia de muestreo, se convierten. Si son estéreo, se pasan a mono.
+Se usa el inicio de cada archivo (la duración que se elija en la radio) y cada audio se limita a 15 kHz.
+En la radio se usan con la fuente «Grabaciones (WAV)».

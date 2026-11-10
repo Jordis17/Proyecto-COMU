@@ -1,5 +1,5 @@
 function R = modelo_referencia(P, X)
-%MODELO_REFERENCIA  Cadena completa TX -> canal -> superheterodino -> demux, en MATLAB puro.
+% Cadena completa TX -> canal -> superheterodino -> demux, en MATLAB puro.
 %   R = modelo_referencia(P, X)
 %   P : estructura de params_sistema
 %   X : 3 x Na, los tres audios muestreados a P.fs_a (cada uno normalizado, |x| <= 1)
@@ -28,6 +28,7 @@ function R = modelo_referencia(P, X)
         m  = m + xk .* cos(2*pi*P.f_sc(k)*t_m);         % 3) DSB-SC
     end
     m_n = m / P.normalizacion;                            % 4) |m_n| <= 1
+    m_n = filter(P.enf.num_tx, 1, m_n);                   % 4b) prénfasis (cable si P.enfasis = false)
 
     % 5) interpolación x L2 = L2a * L2b hasta la tasa de RF (dos etapas x10)
     Ni = Nm * P.L2a;
@@ -54,16 +55,17 @@ function R = modelo_referencia(P, X)
     v  = filter(P.h.presel, 1, r);                        % sección de RF (preselector)
     v  = v .* (2*cos(2*pi*P.f_LO*t_rf));                  % mezclador con LO
     v  = filter(P.h.fi_lpf, 1, v);                        % pasabajos anti-aliasing (quita suma)
-    v  = retrasar(v(1:P.M1:end), P.rt_dec);               % decimación -> fs_fi
+    v  = v(1:P.M1:end);                                   % decimación -> fs_fi
     fi = filter(P.h.fi, 1, v);                            % sección de FI (pasabanda selectivo)
-    n_fi = 0:numel(fi)-1;
 
-    % demodulador FM en cuadratura: f_i = fs/(2 pi) * arg(z[n] z*[n-1])
-    z = fi .* exp(-1j*2*pi*P.f_FI*n_fi/P.fs_fi);
-    z = filter(P.h.iq, 1, z);
-    finst = [0, angle(z(2:end) .* conj(z(1:end-1)))] * P.fs_fi / (2*pi);
+    % demodulador FM: discriminador (igual que el modelo)
+    A  = max(sqrt(max(2*filter(P.h.iq, 1, fi.^2), 0)), P.disc.amin);     % limitador: amplitud
+    fd = [zeros(1, P.disc.d_env), fi(1:end-P.disc.d_env)];               % FI retrasada para alinear
+    d  = filter(P.disc.h_der, 1, fd ./ A);                              % detector de pendiente
+    finst = sqrt(max(2*filter(P.h.iq, 1, d.^2), 0)) / (2*pi) - P.f_FI;   % detector de envolvente
     m_hat = filter(P.h.mux, 1, finst / P.kf);             % filtro posdetección (120 kHz nom)
-    m_hat = retrasar(m_hat(1:P.M2:end), P.rt_dec) * P.normalizacion;   % -> fs_m, deshace /3
+    m_hat = m_hat(1:P.M2:end) * P.normalizacion;          % -> fs_m, deshace /3
+    m_hat = filter(P.enf.num_rx, P.enf.den_rx, m_hat);   % deénfasis (cable si P.enfasis = false)
 
     %% ===================== DEMULTIPLEXOR FDM =====================
     t_m2 = (0:numel(m_hat)-1) / P.fs_m;
@@ -72,7 +74,7 @@ function R = modelo_referencia(P, X)
         y = filter(P.h.canal{k}, 1, m_hat);
         y = y .* (2*cos(2*pi*P.f_sc(k)*t_m2 + P.fase_rx(k)));   % detección coherente con tau_k compensado
         y = filter(P.h.post, 1, y);
-        y = retrasar(y(1:P.M3:end), P.rt_dec);
+        y = y(1:P.M3:end);
         Y(k,:) = y(1:Na);
     end
 

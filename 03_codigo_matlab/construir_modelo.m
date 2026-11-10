@@ -1,14 +1,15 @@
 function construir_modelo(nombre)
-%CONSTRUIR_MODELO  Genera el modelo Simulink del sistema a partir de bloques básicos.
-%   construir_modelo()            crea/reemplaza 'sistema_fdm_fm.slx' en la carpeta actual
+% Genera el modelo Simulink del sistema con bloques básicos.
+%   construir_modelo()            crea o reemplaza 'sistema_fdm_fm.slx' en la carpeta actual
 %
-%   ESTADO: etapas 1-6 -> fuentes, transmisor FDM (DSB-SC), modulador FM, canal (ideal/AWGN),
-%   receptor superheterodino y demultiplexor FDM. La GUI se agrega en la etapa 7.
-%   El .slx siempre se puede regenerar ejecutando este script.
+%   Contiene: fuentes, transmisor FDM (DSB-SC + prénfasis opcional), modulador FM, canal
+%   (ideal/AWGN), receptor superheterodino (con deénfasis opcional) y demultiplexor FDM.
+%   La GUI (radio_fdm_fm.m) solo cambia parámetros y llama a sim().
+%   El .slx siempre se puede volver a generar con este script.
 %
-%   Los bloques NO contienen números escritos a mano: todo se lee de las variables del
-%   workspace base 'P' (params_sistema) y 'fuente' (generar_fuentes).
-%   Solo usa la biblioteca básica de Simulink (sin DSP System Toolbox).
+%   Los bloques no tienen números escritos a mano: todo se lee de las variables 'P'
+%   (params_sistema) y 'fuente' (generar_fuentes) del workspace base.
+%   Solo usa la biblioteca básica de Simulink.
 
     if nargin < 1, nombre = 'sistema_fdm_fm'; end
     mdl = nombre;
@@ -17,11 +18,12 @@ function construir_modelo(nombre)
     new_system(mdl);
     open_system(mdl);
 
-    %% Configuración del solver: discreto, paso fijo, una sola tarea [§8 del enunciado]
+    %% Solver discreto de paso fijo, una sola tarea
     set_param(mdl, 'SolverType', 'Fixed-step', 'Solver', 'FixedStepDiscrete', ...
         'FixedStep', 'auto', 'StopTime', 'fuente.T_stop');
-    % Una sola tarea para todas las tasas: así los Rate Transition no agregan retardo.
-    % (En modo multitarea, el paso de tasa lenta a rápida retrasa una muestra lenta.)
+    % Una sola tarea para todas las tasas. Aun así, cada Rate Transition de tasa lenta a
+    % rápida retrasa 1 muestra lenta (medido en verificar_etapa2); params_sistema lo incluye
+    % en tau_k con P.rt_retardo.
     try, set_param(mdl, 'EnableMultiTasking', 'off'); catch, end
     try, set_param(mdl, 'SolverMode', 'SingleTasking'); catch, end
     set_param(mdl, 'ReturnWorkspaceOutputs', 'on');
@@ -41,41 +43,41 @@ function construir_modelo(nombre)
     add_block('built-in/Subsystem', tx, 'Position', caja(220, 70, 160, 200));
     construir_tx_fdm(tx);
     set_param(tx, 'Description', ...
-        'FDM DSB-SC: LPF 15 kHz, interpolación x10 por inserción de ceros, subportadoras 20/60/100 kHz nom, m_n = m/3');
+        'FDM DSB-SC: LPF 15 kHz, interpolación x10 por inserción de ceros, subportadoras 20/60/100 kHz nom, m_n = m/3, prénfasis (opcional)');
 
     for k = 1:3
-        add_line(mdl, sprintf('Audio%d/1', k), sprintf('Transmisor_FDM/%d', k), 'autorouting', 'on');
+        nombrar(add_line(mdl, sprintf('Audio%d/1', k), sprintf('Transmisor_FDM/%d', k), 'autorouting', 'on'), sprintf('x%d(t) audio %d', k, k));
     end
 
-    %% ---------------- Modulador FM (etapa 3) ----------------
+    %% ---------------- Modulador FM ----------------
     fm = [mdl '/Modulador_FM'];
     add_block('built-in/Subsystem', fm, 'Position', caja(480, 70, 160, 120));
     construir_modulador_fm(fm);
     set_param(fm, 'Description', ...
         'Interpolación x100 en dos etapas x10 (fs_m -> fs_fi -> fs_rf) y FM: s = Ac cos(2 pi fc t + 2 pi kf * suma(m_n)/fs_rf)');
-    add_line(mdl, 'Transmisor_FDM/1', 'Modulador_FM/1', 'autorouting', 'on');
+    nombrar(add_line(mdl, 'Transmisor_FDM/1', 'Modulador_FM/1', 'autorouting', 'on'), 'm(t) multiplex');
 
-    %% ---------------- Canal (etapa 4): ideal o AWGN ----------------
+    %% ---------------- Canal: ideal o AWGN ----------------
     ch = [mdl '/Canal'];
     add_block('built-in/Subsystem', ch, 'Position', caja(720, 85, 120, 60));
     construir_canal(ch);
-    set_param(ch, 'Description', 'r = s + n, n gaussiano de varianza P.sigma_ruido^2 (0 = canal ideal). (SNR)_C de Haykin, doc 6.9');
-    add_line(mdl, 'Modulador_FM/1', 'Canal/1', 'autorouting', 'on');
+    set_param(ch, 'Description', 'r = s + n, n gaussiano de varianza P.sigma_ruido^2 (0 = canal ideal)');
+    nombrar(add_line(mdl, 'Modulador_FM/1', 'Canal/1', 'autorouting', 'on'), 's(t) señal FM');
 
-    %% ---------------- Receptor superheterodino (etapa 5) ----------------
+    %% ---------------- Receptor superheterodino ----------------
     rx = [mdl '/Receptor_Superheterodino'];
     add_block('built-in/Subsystem', rx, 'Position', caja(900, 70, 170, 120));
     construir_receptor(rx);
     set_param(rx, 'Description', ['Sección RF (preselector en f_c) -> mezclador con LO = f_c - f_FI -> ' ...
-        'pasabajos + decimación -> pasabanda FI 1.7 MHz -> demodulador FM en cuadratura -> filtro posdetección']);
-    add_line(mdl, 'Canal/1', 'Receptor_Superheterodino/1', 'autorouting', 'on');
+        'pasabajos + decimación -> pasabanda FI 1.7 MHz -> demodulador FM (discriminador) -> filtro posdetección -> deénfasis (opcional)']);
+    nombrar(add_line(mdl, 'Canal/1', 'Receptor_Superheterodino/1', 'autorouting', 'on'), 'x(t) = s(t) + w(t)');
 
-    %% ---------------- Demultiplexor FDM (etapa 6) ----------------
+    %% ---------------- Demultiplexor FDM ----------------
     dm = [mdl '/Demultiplexor_FDM'];
     add_block('built-in/Subsystem', dm, 'Position', caja(1140, 70, 160, 200));
     construir_demux(dm);
     set_param(dm, 'Description', 'Por canal: BPF -> x 2cos(2 pi f_k (t - tau_k)) -> LPF 15 kHz -> decimación a fs_a');
-    add_line(mdl, 'Receptor_Superheterodino/1', 'Demultiplexor_FDM/1', 'autorouting', 'on');
+    nombrar(add_line(mdl, 'Receptor_Superheterodino/1', 'Demultiplexor_FDM/1', 'autorouting', 'on'), 'm(t) recuperado');
 
     %% ---------------- Registro de señales ----------------
     a_workspace(mdl, 'Log_m_n',  'sim_m_n',  caja(480, 230, 90, 30));
@@ -96,17 +98,19 @@ function construir_modelo(nombre)
     add_line(mdl, 'Receptor_Superheterodino/3', 'Log_mezcla/1','autorouting', 'on');
     for k = 1:3
         a_workspace(mdl, sprintf('Log_audio%d', k), sprintf('sim_y%d', k), caja(1380, 75 + 70*(k-1), 90, 30));
-        add_line(mdl, sprintf('Demultiplexor_FDM/%d', k), sprintf('Log_audio%d/1', k), 'autorouting', 'on');
+        nombrar(add_line(mdl, sprintf('Demultiplexor_FDM/%d', k), sprintf('Log_audio%d/1', k), 'autorouting', 'on'), sprintf('audio %d recuperado', k));
     end
 
-    % marca de versión: la GUI y main.m regeneran el modelo si no coincide
-    set_param(mdl, 'Description', sprintf('version_modelo=%d', version_modelo()));
+    set_param(mdl, 'Description', 'Sistema FDM + FM + receptor superheterodino');
+    nombres_del_curso(mdl);
+    agrupar_como_el_curso(mdl);
+    ordenar_diagrama(mdl);
     save_system(mdl, fullfile(pwd, [mdl '.slx']));
     try
         fprintf('Multitarea: %s\n', get_param(mdl, 'EnableMultiTasking'));
     catch
     end
-    fprintf('Modelo %s.slx creado (etapas 1-6: fuentes, FDM, FM, canal, superheterodino, demux).\n', mdl);
+    fprintf('Modelo %s.slx creado (fuentes, FDM, FM, canal, superheterodino, demux).\n', mdl);
 end
 
 % =========================================================================
@@ -127,9 +131,17 @@ function construir_tx_fdm(tx)
     add_block('simulink/Math Operations/Gain', [tx '/Normalizacion'], 'Gain', '1/P.normalizacion', ...
         'Position', caja(420, 165, 50, 30));
     add_line(tx, 'Suma_FDM/1', 'Normalizacion/1', 'autorouting', 'on');
-    add_block('built-in/Outport', [tx '/m_n'], 'Position', caja(520, 173, 30, 14));
-    add_block('built-in/Outport', [tx '/m'],   'Position', caja(520, 253, 30, 14));
-    add_line(tx, 'Normalizacion/1', 'm_n/1', 'autorouting', 'on');
+    % Prénfasis del multiplex (curso, diap. 384): y[n] = g (x[n] - a x[n-1]).
+    % Con P.enfasis = false, P.enf.num_tx = [1 0] y el bloque es un cable.
+    add_block('simulink/Discrete/Discrete Filter', [tx '/Prenfasis'], ...
+        'Numerator', 'P.enf.num_tx', 'Denominator', '1', 'SampleTime', '-1', ...
+        'Position', caja(500, 165, 80, 30));
+    set_param([tx '/Prenfasis'], 'Description', ...
+        'Prénfasis H(z) = g (1 - a z^-1): realza los canales altos antes del modulador FM');
+    add_block('built-in/Outport', [tx '/m_n'], 'Position', caja(620, 173, 30, 14));
+    add_block('built-in/Outport', [tx '/m'],   'Position', caja(620, 253, 30, 14));
+    add_line(tx, 'Normalizacion/1', 'Prenfasis/1', 'autorouting', 'on');
+    add_line(tx, 'Prenfasis/1', 'm_n/1', 'autorouting', 'on');
     add_line(tx, 'Suma_FDM/1', 'm/1', 'autorouting', 'on');
 end
 
@@ -177,12 +189,6 @@ function construir_rama_dsb(rama, k)
     add_line(rama, 'Filtro_interpolador/1', 'Modulador_DSB/1', 'autorouting', 'on');
     add_line(rama, 'Subportadora/1', 'Modulador_DSB/2', 'autorouting', 'on');
     add_line(rama, 'Modulador_DSB/1', 'y/1', 'autorouting', 'on');
-
-    % puntos de registro para depuración (audio filtrado y banda base interpolada)
-    a_workspace(rama, 'Log_xa', sprintf('sim_xa%d', k), caja(210, 190, 70, 26));
-    a_workspace(rama, 'Log_xb', sprintf('sim_xb%d', k), caja(490, 190, 70, 26));
-    add_line(rama, 'LPF_audio_15kHz/1', 'Log_xa/1', 'autorouting', 'on');
-    add_line(rama, 'Filtro_interpolador/1', 'Log_xb/1', 'autorouting', 'on');
 
     set_param(rama, 'Description', sprintf( ...
         'Canal %d: DSB-SC con subportadora P.f_sc(%d). Interpolación x P.L1 = Rate Transition (retención) x tren de pulsos -> inserción de ceros; luego FIR con ganancia L1.', k, k));
@@ -285,7 +291,7 @@ function construir_receptor(rx)
     dem = [rx '/Demodulador_FM'];
     add_block('built-in/Subsystem', dem, 'Position', caja(650, 55, 120, 55));
     construir_demodulador_fm(dem);
-    set_param(dem, 'Description', 'Cuadratura: z = FI * exp(-j 2 pi f_FI t), LPF, f_i = fs/(2 pi) * atan2(Im, Re) de z[n] z*[n-1]');
+    set_param(dem, 'Description', 'Discriminador: limitador (normaliza la amplitud) -> detector de pendiente (derivador) -> detector de envolvente (ley cuadrática).');
     add_block('simulink/Math Operations/Gain', [rx '/Escala_1_kf'], 'Gain', '1/P.kf', ...
         'Position', caja(800, 67, 50, 30));
     add_block('simulink/Discrete/Discrete Filter', [rx '/Filtro_posdeteccion'], ...
@@ -296,7 +302,14 @@ function construir_receptor(rx)
         'Position', caja(1010, 67, 50, 30));
     add_block('simulink/Math Operations/Gain', [rx '/Deshace_normalizacion'], 'Gain', 'P.normalizacion', ...
         'Position', caja(1090, 67, 50, 30));
-    add_block('built-in/Outport', [rx '/m_hat'],  'Position', caja(1180, 75, 30, 14));
+    % Deénfasis justo después del demodulador (curso, diap. 384): inverso exacto del prénfasis,
+    % H(z) = (1/g) / (1 - a z^-1). Con P.enfasis = false es un cable.
+    add_block('simulink/Discrete/Discrete Filter', [rx '/Deenfasis'], ...
+        'Numerator', 'P.enf.num_rx', 'Denominator', 'P.enf.den_rx', 'SampleTime', '-1', ...
+        'Position', caja(1170, 67, 80, 30));
+    set_param([rx '/Deenfasis'], 'Description', ...
+        'Deénfasis H(z) = (1/g)/(1 - a z^-1): devuelve el multiplex a su forma original y atenúa el ruido de alta frecuencia');
+    add_block('built-in/Outport', [rx '/m_hat'],  'Position', caja(1290, 75, 30, 14));
     add_block('built-in/Outport', [rx '/fi'],     'Position', caja(650, 160, 30, 14));
     add_block('built-in/Outport', [rx '/mezcla'], 'Position', caja(300, 160, 30, 14));
 
@@ -311,67 +324,70 @@ function construir_receptor(rx)
     add_line(rx, 'Escala_1_kf/1', 'Filtro_posdeteccion/1', 'autorouting', 'on');
     add_line(rx, 'Filtro_posdeteccion/1', 'Decimacion_M2/1', 'autorouting', 'on');
     add_line(rx, 'Decimacion_M2/1', 'Deshace_normalizacion/1', 'autorouting', 'on');
-    add_line(rx, 'Deshace_normalizacion/1', 'm_hat/1', 'autorouting', 'on');
+    add_line(rx, 'Deshace_normalizacion/1', 'Deenfasis/1', 'autorouting', 'on');
+    add_line(rx, 'Deenfasis/1', 'm_hat/1', 'autorouting', 'on');
     add_line(rx, 'Seccion_FI_pasabanda/1', 'fi/1', 'autorouting', 'on');
     add_line(rx, 'Mezclador/1', 'mezcla/1', 'autorouting', 'on');
 end
 
 function construir_demodulador_fm(dem)
-% I = FI*cos(w t), Q = -FI*sin(w t), filtrados; z[n] z*[n-1] = (I I1 + Q Q1) + j (Q I1 - I Q1)
-% f_i = fs_fi/(2 pi) * atan2(Q I1 - I Q1, I I1 + Q Q1)
+% Discriminador de frecuencia (diap. 342-345, 375): limitador -> detector de pendiente -> detector de envolvente
+%   limitador: y = FI / A, con A = sqrt(2*LPF(FI^2)) >= 0.3   (amplitud constante = 1)
+%   detector de pendiente: derivador FIR -> amplitud proporcional a 2*pi*f_i
+%   detector de envolvente (ley cuadrática): sqrt(2*LPF(d^2)) = 2*pi*f_i
+%   salida: f_i/(1) - f_FI = desviación de frecuencia [Hz]
     add_block('built-in/Inport', [dem '/fi'], 'Position', caja(20, 120, 30, 14));
-    add_block('simulink/Sources/Sine Wave', [dem '/cos_FI'], 'SineType', 'Time based', ...
-        'Amplitude', '1', 'Frequency', '2*pi*P.f_FI', 'Phase', 'pi/2', 'Bias', '0', ...
-        'SampleTime', '1/P.fs_fi', 'Position', caja(20, 40, 50, 30));
-    add_block('simulink/Sources/Sine Wave', [dem '/menos_sen_FI'], 'SineType', 'Time based', ...
-        'Amplitude', '-1', 'Frequency', '2*pi*P.f_FI', 'Phase', '0', 'Bias', '0', ...
-        'SampleTime', '1/P.fs_fi', 'Position', caja(20, 190, 50, 30));
-    add_block('simulink/Math Operations/Product', [dem '/Mezcla_I'], 'Position', caja(110, 50, 30, 40));
-    add_block('simulink/Math Operations/Product', [dem '/Mezcla_Q'], 'Position', caja(110, 170, 30, 40));
-    add_block('simulink/Discrete/Discrete Filter', [dem '/LPF_I'], 'Numerator', 'P.h.iq', ...
-        'Denominator', '1', 'SampleTime', '-1', 'Position', caja(170, 55, 70, 30));
-    add_block('simulink/Discrete/Discrete Filter', [dem '/LPF_Q'], 'Numerator', 'P.h.iq', ...
-        'Denominator', '1', 'SampleTime', '-1', 'Position', caja(170, 175, 70, 30));
-    add_block('simulink/Discrete/Unit Delay', [dem '/Retardo_I'], 'InitialCondition', '0', ...
-        'SampleTime', '-1', 'Position', caja(270, 100, 40, 30));
-    add_block('simulink/Discrete/Unit Delay', [dem '/Retardo_Q'], 'InitialCondition', '0', ...
-        'SampleTime', '-1', 'Position', caja(270, 230, 40, 30));
-    add_block('simulink/Math Operations/Product', [dem '/I_I1'], 'Position', caja(350, 30, 30, 40));
-    add_block('simulink/Math Operations/Product', [dem '/Q_Q1'], 'Position', caja(350, 90, 30, 40));
-    add_block('simulink/Math Operations/Product', [dem '/Q_I1'], 'Position', caja(350, 160, 30, 40));
-    add_block('simulink/Math Operations/Product', [dem '/I_Q1'], 'Position', caja(350, 220, 30, 40));
-    add_block('simulink/Math Operations/Add', [dem '/Re'], 'Inputs', '++', 'Position', caja(420, 50, 30, 50));
-    add_block('simulink/Math Operations/Add', [dem '/Im'], 'Inputs', '+-', 'Position', caja(420, 180, 30, 50));
-    add_block('simulink/Math Operations/Trigonometric Function', [dem '/atan2'], 'Operator', 'atan2', ...
-        'Position', caja(490, 110, 50, 50));
-    add_block('simulink/Math Operations/Gain', [dem '/fs_sobre_2pi'], 'Gain', 'P.fs_fi/(2*pi)', ...
-        'Position', caja(570, 120, 60, 30));
-    add_block('built-in/Outport', [dem '/f_inst'], 'Position', caja(670, 128, 30, 14));
+    % --- limitador (normaliza la amplitud)
+    add_block('simulink/Math Operations/Product', [dem '/Cuadrado de la FI'], 'Position', caja(100, 40, 30, 40));
+    add_block('simulink/Discrete/Discrete Filter', [dem '/Pasabajos (amplitud)'], 'Numerator', 'P.h.iq', ...
+        'Denominator', '1', 'SampleTime', '-1', 'Position', caja(160, 45, 90, 30));
+    add_block('simulink/Math Operations/Gain', [dem '/x2 (amplitud)'], 'Gain', '2', 'Position', caja(280, 45, 40, 30));
+    add_block('simulink/Discontinuities/Saturation', [dem '/No negativo (amplitud)'], 'UpperLimit', 'inf', ...
+        'LowerLimit', '0', 'Position', caja(350, 45, 40, 30));
+    add_block('simulink/Math Operations/Sqrt', [dem '/Raíz (amplitud)'], 'Position', caja(420, 45, 40, 30));
+    add_block('simulink/Discontinuities/Saturation', [dem '/Amplitud mínima'], 'UpperLimit', 'inf', ...
+        'LowerLimit', 'P.disc.amin', 'Position', caja(490, 45, 40, 30));
+    add_block('simulink/Discrete/Delay', [dem '/Retardo para alinear'], 'DelayLength', 'P.disc.d_env', ...
+        'InitialCondition', '0', 'SampleTime', '-1', 'Position', caja(350, 120, 60, 30));
+    add_block('simulink/Math Operations/Divide', [dem '/Dividir por la amplitud'], 'Position', caja(570, 90, 40, 50));
+    % --- detector de pendiente (derivador)
+    add_block('simulink/Discrete/Discrete Filter', [dem '/Detector de pendiente (derivador)'], 'Numerator', 'P.disc.h_der', ...
+        'Denominator', '1', 'SampleTime', '-1', 'Position', caja(650, 100, 110, 30));
+    % --- detector de envolvente (ley cuadrática)
+    add_block('simulink/Math Operations/Product', [dem '/Cuadrado'], 'Position', caja(800, 95, 30, 40));
+    add_block('simulink/Discrete/Discrete Filter', [dem '/Pasabajos'], 'Numerator', 'P.h.iq', ...
+        'Denominator', '1', 'SampleTime', '-1', 'Position', caja(860, 100, 90, 30));
+    add_block('simulink/Math Operations/Gain', [dem '/x2'], 'Gain', '2', 'Position', caja(980, 100, 40, 30));
+    add_block('simulink/Discontinuities/Saturation', [dem '/No negativo'], 'UpperLimit', 'inf', ...
+        'LowerLimit', '0', 'Position', caja(1050, 100, 40, 30));
+    add_block('simulink/Math Operations/Sqrt', [dem '/Raíz'], 'Position', caja(1120, 100, 40, 30));
+    % --- de 2*pi*f_i a desviación en Hz
+    add_block('simulink/Math Operations/Gain', [dem '/Dividir entre 2 pi'], 'Gain', '1/(2*pi)', 'Position', caja(1190, 100, 60, 30));
+    add_block('simulink/Sources/Constant', [dem '/Frecuencia de FI'], 'Value', 'P.f_FI', 'Position', caja(1190, 170, 60, 30));
+    add_block('simulink/Math Operations/Add', [dem '/Restar la FI'], 'Inputs', '+-', 'Position', caja(1280, 105, 30, 50));
+    add_block('built-in/Outport', [dem '/f_inst'], 'Position', caja(1350, 123, 30, 14));
 
-    add_line(dem, 'fi/1', 'Mezcla_I/1', 'autorouting', 'on');
-    add_line(dem, 'cos_FI/1', 'Mezcla_I/2', 'autorouting', 'on');
-    add_line(dem, 'fi/1', 'Mezcla_Q/1', 'autorouting', 'on');
-    add_line(dem, 'menos_sen_FI/1', 'Mezcla_Q/2', 'autorouting', 'on');
-    add_line(dem, 'Mezcla_I/1', 'LPF_I/1', 'autorouting', 'on');
-    add_line(dem, 'Mezcla_Q/1', 'LPF_Q/1', 'autorouting', 'on');
-    add_line(dem, 'LPF_I/1', 'Retardo_I/1', 'autorouting', 'on');
-    add_line(dem, 'LPF_Q/1', 'Retardo_Q/1', 'autorouting', 'on');
-    add_line(dem, 'LPF_I/1', 'I_I1/1', 'autorouting', 'on');
-    add_line(dem, 'Retardo_I/1', 'I_I1/2', 'autorouting', 'on');
-    add_line(dem, 'LPF_Q/1', 'Q_Q1/1', 'autorouting', 'on');
-    add_line(dem, 'Retardo_Q/1', 'Q_Q1/2', 'autorouting', 'on');
-    add_line(dem, 'LPF_Q/1', 'Q_I1/1', 'autorouting', 'on');
-    add_line(dem, 'Retardo_I/1', 'Q_I1/2', 'autorouting', 'on');
-    add_line(dem, 'LPF_I/1', 'I_Q1/1', 'autorouting', 'on');
-    add_line(dem, 'Retardo_Q/1', 'I_Q1/2', 'autorouting', 'on');
-    add_line(dem, 'I_I1/1', 'Re/1', 'autorouting', 'on');
-    add_line(dem, 'Q_Q1/1', 'Re/2', 'autorouting', 'on');
-    add_line(dem, 'Q_I1/1', 'Im/1', 'autorouting', 'on');
-    add_line(dem, 'I_Q1/1', 'Im/2', 'autorouting', 'on');
-    add_line(dem, 'Im/1', 'atan2/1', 'autorouting', 'on');
-    add_line(dem, 'Re/1', 'atan2/2', 'autorouting', 'on');
-    add_line(dem, 'atan2/1', 'fs_sobre_2pi/1', 'autorouting', 'on');
-    add_line(dem, 'fs_sobre_2pi/1', 'f_inst/1', 'autorouting', 'on');
+    add_line(dem, 'fi/1', 'Cuadrado de la FI/1', 'autorouting', 'on');
+    add_line(dem, 'fi/1', 'Cuadrado de la FI/2', 'autorouting', 'on');
+    add_line(dem, 'Cuadrado de la FI/1', 'Pasabajos (amplitud)/1', 'autorouting', 'on');
+    add_line(dem, 'Pasabajos (amplitud)/1', 'x2 (amplitud)/1', 'autorouting', 'on');
+    add_line(dem, 'x2 (amplitud)/1', 'No negativo (amplitud)/1', 'autorouting', 'on');
+    add_line(dem, 'No negativo (amplitud)/1', 'Raíz (amplitud)/1', 'autorouting', 'on');
+    add_line(dem, 'Raíz (amplitud)/1', 'Amplitud mínima/1', 'autorouting', 'on');
+    add_line(dem, 'fi/1', 'Retardo para alinear/1', 'autorouting', 'on');
+    add_line(dem, 'Retardo para alinear/1', 'Dividir por la amplitud/1', 'autorouting', 'on');
+    add_line(dem, 'Amplitud mínima/1', 'Dividir por la amplitud/2', 'autorouting', 'on');
+    add_line(dem, 'Dividir por la amplitud/1', 'Detector de pendiente (derivador)/1', 'autorouting', 'on');
+    add_line(dem, 'Detector de pendiente (derivador)/1', 'Cuadrado/1', 'autorouting', 'on');
+    add_line(dem, 'Detector de pendiente (derivador)/1', 'Cuadrado/2', 'autorouting', 'on');
+    add_line(dem, 'Cuadrado/1', 'Pasabajos/1', 'autorouting', 'on');
+    add_line(dem, 'Pasabajos/1', 'x2/1', 'autorouting', 'on');
+    add_line(dem, 'x2/1', 'No negativo/1', 'autorouting', 'on');
+    add_line(dem, 'No negativo/1', 'Raíz/1', 'autorouting', 'on');
+    add_line(dem, 'Raíz/1', 'Dividir entre 2 pi/1', 'autorouting', 'on');
+    add_line(dem, 'Dividir entre 2 pi/1', 'Restar la FI/1', 'autorouting', 'on');
+    add_line(dem, 'Frecuencia de FI/1', 'Restar la FI/2', 'autorouting', 'on');
+    add_line(dem, 'Restar la FI/1', 'f_inst/1', 'autorouting', 'on');
 end
 
 function construir_demux(dm)
@@ -410,6 +426,212 @@ function a_workspace(sys, nombre_bloque, variable, pos, max_puntos)
     add_block('simulink/Sinks/To Workspace', [sys '/' nombre_bloque], ...
         'VariableName', variable, 'SaveFormat', 'Array', 'MaxDataPoints', max_puntos, ...
         'SampleTime', '-1', 'Position', pos);
+end
+
+function nombrar(linea, nombre)
+% Pone nombre a una línea de señal (se ve sobre la línea en el diagrama).
+    try, set_param(linea, 'Name', nombre); catch, end
+end
+
+function nombres_del_curso(mdl)
+% Cambia los nombres internos de los bloques por nombres fáciles de leer, con la notación
+% de la presentación del curso: m(t) mensaje, s(t) señal FM, w(t) ruido, x(t) = s(t) + w(t)
+% (diap. 309, 365, 384); sección de RF, oscilador local, mezclador, sección de FI (diap. 358);
+% detector coherente (diap. 230); filtro antitraslape (diap. 400); filtro posdetección (diap. 376).
+% Se hace al final, con todo ya conectado: las líneas siguen unidas al cambiar el nombre.
+    tx = [mdl '/Transmisor_FDM'];  fm = [mdl '/Modulador_FM'];  ch = [mdl '/Canal'];
+    rx = [mdl '/Receptor_Superheterodino'];  dem = [rx '/Demodulador_FM'];  dm = [mdl '/Demultiplexor_FDM'];
+    L = {};
+    for k = 1:3
+        r = sprintf('%s/Canal%d_DSB', tx, k);
+        L = [L; {
+            sprintf('%s/Audio%d', mdl, k),          sprintf('Audio %d', k);
+            sprintf('%s/Log_audio%d', mdl, k),      sprintf('Guardar audio %d', k);
+            sprintf('%s/audio%d', tx, k),           sprintf('x%d(t)', k);
+            [r '/x'],                               'x(t)';
+            [r '/LPF_audio_15kHz'],                 'Pasabajos 15 kHz';
+            [r '/Cambio_tasa'],                     'Subir tasa 1 a 10';
+            [r '/Tren_pulsos_L1'],                  'Tren de pulsos';
+            [r '/Insercion_ceros'],                 'Inserción de ceros';
+            [r '/Filtro_interpolador'],             'Filtro interpolador';
+            [r '/Subportadora'],                    sprintf('Subportadora cos(2 pi f%d t)', k);
+            [r '/Modulador_DSB'],                   'Modulador DSB-SC';
+            [r '/y'],                               'señal DSB-SC';
+            r,                                      sprintf('Canal %d DSB-SC', k);
+            sprintf('%s/Canal%d_BPF', dm, k),       sprintf('Canal %d pasabanda', k);
+            sprintf('%s/Canal%d_subportadora_RX', dm, k), sprintf('Canal %d oscilador local', k);
+            sprintf('%s/Canal%d_deteccion_coherente', dm, k), sprintf('Canal %d detector coherente', k);
+            sprintf('%s/Canal%d_LPF_15kHz', dm, k), sprintf('Canal %d pasabajos 15 kHz', k);
+            sprintf('%s/Canal%d_decimacion_M3', dm, k), sprintf('Canal %d bajar tasa 10 a 1', k);
+            sprintf('%s/audio%d', dm, k),           sprintf('audio %d recuperado', k)}]; %#ok<AGROW>
+    end
+    for e = 'ab'
+        L = [L; {
+            [fm '/Cambio_tasa_' e],                 ['Subir tasa 1 a 10 (' e ')'];
+            [fm '/Tren_pulsos_' e],                 ['Tren de pulsos (' e ')'];
+            [fm '/Insercion_ceros_' e],             ['Inserción de ceros (' e ')'];
+            [fm '/Interpolador_' e],                ['Filtro interpolador (' e ')']}]; %#ok<AGROW>
+    end
+    L = [L; {
+        [tx '/Suma_FDM'],               'Suma de los 3 canales';
+        [tx '/Normalizacion'],          'Normalización (dividir entre 3)';
+        [tx '/Prenfasis'],              'Filtro de preénfasis';
+        [tx '/m_n'],                    'm(t) al modulador';
+        [tx '/m'],                      'multiplex m(t)';
+        [fm '/m_n'],                    'm(t)';
+        [fm '/Integrador'],             'Integrador';
+        [fm '/Ganancia_2pi_kf'],        '2 pi kf';
+        [fm '/Reloj'],                  'Reloj t';
+        [fm '/Ganancia_2pi_fc'],        '2 pi fc';
+        [fm '/Fase_total'],             'Fase total';
+        [fm '/cos'],                    'cos';
+        [fm '/Amplitud_Ac'],            'Amplitud Ac';
+        [fm '/s_FM'],                   's(t)';
+        [fm '/m_rf'],                   'm(t) a tasa RF';
+        [ch '/s'],                      's(t)';
+        [ch '/Ruido_gaussiano'],        'Ruido blanco gaussiano';
+        [ch '/sigma'],                  'Nivel de ruido';
+        [ch '/Suma_ruido'],             'Suma de ruido w(t)';
+        [ch '/r'],                      'x(t)';
+        [rx '/r'],                      'x(t)';
+        [rx '/Seccion_RF_preselector'], 'Sección de RF (preselector)';
+        [rx '/Oscilador_local'],        'Oscilador local';
+        [rx '/LPF_antialiasing_FI'],    'Filtro antitraslape';
+        [rx '/Decimacion_M1'],          'Bajar tasa 10 a 1 (FI)';
+        [rx '/Seccion_FI_pasabanda'],   'Sección de FI';
+        [rx '/Escala_1_kf'],            'Dividir entre kf';
+        [rx '/Filtro_posdeteccion'],    'Filtro posdetección';
+        [rx '/Decimacion_M2'],          'Bajar tasa 10 a 1 (multiplex)';
+        [rx '/Deshace_normalizacion'],  'Multiplicar por 3';
+        [rx '/Deenfasis'],              'Filtro de deénfasis';
+        [rx '/m_hat'],                  'm(t) recuperado';
+        [rx '/fi'],                     'señal de FI';
+        [rx '/mezcla'],                 'salida del mezclador';
+        [dem '/fi'],                    'señal de FI';
+        [dem '/f_inst'],                'frecuencia instantánea';
+        dem,                            'Demodulador FM';
+        [dm '/m_hat'],                  'm(t) recuperado';
+        [mdl '/Log_m_n'],               'Guardar m(t) al modulador';
+        [mdl '/Log_m'],                 'Guardar multiplex m(t)';
+        [mdl '/Log_s_rf'],              'Guardar s(t)';
+        [mdl '/Log_m_rf'],              'Guardar m(t) a tasa RF';
+        [mdl '/Log_mezcla'],            'Guardar salida del mezclador';
+        [mdl '/Log_r_rf'],              'Guardar x(t)';
+        [mdl '/Log_fi'],                'Guardar señal de FI';
+        [mdl '/Log_m_hat'],             'Guardar m(t) recuperado';
+        tx,                             'Transmisor FDM';
+        fm,                             'Modulador FM';
+        rx,                             'Receptor superheterodino';
+        dm,                             'Demultiplexor FDM'}];
+    % primero los bloques más internos, para que la ruta de cada uno siga siendo válida
+    nivel = cellfun(@(c) numel(strfind(c, '/')), L(:,1));
+    [~, orden] = sort(nivel, 'descend');
+    for i = orden(:).'
+        try
+            set_param(L{i,1}, 'Name', L{i,2});
+        catch err
+            fprintf('Aviso: no se pudo renombrar %s (%s).\n', L{i,1}, err.message);
+        end
+    end
+end
+
+function agrupar_como_el_curso(mdl)
+% Mete en subsistemas los bloques que solo existen por la simulación digital (cambios de tasa,
+% escalas, detalles del demodulador). Así cada diagrama que se abre tiene los mismos bloques
+% que los esquemas de la presentación del curso, y el detalle queda un nivel más adentro.
+% Agrupar no cambia ningún cálculo: son subsistemas virtuales (solo agrupan visualmente).
+    tx = [mdl '/Transmisor FDM'];  fm = [mdl '/Modulador FM'];
+    rx = [mdl '/Receptor superheterodino'];  dem = [rx '/Demodulador FM'];  dm = [mdl '/Demultiplexor FDM'];
+    for k = 1:3
+        r = sprintf('%s/Canal %d DSB-SC', tx, k);
+        agrupar(r, {'Subir tasa 1 a 10', 'Tren de pulsos', 'Inserción de ceros', 'Filtro interpolador'}, ...
+            'Interpolación (x10)', {}, {});
+        c = sprintf('Canal %d ', k);
+        renombrar([dm '/' c 'pasabajos 15 kHz'], 'Pasabajos 15 kHz');
+        agrupar(dm, {'Pasabajos 15 kHz', [c 'bajar tasa 10 a 1']}, [c 'pasabajos 15 kHz'], {}, {});
+        renombrar([dm '/' c 'pasabajos 15 kHz/' c 'bajar tasa 10 a 1'], 'Bajar tasa 10 a 1');
+    end
+    e = {'Subir tasa 1 a 10', 'Tren de pulsos', 'Inserción de ceros', 'Filtro interpolador'};
+    agrupar(fm, [strcat(e, ' (a)'), strcat(e, ' (b)')], 'Interpolación (x100)', {'m(t)'}, {'m(t) a tasa RF'});
+    agrupar(fm, {'Reloj t', '2 pi fc'}, 'Fase de la portadora', {}, {'2 pi fc t'});
+    renombrar([rx '/Sección de FI'], 'Pasabanda de FI');
+    agrupar(rx, {'Filtro antitraslape', 'Bajar tasa 10 a 1 (FI)', 'Pasabanda de FI'}, 'Sección de FI', ...
+        {'salida del mezclador'}, {'señal de FI'});
+    renombrar([rx '/Filtro posdetección'], 'Pasabajos 120 kHz');
+    agrupar(rx, {'Dividir entre kf', 'Pasabajos 120 kHz', 'Bajar tasa 10 a 1 (multiplex)', 'Multiplicar por 3'}, ...
+        'Filtro posdetección', {'frecuencia instantánea'}, {'m(t) recuperado'});
+    agrupar(dem, {'Cuadrado de la FI', 'Pasabajos (amplitud)', 'x2 (amplitud)', 'No negativo (amplitud)', ...
+        'Raíz (amplitud)', 'Amplitud mínima', 'Retardo para alinear', 'Dividir por la amplitud'}, ...
+        'Limitador', {'señal de FI'}, {'FI con amplitud 1'});
+    agrupar(dem, {'Cuadrado', 'Pasabajos', 'x2', 'No negativo', 'Raíz'}, ...
+        'Detector de envolvente', {'salida del derivador'}, {'envolvente = 2 pi f_i'});
+    agrupar(dem, {'Dividir entre 2 pi', 'Frecuencia de FI', 'Restar la FI'}, ...
+        'Convertir a desviación', {'envolvente'}, {'desviación de frecuencia'});
+end
+
+function agrupar(sys, nombres, nombre_nuevo, nombres_in, nombres_out)
+% Crea un subsistema con los bloques 'nombres' de 'sys' y le pone 'nombre_nuevo'.
+% nombres_in / nombres_out: nombres de sus puertos (vacío = 'entrada' / 'salida').
+% Con nombres_in = 'por_origen', cada entrada se llama como la salida del bloque que la alimenta.
+    try
+        h = zeros(1, numel(nombres));
+        for i = 1:numel(nombres), h(i) = get_param([sys '/' nombres{i}], 'Handle'); end
+        antes = find_system(sys, 'SearchDepth', 1, 'BlockType', 'SubSystem');
+        Simulink.BlockDiagram.createSubsystem(h);
+        nuevo = setdiff(find_system(sys, 'SearchDepth', 1, 'BlockType', 'SubSystem'), antes);
+        set_param(nuevo{1}, 'Name', nombre_nuevo);
+        s = [sys '/' nombre_nuevo];
+        ins  = find_system(s, 'SearchDepth', 1, 'BlockType', 'Inport');
+        outs = find_system(s, 'SearchDepth', 1, 'BlockType', 'Outport');
+        if ischar(nombres_in) && strcmp(nombres_in, 'por_origen')
+            pc = get_param(s, 'PortConnectivity');
+            for i = 1:numel(ins)
+                np = str2double(get_param(ins{i}, 'Port'));
+                src = pc(np).SrcBlock;  ps = pc(np).SrcPort + 1;
+                o = find_system(src, 'SearchDepth', 1, 'BlockType', 'Outport', 'Port', num2str(ps));
+                try, if ~isempty(o), set_param(ins{i}, 'Name', get_param(o, 'Name')); end, catch, end
+            end
+        else
+            poner_nombres(ins, nombres_in, 'entrada');
+        end
+        poner_nombres(outs, nombres_out, 'salida');
+    catch err
+        fprintf('Aviso: no se pudo agrupar «%s» (%s). El modelo funciona igual.\n', nombre_nuevo, err.message);
+    end
+end
+
+function poner_nombres(puertos, nombres, defecto)
+    for i = 1:numel(puertos)
+        np = str2double(get_param(puertos{i}, 'Port'));
+        if np <= numel(nombres), n = nombres{np}; elseif numel(puertos) == 1, n = defecto; else, n = sprintf('%s %d', defecto, np); end
+        try, set_param(puertos{i}, 'Name', n); catch, end
+    end
+end
+
+function renombrar(bloque, nuevo)
+    try, set_param(bloque, 'Name', nuevo); catch, end
+end
+
+function ordenar_diagrama(mdl)
+% Ordena el diagrama principal y cada subsistema con el auto-ordenado de Simulink
+% (el mismo comando "Auto Arrange" del menú Format). Si la versión no lo tiene, se deja igual.
+    sistemas = [{mdl}; find_system(mdl, 'LookUnderMasks', 'all', 'BlockType', 'SubSystem')];
+    for i = numel(sistemas):-1:1          % de adentro hacia afuera
+        % el demultiplexor ya está armado con los canales en orden 1, 2, 3 (el auto-ordenado los cambia)
+        if endsWith(sistemas{i}, '/Demultiplexor FDM'), continue; end
+        try
+            Simulink.BlockDiagram.arrangeSystem(sistemas{i});
+        catch err
+            if i == 1, fprintf('Aviso: no se pudo ordenar el diagrama (%s).\n', err.message); end
+        end
+    end
+    % el auto-ordenado agranda la ganancia «Multiplicar por 3»: se deja de tamaño normal
+    try
+        b = [mdl '/Receptor superheterodino/Filtro posdetección/Multiplicar por 3'];
+        p = get_param(b, 'Position');  c = (p(2) + p(4)) / 2;
+        set_param(b, 'Position', [p(1), c - 15, p(1) + 50, c + 15]);
+    catch
+    end
 end
 
 function p = caja(x, y, w, h)

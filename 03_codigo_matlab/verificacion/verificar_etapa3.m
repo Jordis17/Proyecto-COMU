@@ -1,5 +1,8 @@
-%VERIFICAR_ETAPA3  Interpolación x100 + modulador FM en Simulink, contra la referencia.
+% Interpolación x100 + modulador FM en Simulink, contra la referencia.
 %   Ejecutar desde la carpeta del proyecto:  >> verificar_etapa3
+%   UBICACIÓN: carpeta verificacion/. Se ejecuta desde 03_codigo_matlab con:
+%       >> addpath verificacion
+%   Son pruebas internas del equipo: no forman parte del entregable.
 %   1) Simula el modelo (fuentes + FDM + FM) y compara m_rf y s_FM con modelo_referencia.m.
 %   2) Mide la desviación pico real y el ancho de banda de la FM (98 / 99 / 99.9 % de la
 %      potencia) y lo compara con Carson y con Bessel [doc §6.4].

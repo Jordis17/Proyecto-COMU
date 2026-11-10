@@ -1,5 +1,5 @@
 function fuente = generar_fuentes(P, modo, carpeta_audios)
-%GENERAR_FUENTES  Crea las tres señales de audio y las prepara para Simulink.
+% Crea las tres señales de audio y las prepara para Simulink.
 %   fuente = generar_fuentes(P, modo)
 %   modo:
 %     'tonos'  : canal 1 = 1 kHz, canal 2 = 3 kHz, canal 3 = 7 kHz (nominales). Fáciles de
@@ -9,13 +9,13 @@ function fuente = generar_fuentes(P, modo, carpeta_audios)
 %     'audio'  : archivos audio1.wav, audio2.wav y audio3.wav de la carpeta 'audios'
 %                (o de carpeta_audios). Se pasan a mono, se llevan a 48 kHz y se normalizan.
 %
-%   ESCALAMIENTO DEL AUDIO REAL [E3]: las muestras del archivo NO se modifican. Solo se
+%   Escalamiento del audio real: las muestras del archivo no se modifican. Solo se
 %   declara su tiempo de muestreo como 1/P.fs_a (= K/48 kHz). Para escuchar el resultado se
 %   reproduce a 48 kHz con sound(y, P.fs_audio_real), lo que deshace el escalamiento.
 %
 %   Salida (struct):
 %     fuente.X       3 x Na, audios normalizados (|x| <= 1)
-%     fuente.t       1 x Na, tiempo SIMULADO de cada muestra
+%     fuente.t       1 x Na, tiempo simulado de cada muestra
 %     fuente.audio1  [t x1] para el bloque From Workspace (ídem audio2, audio3)
 %     fuente.T_stop  tiempo de parada del modelo
 %     fuente.modo
@@ -62,6 +62,7 @@ function fuente = generar_fuentes(P, modo, carpeta_audios)
                 [x, fs_arch] = audioread(archivo);
                 x = mean(x, 2).';                              % a mono
                 x = a_48kHz(x, fs_arch, P);
+                x = quitar_silencio_inicial(x, P.fs_audio_real);
                 n = min(Na, numel(x));
                 X(k, 1:n) = x(1:n);                            % se recorta a la duración pedida
             end
@@ -69,7 +70,7 @@ function fuente = generar_fuentes(P, modo, carpeta_audios)
             error('modo debe ser ''tonos'', ''demo'', ''ruido'' o ''audio''');
     end
 
-    % normalización a pico 1 (cada audio por separado) [6.3]
+    % normalización a pico 1 (cada audio por separado)
     for k = 1:3
         pk = max(abs(X(k,:)));
         if pk > 0, X(k,:) = X(k,:) / pk; end
@@ -78,7 +79,7 @@ function fuente = generar_fuentes(P, modo, carpeta_audios)
     fuente.X = X;
     fuente.t = t;
     % Tiempos para el bloque From Workspace (interpolación apagada = retención):
-    % se adelantan 1/4 de muestra para que, en el instante n*Ts, el bloque tome SIEMPRE
+    % se adelantan 1/4 de muestra para que, en el instante n*Ts, el bloque tome siempre
     % la muestra n y no la anterior por errores de redondeo en el tiempo de simulación.
     t_fw = max(0, ((0:Na-1) - 0.25) / P.fs_a);
     fuente.audio1 = [t_fw(:) X(1,:).'];
@@ -87,6 +88,14 @@ function fuente = generar_fuentes(P, modo, carpeta_audios)
     fuente.Na = Na;
     fuente.T_stop = (Na * P.L1 - 1) / P.fs_m;   % cubre las Na muestras de audio
     fuente.modo = lower(modo);
+end
+
+function x = quitar_silencio_inicial(x, fs)
+% Quita el silencio del inicio de una grabación: empieza 10 ms antes de la primera muestra
+% que pasa del 5 % del pico. Así la radio, que usa solo los primeros segundos, oye el sonido.
+    i0 = find(abs(x) > 0.05 * max(abs(x)), 1);
+    if isempty(i0), return; end
+    x = x(max(1, i0 - round(0.01 * fs)):end);
 end
 
 function y = a_48kHz(x, fs_arch, P)

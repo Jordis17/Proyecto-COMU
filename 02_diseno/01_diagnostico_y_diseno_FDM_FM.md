@@ -15,11 +15,10 @@ Sistema: 3 audios → FDM → FM → canal (ideal / AWGN) → receptor superhete
 
 > **Fuentes:**
 > - `Intrucciones originales.md` (enunciado).
-> - Los dos diagnósticos previos.
 > - `Comunicaciones Eléctricas.pdf`: 620 diapositivas escaneadas, leídas mediante OCR. Diapositivas clave: 225–243 (DSB-SC, detección coherente, error de fase, piloto), 244–246 (FM estéreo), 263–266 (FDM), 309–328 (índice, Carson, Bessel, DR), 342–354 (discriminadores, PLL), 356–361 (superheterodino, imagen), 362–387 (ruido en FM, umbral, prénfasis).
 > - Tomasi (texto). Haykin y Stremler están escaneados: se usan a través de la presentación, que cita a Haykin.
 >
-> **No hay todavía resultados de MATLAB/Simulink.** Los valores [VERIFICADO-PY] provienen de `verificacion_python/proto_fdm_fm.py`.
+> Los valores [VERIFICADO-PY] provienen del prototipo en Python (`04_verificacion_python/`). Los resultados medidos en MATLAB/Simulink R2026a están en §8b.
 
 ---
 
@@ -65,7 +64,7 @@ Sistema: 3 audios → FDM → FM → canal (ideal / AWGN) → receptor superhete
 | A1 | 5, tabla | Audio y FDM sin escalar; portadora y FI ÷100 | **[ERROR]** crítico | Ver E1 |
 | A2 | 5, premisa | «Por limitaciones computacionales no se simulan las frecuencias nominales» | Premisa imprecisa | El escalamiento uniforme no ahorra muestras (E3). Se cumple igualmente. |
 | A3 | 8 | «f_s 5–10 × ancho de banda máximo» | **[INADECUADA]** | En pasabanda manda f_max, incluido el producto suma (E2) |
-| A4 | 4.5 | «Si la calidad es baja, prénfasis/deénfasis» | **[INADECUADA]** | Solo actúa sobre el ruido; con canal ideal no corrige nada (E4) |
+| A4 | 4.5 | «Si la calidad es baja, prénfasis/deénfasis» | **Válida (condicional)** | No es un error. Con canal ideal la calidad es buena y no hace falta; con AWGN el canal 3 sale unos 14 dB peor que el canal 1 y se implementa (E4) |
 | A5 | 8 | «Simulaciones cortas» | Matiz | Al escalar, 1 s real equivale a 100 s simulados. Lo que hay que limitar son las muestras. |
 | A6 | 4.3 | «Definir el índice de modulación» | Matiz | Con moduladora compuesta se usa la **relación de desviación DR = Δf_máx/f_m(máx)** [CURSO diap. 328] [TOMASI ec. 6-29] |
 | A7 | 4.3 | «Verificar con Carson» | Válida, con riesgo | f_m = 115 kHz del multiplex, no 15 kHz. Con DR ≈ 1 Carson subestima frente a Bessel [TOMASI §6] → se comprueban ambos |
@@ -117,11 +116,12 @@ N = (K·T_r)·(f_s,RF,nom/K) = **T_r·f_s,RF,nom**: no depende de K. Escalar sol
 
 El ahorro viene del **multirritmo** y de los **clips cortos**. El audio real no se filtra a 150 Hz: se usan las mismas muestras declarando el tiempo de muestreo como 1/480 s simulados, y se escuchan con `sound(y,48000)`.
 
-### E4 — Prénfasis como remedio genérico [INADECUADA, §4.5]
+### E4 — Prénfasis/deénfasis [REQ condicional, §4.5]
 
-[CURSO diap. 385] Haykin: la densidad espectral del ruido a la salida del discriminador es S_No(f) = N₀f²/A_c² para |f| ≤ W. El prénfasis es un par de filtros complementarios TX/RX: con canal ideal se cancela y no corrige una calidad baja, que en ese caso se debe a errores de diseño.
+El enunciado dice «si la calidad es baja, considerar prénfasis/deénfasis». **No es un error del enunciado.** Es una condición, y hay que revisar cuándo se cumple:
 
-**Con AWGN y FDM:** cada canal está en una subportadora. Integrando S_No alrededor de f_k (§6.9), el ruido del canal k es ∝ (f_k² + W_a²/3):
+- **Canal ideal:** la calidad no es baja (SDR ≈ 60 dB). El prénfasis y el deénfasis son filtros inversos, así que sin ruido se cancelan y no cambian nada.
+- **Canal AWGN:** la calidad sí baja, y no por igual en los tres canales. Según el curso [diap. 385], el ruido a la salida del discriminador crece como f² (S_No(f) = N₀f²/A_c²). Integrando alrededor de cada subportadora, el ruido del canal k es ∝ (f_k² + W_a²/3):
 
 | Canal | f_k² + W_a²/3 (kHz²) | Ruido relativo |
 |---|---|---|
@@ -129,44 +129,23 @@ El ahorro viene del **multirritmo** y de los **clips cortos**. El audio real no 
 | 2 | 3600 + 75 = 3675 | +8.9 dB |
 | 3 | 10000 + 75 = 10075 | +13.3 dB |
 
-[VERIFICADO-PY] Medido: +8.6 dB y +12.1 dB.
+Por eso se implementa con AWGN. Se coloca donde indica el curso [diap. 384]: el prénfasis antes del modulador FM y el deénfasis después del demodulador. Como aquí el mensaje es el multiplex completo, se filtra el multiplex. Son dos filtros de primer orden; el detalle está en `02_diseno/prenfasis_deenfasis.md`.
 
-**Diferencia con la FM estéreo** [CURSO diap. 244–246] [TOMASI fig. 7-22]: allí el prénfasis de 75 µs se aplica a L y R porque el canal principal L+R está en **banda base**, donde el ruido sí crece con f dentro del audio. En nuestro canal 3, el término f_k² domina: el ruido es casi plano dentro del audio y un prénfasis por audio aporta poco. **Decisión:** no usar prénfasis con canal ideal. En la etapa AWGN se evalúa como opción un **«énfasis por canal»** (pesos a_k en TX y 1/a_k en RX), que sí actúa sobre la diferencia entre canales.
+**Resultado esperado** (misma desviación pico): el prénfasis no reduce el ruido total, lo reparte. Con f₀ = 30 kHz, el canal 3 mejora unos +2 dB, el canal 2 baja unos −1 dB y el canal 1 baja unos −6 dB, que tenía SNR de sobra. La teoría y la simulación en Python coinciden. **[RESULTADO VERIFICADO] Simulink** (`analisis_awgn`): −5.7 / −1.1 / +2.0 dB sobre el umbral; con canal ideal el SDR no cambia.
+
+**Por qué no se aplica a cada audio por separado** (como el prénfasis de 75 µs de la FM estéreo [diap. 244–246]): en la FM estéreo el canal L+R está en banda base, donde el ruido sí crece dentro del audio. En nuestro canal 3, lo que domina es el término f_k², así que el ruido es casi plano dentro del audio y un prénfasis por audio casi no ayuda.
 
 ### E5 — Riesgos de interpretación
 
 - **Carson con f_m del multiplex**, no del audio.
 - **Filtro FI dimensionado para B_T** (incluso para el ancho por Bessel), no para 120 kHz.
-- **Retardo en DSB-SC.** [CURSO diap. 237–238] Con un error de fase φ, la salida es ½f(t)·cos φ. Los filtros FIR retrasan la señal. Con los filtros que genera `params_sistema.m`, el retardo hasta el producto de cada canal es τ_1 = 406 µs y τ_2 = τ_3 = 220 µs nominales. Sin compensarlo, las ganancias serían cos(2π f_k τ_k) = **+0.74 / +0.16 / +0.97**: el canal 2 caería unos 16 dB. [VERIFICADO-MATLAB-REF] El modelo de referencia con filtros causales midió exactamente +0.74 / +0.16 / +0.97. Por eso se compensa (§6.7). Tomasi describe la misma práctica en la FM estéreo: se retarda L+R «para mantener la integridad de fase».
+- **Retardo en DSB-SC.** [CURSO diap. 237–238] Con un error de fase φ, la salida es ½f(t)·cos φ. Los filtros FIR retrasan la señal. Con los filtros actuales de `params_sistema.m` (interpolación y FI en dos etapas), el retardo hasta el producto de cada canal es τ_1 = 411.8 µs y τ_2 = τ_3 = 226.4 µs nominales. Sin compensarlo, las ganancias serían cos(2π f_k τ_k) = **+0.09 / −0.87 / −0.65**: el canal 1 casi desaparecería (−21 dB). [RESULTADO VERIFICADO] Simulink midió las mismas ganancias (§8b). Por eso se compensa (§6.7). Tomasi describe la misma práctica en la FM estéreo: se retarda L+R «para mantener la integridad de fase».
 
 ---
 
-## 4. Revisión crítica de los diagnósticos previos
+## 4. (Eliminada)
 
-### 4.1 Diagnóstico 1
-
-**Correcto:**
-- La trampa de la tabla.
-- Carson con f_m del multiplex.
-- FI < f_m.
-- Ruido ∝ f² y umbral.
-- La doble selección de canal.
-
-**Imprecisiones:**
-- **La interpretación B de los 120 kHz es descartable.** El texto dice «para la señal multiplexada». Además, B_T ≤ 120 kHz exigiría Δf + f_m ≤ 60 kHz: no caben tres canales DSB-SC y con SSB quedaría Δf ≈ 0–5 kHz.
-- **«La sincronización DSB-SC es trivial con canal ideal».** No lo es: el retardo de los filtros desfasa las subportadoras (E5, curso diap. 238).
-- **«La selectividad no se demuestra».** Con AWGN, el preselector evita que se pliegue el ruido de la banda imagen, y se puede añadir una señal en la imagen.
-- **No advierte la invariancia del cómputo frente a K.**
-- **Menciona una rúbrica** que no aparece en el enunciado disponible.
-
-### 4.2 Diagnóstico 2
-
-Coherente en lo esencial.
-
-**Mejorable:**
-- **Δf = 25 kHz** (DR = 0.22). Según la figura de mérito del curso, la SNR de salida es ∝ Δf². Con 150 kHz, la mejora es (150/25)² = 36 → **+15.6 dB**.
-- **No concluye una arquitectura.**
-- **No cuantifica el desfase de DSB-SC.**
+Esta sección comentaba dos diagnósticos previos que ya se borraron del proyecto. Lo útil de ellos quedó incorporado en las secciones 2, 3 y 6.
 
 ---
 
@@ -270,7 +249,10 @@ Siguiendo la notación del curso [diap. 309]: sensibilidad k_f, desviación Δf 
 **Anchos de banda:**
 - **Carson:** B_T = 2(150 + 115) = **530 kHz**. Abarca ≈ 98 % de la potencia [CURSO diap. 326].
 - **Bessel** [CURSO diap. 327] [TOMASI ec. 6-27]: con β = 1.30, J₀ = 0.67, J₁ = 0.52, J₂ = 0.17, J₃ = 0.037, J₄ = 0.006. Hay 3 bandas laterales ≥ 0.01, así que B = 2·3·115 = **690 kHz**. Como advierten el curso y Tomasi, con índices bajos o medios Carson se queda corto.
-- **Medido** (peor caso: tres tonos de 15 kHz a plena escala, pico m_n = 1): BW 99 % = **292 kHz**, BW 99.9 % = **450 kHz**. Con un multiplex de varios tonos el espectro es más compacto que en el análisis de un solo tono.
+- **Medido.** Hay dos mediciones con señales distintas, y no deben mezclarse:
+  - Prototipo en Python, peor caso de tres tonos de 15 kHz a plena escala (pico m_n = 1): BW 99 % = **292 kHz**, BW 99.9 % = **450 kHz**.
+  - Simulink, fuentes de ruido de 0.3–15 kHz (desviación pico 91.6 kHz, 61 %): BW 98/99/99.9 % = **119 / 148 / 229 kHz**.
+  - En los dos casos el ancho queda dentro de Carson (530 kHz) y del paso de FI (700 kHz).
 - **Decisión:** se dimensiona con el valor más exigente (Bessel, 690 kHz). Por eso el paso del preselector y de la FI es ±350 kHz.
 
 ### 6.5 RF / LO / FI — inyección
@@ -314,18 +296,24 @@ RX:  RF 48 MHz --FI, /10--> 4.8 MHz --demod, LPF, /10--> 480 kHz --demux, /10-->
 
 | Filtro | f_s | Paso / rechazo (nominal) | N |
 |---|---|---|---|
-| LPF audio TX | 48 kHz | 15 / 18 kHz | 61 |
-| Interpolación ×10 | 480 kHz | 15 / 33 kHz | 99 |
-| Interpolación ×100 | 48 MHz | 120 / 360 kHz | 727 (polifásico) |
-| Preselector (sintonizable) | 48 MHz | f_c ± 0.35 / ± 1.55 MHz | 147 |
-| FI + ↓10 | 48 MHz | 1.35–2.05 / 1.15 y 2.25 MHz | 873 (polifásico) |
+| LPF audio TX | 48 kHz | 15 / 18 kHz | 63 |
+| Interpolación ×10 (audio → multiplex) | 480 kHz | 15 / 33 kHz | 105 |
+| Prénfasis (opcional) | 480 kHz | g·(1 − a z⁻¹), f₀ = 30 kHz | 2 |
+| Interpolación ×100, etapa a (×10) | 4.8 MHz | 120 / 360 kHz | 75 |
+| Interpolación ×100, etapa b (×10) | 48 MHz | 120 kHz / 4.68 MHz | 47 |
+| Preselector (sintonizable) | 48 MHz | f_c ± 0.35 / ± 1.55 MHz | 167 |
+| Pasabajos FI antes de ↓10 | 48 MHz | 2.05 / 2.75 MHz | 251 |
+| Pasabanda FI | 4.8 MHz | 1.35–2.05 / 1.15 y 2.25 MHz | 93 |
 | LPF I/Q | 4.8 MHz | 400 / 950 kHz | 33 |
-| LPF multiplex + ↓10 | 4.8 MHz | 120 / 240 kHz | 147 |
-| **BPF canal 1** | 480 kHz | **5–35 kHz**, rechazo < 2.5 y > 37.5 kHz | 351 |
-| BPF canales 2 y 3 | 480 kHz | f_k ± 15 kHz / guarda de 10 kHz | 177 |
+| LPF multiplex (posdetección) + ↓10 | 4.8 MHz | 120 / 240 kHz | 147 |
+| Deénfasis (opcional) | 480 kHz | (1/g) / (1 − a z⁻¹) | IIR, 1 polo |
+| **BPF canal 1** | 480 kHz | **5–35 kHz**, rechazo en 0 Hz y > 40 kHz | 355 |
+| BPF canales 2 y 3 | 480 kHz | f_k ± 15 kHz / rechazo desde f_k ± 25 kHz | 177 |
 | LPF tras producto + ↓10 | 480 kHz | 15 / 20 kHz | 351 |
 
-**El canal 1 debe ser pasabanda, no pasabajos.** [VERIFICADO-PY] Con el discriminador clásico, un pequeño offset de DC entra en el canal 1 si su filtro deja pasar 0 Hz: el SDR cae a 3.6 dB. Con el pasabanda de 5–35 kHz sube a 36.5 dB. Para esto sirve el margen de 0–5 kHz del plan.
+Los N se recalcularon con el mismo algoritmo de `disenar_fir_kaiser.m`. El preselector tiene el mismo N para cualquier f_c, porque N solo depende del ancho de transición.
+
+**El canal 1 usa un pasabanda (5–35 kHz), igual que los canales 2 y 3.** Así los tres canales tienen el mismo tipo de filtro, y además se elimina cualquier nivel de DC a la salida del demodulador, como el que aparece cuando el receptor está desintonizado. Para esto sirve dejar libre el margen de 0–5 kHz del plan. [VERIFICADO-PY] Con el discriminador clásico, un pasabajos que deja pasar 0 Hz hacía caer el SDR del canal 1 a 3.6 dB.
 
 **Compensación de retardo:** τ_k = Σ (N_i − 1)/(2f_s,i), sumando todos los FIR entre la modulación DSB-SC y el producto del canal k, más ½ muestra del demodulador. En el RX se usa cos(2π f_k (t − τ_k)). **Alternativa más cercana al curso:** un tono piloto [diap. 243], como en la FM estéreo. Queda como mejora opcional.
 
@@ -427,9 +415,9 @@ SELECTOR DE AUDIO (GUI) → altavoz y gráficas
 | 5 | Superheterodino | Espectros: RF, preselector, mezclador (FI + suma), FI; barrido de 9/10/11 MHz; desintonía; imagen (IFRR medida) | FI siempre en 1.7 MHz |
 | 6 | Demultiplexación | Audios frente a originales; ganancias con y sin τ_k; diafonía | Ganancia ≈ 1; diafonía < −40 dB |
 | 7 | GUI (App Designer → `sim`) | Sintonía → LO; selector → audio | Actualización automática |
-| 8 | AWGN | Barrido de (SNR)_C; comparación con la fórmula de §6.9; umbral; efecto f² por canal; opcional: énfasis por canal y Δf variable | Explicado con la teoría del curso |
+| 8 | AWGN | Barrido de (SNR)_C; comparación con la fórmula de §6.9; umbral; efecto f² por canal; prénfasis/deénfasis on/off (E4) | Explicado con la teoría del curso |
 
-**Antes de construir:** ejecutar `ver` para confirmar Simulink, DSP System Toolbox y Signal Processing Toolbox. No se depende de Communications Toolbox.
+**Toolboxes:** solo MATLAB y Simulink básicos (ver §8b-1). No se usan DSP System Toolbox, Signal Processing Toolbox ni Communications Toolbox.
 
 **Consejos para Simulink:** solver discreto de paso fijo, procesamiento por tramas y registrar solo las señales decimadas.
 
@@ -438,7 +426,7 @@ SELECTOR DE AUDIO (GUI) → altavoz y gráficas
 ## 8b. Estado de la implementación
 
 **Etapa 0 completada** (carpeta `proyecto_matlab/`, solo MATLAB básico + Simulink; ver §8b-1):
-- `params_sistema.m`: todos los parámetros de §6, filtros, τ_k, AWGN y 16 comprobaciones `assert`.
+- `params_sistema.m`: todos los parámetros de §6, filtros, τ_k, AWGN y 18 comprobaciones `assert`.
 - `disenar_fir_kaiser.m`: diseño FIR por ventana de Kaiser con verificación de la respuesta, sin Signal Processing Toolbox.
 - `modelo_referencia.m`: la cadena completa en MATLAB con filtros causales. Es la referencia contra la que se comparará el `.slx`.
 - `comparar_senales.m`: SDR con alineación de retardo fraccionario y de ganancia.
@@ -451,7 +439,7 @@ SELECTOR DE AUDIO (GUI) → altavoz y gráficas
 |---|---|
 | SDR canal ideal, f_c = 9 / 10 / 11 MHz | 60.4 / 59.9 / 60.0 dB en los tres casos, ganancia ≈ 1.002 |
 | Diafonía (solo canal 2 activo) | −71.4 dB y −71.5 dB |
-| Ganancia sin compensar τ_k | +0.74 / +0.16 / +0.97 (teoría: idéntica) |
+| Ganancia sin compensar τ_k | +0.74 / +0.16 / +0.97 (teoría: idéntica). Corresponde a los filtros de una sola etapa; con los filtros actuales es +0.09 / −0.87 / −0.65 |
 | AWGN, (SNR)_C = 35 / 25 / 20 dB | Medido dentro de ≈1 dB de la fórmula de §6.9 |
 | AWGN, (SNR)_C = 17 dB | Canal 1: 13.1 dB frente a 18.9 teóricos → efecto umbral |
 
@@ -465,7 +453,7 @@ SELECTOR DE AUDIO (GUI) → altavoz y gráficas
 | 6. Demultiplexor | Audios: 9e-12 a 4e-11 | **SDR 60.3 / 59.4 / 57.1 dB**, ganancia ≈ 1.00 |
 
 **Decisiones tomadas durante la implementación [DECISIÓN]:**
-- **Retardo del Rate Transition.** Al pasar de una tasa lenta a una rápida, el bloque retrasa **1 muestra lenta**, aun en modo de una sola tarea. Se midió en `verificar_etapa2`. Es determinista, así que se modela (`P.rt_retardo = 1`) en la referencia y en τ_k. La decimación (de rápida a lenta) no añade retardo (`P.rt_dec = 0`, verificado).
+- **Retardo del Rate Transition.** Al pasar de una tasa lenta a una rápida, el bloque retrasa **1 muestra lenta**, aun en modo de una sola tarea. Se midió en `verificar_etapa2`. Es determinista, así que se modela (`P.rt_retardo = 1`) en la referencia y en τ_k. La decimación (de rápida a lenta) no añade retardo (verificado).
 - **Interpolación ×100 en dos etapas de ×10** y **sección de FI en dos etapas** (pasabajos antialiasing a 48 MHz, ↓10, pasabanda selectivo a 4.8 MHz). Hacen lo mismo con mucho menos cálculo que un solo FIR a 48 MHz. El retardo total cambió, y las ganancias sin compensar (+0.09 / −0.87 / −0.65) coinciden con la predicción.
 - **Modo acelerado de Simulink:** 4.3 veces más rápido, con resultados idénticos (diferencia 0). Tiempo del sistema completo: ≈ 13 s por cada 0.05 s de audio real, es decir ≈ 4.5 min por segundo de audio.
 - **f_s,RF = 48 MHz** se mantiene (no 24 MHz), para que el producto suma aparezca en su frecuencia real en el video.
@@ -512,7 +500,7 @@ Cada simulación de 0.3 s reales tarda ≈ 40 s en modo acelerado.
 
 ## 9. Consultas al profesor y entrega de archivos
 
-No hay ninguna contradicción técnica bloqueante. La duda administrativa quedó resuelta: **además del video se entregan los `.slx` y `.m`** (R13).
+No hay ninguna contradicción técnica bloqueante. La duda administrativa quedó resuelta: **además del video se entregan los `.slx` y `.m`** (R13). La lista final de archivos está en `diseno_final.md` (sección 4): el `.slx`, 8 `.m`, los audios y un LEEME, armados con `preparar_entrega`.
 
 **Consecuencias para la implementación [DECISIÓN]:** como el profesor abrirá y ejecutará los archivos, el modelo debe funcionar sin depender de nuestro equipo.
 - **Un solo punto de entrada.** Un script, por ejemplo `main.m`, que ejecute `params_sistema.m`, abra la GUI o simule el modelo con los valores por defecto.
