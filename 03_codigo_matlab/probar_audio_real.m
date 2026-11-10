@@ -1,4 +1,4 @@
-%PROBAR_AUDIO_REAL  Pasa tres audios reales por el sistema y guarda los audios recuperados.
+% Pasa tres audios reales por el sistema y guarda los audios recuperados.
 %   Ejecutar desde esta carpeta:  >> probar_audio_real
 %
 %   Antes: copiar tres archivos WAV en la carpeta 'audios':

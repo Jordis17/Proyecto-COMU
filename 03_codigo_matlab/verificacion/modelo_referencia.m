@@ -1,5 +1,5 @@
 function R = modelo_referencia(P, X)
-%MODELO_REFERENCIA  Cadena completa TX -> canal -> superheterodino -> demux, en MATLAB puro.
+% Cadena completa TX -> canal -> superheterodino -> demux, en MATLAB puro.
 %   R = modelo_referencia(P, X)
 %   P : estructura de params_sistema
 %   X : 3 x Na, los tres audios muestreados a P.fs_a (cada uno normalizado, |x| <= 1)

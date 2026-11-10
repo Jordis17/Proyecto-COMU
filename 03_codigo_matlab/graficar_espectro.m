@@ -1,6 +1,6 @@
 function [f_nom, PdB] = graficar_espectro(x, fs, K, opciones)
-%GRAFICAR_ESPECTRO  Densidad espectral promediada (método de Welch propio, sin toolboxes).
-%   graficar_espectro(x, fs, K)            grafica contra frecuencia NOMINAL (f*K) en kHz
+% Densidad espectral promediada (método de Welch propio, sin toolboxes).
+%   graficar_espectro(x, fs, K)            grafica contra frecuencia nominal (f*K) en kHz
 %   [f_nom, PdB] = graficar_espectro(...)  devuelve los datos sin graficar si se piden salidas
 %   opciones.nfft     longitud de cada segmento (por defecto 4096)
 %   opciones.unilado  true = solo frecuencias positivas (por defecto true)

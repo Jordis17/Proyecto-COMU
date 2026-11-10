@@ -1,5 +1,5 @@
 function [sdr_dB, g] = comparar_senales(x, y, retardo_s, fs, borde)
-%COMPARAR_SENALES  SDR entre el audio original x y el recuperado y, alineando retardo y ganancia.
+% SDR entre el audio original x y el recuperado y, alineando retardo y ganancia.
 %   [sdr_dB, g] = comparar_senales(x, y, retardo_s, fs, borde)
 %   retardo_s : retardo conocido de y respecto a x [s] (puede ser fraccionario en muestras)
 %   borde     : fracción descartada al inicio y al final (transitorios), por defecto 0.15

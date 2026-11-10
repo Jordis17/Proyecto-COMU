@@ -1,5 +1,5 @@
 function [h, info] = disenar_fir_kaiser(tipo, fs, bordes, A_dB, ganancia)
-%DISENAR_FIR_KAISER  Diseña un filtro FIR de fase lineal por el método de ventana de Kaiser.
+% Diseña un filtro FIR de fase lineal por el método de ventana de Kaiser.
 %   Solo usa funciones de MATLAB básico (no requiere Signal Processing Toolbox).
 %
 %   [h, info] = disenar_fir_kaiser('lp', fs, [fp fst], A_dB, ganancia)

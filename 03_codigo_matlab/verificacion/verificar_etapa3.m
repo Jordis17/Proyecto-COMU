@@ -1,4 +1,4 @@
-%VERIFICAR_ETAPA3  Interpolación x100 + modulador FM en Simulink, contra la referencia.
+% Interpolación x100 + modulador FM en Simulink, contra la referencia.
 %   Ejecutar desde la carpeta del proyecto:  >> verificar_etapa3
 %   UBICACIÓN: carpeta verificacion/. Se ejecuta desde 03_codigo_matlab con:
 %       >> addpath verificacion

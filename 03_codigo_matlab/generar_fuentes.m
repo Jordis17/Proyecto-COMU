@@ -1,5 +1,5 @@
 function fuente = generar_fuentes(P, modo, carpeta_audios)
-%GENERAR_FUENTES  Crea las tres señales de audio y las prepara para Simulink.
+% Crea las tres señales de audio y las prepara para Simulink.
 %   fuente = generar_fuentes(P, modo)
 %   modo:
 %     'tonos'  : canal 1 = 1 kHz, canal 2 = 3 kHz, canal 3 = 7 kHz (nominales). Fáciles de
@@ -9,13 +9,13 @@ function fuente = generar_fuentes(P, modo, carpeta_audios)
 %     'audio'  : archivos audio1.wav, audio2.wav y audio3.wav de la carpeta 'audios'
 %                (o de carpeta_audios). Se pasan a mono, se llevan a 48 kHz y se normalizan.
 %
-%   ESCALAMIENTO DEL AUDIO REAL: las muestras del archivo NO se modifican. Solo se
+%   Escalamiento del audio real: las muestras del archivo no se modifican. Solo se
 %   declara su tiempo de muestreo como 1/P.fs_a (= K/48 kHz). Para escuchar el resultado se
 %   reproduce a 48 kHz con sound(y, P.fs_audio_real), lo que deshace el escalamiento.
 %
 %   Salida (struct):
 %     fuente.X       3 x Na, audios normalizados (|x| <= 1)
-%     fuente.t       1 x Na, tiempo SIMULADO de cada muestra
+%     fuente.t       1 x Na, tiempo simulado de cada muestra
 %     fuente.audio1  [t x1] para el bloque From Workspace (ídem audio2, audio3)
 %     fuente.T_stop  tiempo de parada del modelo
 %     fuente.modo
@@ -79,7 +79,7 @@ function fuente = generar_fuentes(P, modo, carpeta_audios)
     fuente.X = X;
     fuente.t = t;
     % Tiempos para el bloque From Workspace (interpolación apagada = retención):
-    % se adelantan 1/4 de muestra para que, en el instante n*Ts, el bloque tome SIEMPRE
+    % se adelantan 1/4 de muestra para que, en el instante n*Ts, el bloque tome siempre
     % la muestra n y no la anterior por errores de redondeo en el tiempo de simulación.
     t_fw = max(0, ((0:Na-1) - 0.25) / P.fs_a);
     fuente.audio1 = [t_fw(:) X(1,:).'];

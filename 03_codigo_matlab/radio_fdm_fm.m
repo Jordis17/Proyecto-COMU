@@ -1,5 +1,5 @@
 function radio_fdm_fm()
-%RADIO_FDM_FM  Interfaz tipo radio del sistema.
+% Interfaz tipo radio del sistema.
 %   El dial elige la portadora (9 a 11 MHz); el oscilador local y la imagen se recalculan solos.
 %   "Sintonizar y simular" corre el modelo de Simulink. Los botones Audio 1, 2 y 3 eligen qué
 %   salida se grafica y se escucha, sin volver a simular. Cada simulación queda guardada en
@@ -16,7 +16,7 @@ function radio_fdm_fm()
     % Si cambia el modelo, los parámetros, las fuentes o los WAV, se descartan solas.
     archivo_memo = fullfile(fileparts(mfilename('fullpath')), 'radio_guardado.mat');
     firma = firma_archivos(fileparts(mfilename('fullpath')));
-    S.memo = cargar_memo(archivo_memo, firma);
+    S.memo = cargar_memo(archivo_memo, firma, fileparts(mfilename('fullpath')));
     H = struct();                 % objetos gráficos del plan de frecuencias
 
     % colores (los mismos en todas las gráficas)
@@ -624,35 +624,52 @@ function R = a_single(R)
 end
 
 function f = firma_archivos(carpeta)
-% Fecha de modificación de lo que cambia el resultado de una simulación: modelo, parámetros,
-% fuentes, filtros y WAV. La radio no cuenta: cambiar cómo se ve no obliga a volver a simular.
-    lista = [dir(fullfile(carpeta, 'sistema_fdm_fm.slx')); dir(fullfile(carpeta, 'params_sistema.m')); ...
-             dir(fullfile(carpeta, 'generar_fuentes.m')); dir(fullfile(carpeta, 'disenar_fir_kaiser.m')); ...
-             dir(fullfile(carpeta, 'audios', 'audio*.wav'))];
-    f = sprintf('%s|', lista.name);
-    f = [f sprintf('%.6f|', [lista.datenum])];
+% Lo que cambia el resultado de una simulación: el modelo y los WAV (por su fecha) y el código
+% de los parámetros, las fuentes y los filtros (sin contar comentarios). La radio no cuenta.
+    datos = [dir(fullfile(carpeta, 'sistema_fdm_fm.slx')); dir(fullfile(carpeta, 'audios', 'audio*.wav'))];
+    f = [sprintf('%s|', datos.name) sprintf('%.6f|', [datos.datenum])];
+    for m = {'params_sistema.m', 'generar_fuentes.m', 'disenar_fir_kaiser.m'}
+        f = [f sprintf('%s:%d|', m{1}, suma_codigo(fullfile(carpeta, m{1})))];
+    end
 end
 
-function memo = cargar_memo(archivo, firma)
+function c = suma_codigo(archivo)
+% Suma de comprobación del código, sin líneas de comentario ni líneas vacías.
+    c = 0;
+    if ~isfile(archivo), return; end
+    lineas = strtrim(splitlines(fileread(archivo)));
+    lineas = lineas(~startsWith(lineas, '%') & strlength(lineas) > 0);
+    t = double(char(strjoin(lineas, newline)));
+    c = mod(sum(t .* mod(1:numel(t), 9973)), 2^31);
+end
+
+function memo = cargar_memo(archivo, firma, carpeta)
 % Carga las simulaciones guardadas si siguen siendo válidas.
     memo = containers.Map();
-    if ~exist(archivo, 'file'), return; end
+    if ~isfile(archivo), return; end
     try
         d = load(archivo, 'memo', 'firma');
-        % las versiones anteriores incluían radio_fdm_fm.m en la firma: se ignora esa entrada
-        if isa(d.memo, 'containers.Map') && (strcmp(d.firma, firma) || strcmp(sin_radio(d.firma), firma))
+        if isa(d.memo, 'containers.Map') && (strcmp(d.firma, firma) || antigua_valida(d.firma, carpeta))
             memo = d.memo;
         end
     catch
     end
 end
 
-function f = sin_radio(f)
-% Quita radio_fdm_fm.m de una firma guardada ('nombres|...|fechas|...').
+function ok = antigua_valida(f, carpeta)
+% Firmas de versiones anteriores (nombre y fecha de cada archivo). Se aceptan si el modelo y los
+% WAV no cambiaron: desde esas versiones, el código de los .m solo cambió en comentarios.
+    ok = false;
+    if contains(f, ':'), return; end
     p = strsplit(f, '|');  p = p(1:end-1);  n = numel(p) / 2;
-    if n ~= round(n), return; end
-    nombres = p(1:n);  fechas = p(n+1:end);  q = ~strcmp(nombres, 'radio_fdm_fm.m');
-    f = [sprintf('%s|', nombres{q}) sprintf('%s|', fechas{q})];
+    if n < 1 || n ~= round(n), return; end
+    nombres = p(1:n);  fechas = p(n+1:end);
+    datos = [dir(fullfile(carpeta, 'sistema_fdm_fm.slx')); dir(fullfile(carpeta, 'audios', 'audio*.wav'))];
+    for i = 1:numel(datos)
+        j = find(strcmp(nombres, datos(i).name), 1);
+        if isempty(j) || ~strcmp(fechas{j}, sprintf('%.6f', datos(i).datenum)), return; end
+    end
+    ok = sum(endsWith(nombres, '.wav')) == sum(endsWith({datos.name}, '.wav'));
 end
 
 function sdr = sdr_tres(R, P, fuente)

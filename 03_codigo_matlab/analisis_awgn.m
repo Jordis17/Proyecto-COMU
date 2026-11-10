@@ -1,4 +1,4 @@
-%ANALISIS_AWGN  Desempeño del sistema con canal AWGN, sin y con prénfasis/deénfasis.
+% Desempeño del sistema con canal AWGN, sin y con prénfasis/deénfasis.
 %   Ejecutar desde esta carpeta:  >> analisis_awgn
 %
 %   A) Canal ideal: con el prénfasis encendido el SDR debe ser igual (~60 dB), porque el

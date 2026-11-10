@@ -1,5 +1,5 @@
 function modelo_al_dia(mdl)
-%MODELO_AL_DIA  Genera el modelo Simulink SOLO si el .slx no existe.
+% Genera el modelo Simulink SOLO si el .slx no existe.
 %   El .slx se ordenó a mano en Simulink, así que nunca se sobrescribe solo.
 %   Para generarlo de nuevo desde cero (se pierde el orden manual):
 %       >> construir_modelo

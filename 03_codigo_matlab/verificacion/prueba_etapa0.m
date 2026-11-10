@@ -1,4 +1,4 @@
-%PRUEBA_ETAPA0  Verificación de params_sistema.m y del modelo de referencia (MATLAB puro).
+% Verificación de params_sistema.m y del modelo de referencia (MATLAB puro).
 %   Ejecutar desde la carpeta del proyecto:  >> prueba_etapa0
 %   UBICACIÓN: carpeta verificacion/. Se ejecuta desde 03_codigo_matlab con:
 %       >> addpath verificacion

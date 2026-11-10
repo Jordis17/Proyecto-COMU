@@ -1,4 +1,4 @@
-%VERIFICAR_ETAPA5  Sistema completo en Simulink (canal ideal): superheterodino + demux FDM.
+% Sistema completo en Simulink (canal ideal): superheterodino + demux FDM.
 %   Ejecutar desde la carpeta del proyecto:  >> verificar_etapa5
 %   UBICACIÓN: carpeta verificacion/. Se ejecuta desde 03_codigo_matlab con:
 %       >> addpath verificacion

@@ -1,4 +1,4 @@
-%PREPARAR_ENTREGA  Arma la carpeta y el .zip de respaldo para el profesor.
+% Arma la carpeta y el .zip de respaldo para el profesor.
 %   Copia lo que se muestra en el video (el modelo, main y la radio) y lo necesario para que
 %   funcione, revisa que la carpeta corra sola y la comprime.
 %   Ejecutar desde esta carpeta:  >> preparar_entrega

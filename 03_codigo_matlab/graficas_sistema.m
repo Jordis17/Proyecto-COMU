@@ -1,4 +1,4 @@
-%GRAFICAS_SISTEMA  Simula el sistema con canal ideal y genera las gráficas de cada etapa.
+% Simula el sistema con canal ideal y genera las gráficas de cada etapa.
 %   Ejecutar desde esta carpeta:  >> graficas_sistema
 %
 %   Figuras (son la evidencia que pide el enunciado):

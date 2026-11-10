@@ -1,5 +1,5 @@
 function construir_modelo(nombre)
-%CONSTRUIR_MODELO  Genera el modelo Simulink del sistema con bloques básicos.
+% Genera el modelo Simulink del sistema con bloques básicos.
 %   construir_modelo()            crea o reemplaza 'sistema_fdm_fm.slx' en la carpeta actual
 %
 %   Contiene: fuentes, transmisor FDM (DSB-SC + prénfasis opcional), modulador FM, canal

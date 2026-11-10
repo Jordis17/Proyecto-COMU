@@ -1,4 +1,4 @@
-%VERIFICAR_ETAPA8  Evaluación del sistema con canal AWGN (Simulink).
+% Evaluación del sistema con canal AWGN (Simulink).
 %   Ejecutar desde la carpeta del proyecto:  >> verificar_etapa8
 %   UBICACIÓN: carpeta verificacion/. Se ejecuta desde 03_codigo_matlab con:
 %       >> addpath verificacion

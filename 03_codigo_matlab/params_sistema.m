@@ -1,5 +1,5 @@
 function P = params_sistema(fc_nom_Hz, opciones)
-%PARAMS_SISTEMA  Todos los parámetros del sistema FDM + FM + receptor superheterodino.
+% Parámetros del sistema FDM + FM + receptor superheterodino.
 %
 %   P = params_sistema()                 % portadora nominal de 10 MHz
 %   P = params_sistema(10.5e6)           % otra portadora nominal (de 9 a 11 MHz)
@@ -12,7 +12,7 @@ function P = params_sistema(fc_nom_Hz, opciones)
 %        .f0_enfasis  frecuencia de quiebre del prénfasis [Hz nominales] (por defecto 30 kHz)
 %        .log_rf_max  máximo de muestras RF que se guardan (por defecto inf; la GUI usa menos)
 %
-%   ESCALAMIENTO: todas las frecuencias del modelo están divididas por K = 100
+%   Escalamiento: todas las frecuencias del modelo están divididas por K = 100
 %   (valor simulado = valor nominal / K), y el tiempo simulado es K veces el real.
 %   La GUI siempre muestra valores nominales (simulado * K).
 %   Solo usa MATLAB básico. Necesita disenar_fir_kaiser.m en la misma carpeta.
@@ -40,7 +40,7 @@ function P = params_sistema(fc_nom_Hz, opciones)
 
     %% ---------------- Escalamiento ----------------
     % La tabla del enunciado divide la portadora y la FI por 100 pero no el audio ni el FDM,
-    % y así se pierden las proporciones. Aquí se divide TODO por el mismo K.
+    % y así se pierden las proporciones. Aquí se divide todo por el mismo K.
     P.K = 100;
     K = P.K;
 
@@ -274,7 +274,7 @@ function imprimir_tabla(P)
         fprintf('  canal %d    N = %4d   A = %5.1f dB   retardo = %8.3f ms sim\n', k, s.N, s.A_medida_dB, s.retardo_s*1e3);
     end
     fprintf('\nDemodulador: discriminador (limitador -> derivador de %d coef. -> detector de envolvente), amplitud mínima %.1f\n', numel(P.disc.h_der), P.disc.amin);
-    fprintf('\nRetardo hasta el detector de cada canal (tau_k) y ganancia si NO se compensara:\n');
+    fprintf('\nRetardo hasta el detector de cada canal (tau_k) y ganancia si no se compensara:\n');
     for k = 1:3
         fprintf('  canal %d: tau = %7.2f us nom  -> cos(2 pi f_k tau) = %+.2f\n', k, P.tau(k)*1e6/K, P.ganancia_sin_compensar(k));
     end

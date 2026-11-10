@@ -1,4 +1,4 @@
-%VERIFICAR_ETAPA2  Simula el transmisor FDM en Simulink y lo compara con el modelo de referencia.
+% Simula el transmisor FDM en Simulink y lo compara con el modelo de referencia.
 %   Ejecutar desde la carpeta del proyecto:  >> verificar_etapa2
 %   UBICACIÓN: carpeta verificacion/. Se ejecuta desde 03_codigo_matlab con:
 %       >> addpath verificacion

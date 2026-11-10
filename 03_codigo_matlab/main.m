@@ -1,4 +1,4 @@
-%MAIN  Proyecto FDM + FM con receptor superheterodino.
+% Proyecto FDM + FM con receptor superheterodino.
 %   Muestra en la consola los parámetros del diseño (valor real y simulado) y abre la radio.
 %   Ejecutar desde esta carpeta:  >> main
 
@@ -37,7 +37,7 @@ function mostrar_diseno(P)
         fprintf('%-28s %12.1f kHz %12.1f Hz\n', L{i,1}, L{i,2} * K / 1e3, L{i,2});
     end
     fprintf('%-28s %16.2f\n', 'Relación de desviación', P.DR);
-    fprintf('\nGanancia de cada canal si NO se compensara el retardo de los filtros:\n');
+    fprintf('\nGanancia de cada canal si no se compensara el retardo de los filtros:\n');
     for k = 1:3
         fprintf('  audio %d: cos(2 pi f_k tau_k) = %+.2f\n', k, P.ganancia_sin_compensar(k));
     end
