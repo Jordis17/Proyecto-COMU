@@ -11,14 +11,25 @@ archivos = {'main.m', 'radio_fdm_fm.m', 'params_sistema.m', 'disenar_fir_kaiser.
             'generar_fuentes.m', 'graficar_espectro.m', 'comparar_senales.m'};
 
 cd(origen);
+% si la radio o el modelo quedaron abiertos (por ejemplo, al probar la entrega), se cierran
+delete(findall(groot, 'Type', 'figure', 'Name', 'Radio FM superheterodina - FDM de 3 canales'));
 if bdIsLoaded(mdl), close_system(mdl, 0); end
 assert(isfile(fullfile(origen, [mdl '.slx'])), 'No se encontró %s.slx', mdl);
 
 % copiar
-if exist(destino, 'dir'), rmdir(destino, 's'); end
-mkdir(destino);
+if exist(destino, 'dir')
+    try
+        rmdir(destino, 's');
+    catch
+        % OneDrive o el explorador pueden tener la carpeta abierta: se vacía en vez de borrarla
+        fprintf('No se pudo borrar la carpeta de entrega (está abierta en otro programa); se vacía.\n');
+        delete(fullfile(destino, '*.*'));
+        if exist(fullfile(destino, 'audios'), 'dir'), delete(fullfile(destino, 'audios', '*.*')); end
+    end
+end
+if ~exist(destino, 'dir'), mkdir(destino); end
 cd(destino); destino = pwd; cd(origen);
-mkdir(fullfile(destino, 'audios'));
+if ~exist(fullfile(destino, 'audios'), 'dir'), mkdir(fullfile(destino, 'audios')); end
 for i = 1:numel(archivos)
     copyfile(fullfile(origen, archivos{i}), destino);
 end
