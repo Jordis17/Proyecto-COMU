@@ -1,27 +1,10 @@
 function radio_fdm_fm()
-%RADIO_FDM_FM  Interfaz tipo radio del sistema FDM + FM + receptor superheterodino.
-%   >> radio_fdm_fm      (o ejecutar main.m)
-%
-%   DOS SELECCIONES INDEPENDIENTES:
-%     1) SINTONÍA RF (dial de 9 a 11 MHz y botones de ±0.1 MHz): fija la portadora. Al
-%        moverla se recalculan al instante el LO (f_c - 1.7 MHz), la imagen y el preselector,
-%        y el PLAN DE FRECUENCIAS se redibuja mientras se arrastra el dial, sin simular.
-%        "Sintonizar y simular" ejecuta el modelo Simulink con esos parámetros.
-%     2) AUDIO 1 / 2 / 3 (botones de presintonía): elige qué salida del demultiplexor FDM se
-%        grafica y se escucha. NO vuelve a simular ni toca el LO (la selección ocurre después
-%        de la demodulación).
-%
-%   GRÁFICAS (dos pestañas):
-%     Receptor superheterodino : plan de frecuencias (en vivo), espectro RF con la respuesta
-%                                de la sección de RF, salida del mezclador con el pasabajos de
-%                                la sección de FI, y la FI filtrada con su ancho medido.
-%     Demultiplexación y audio : multiplex transmitido y recuperado, SDR de los tres audios
-%                                (con la teoría si hay ruido) y el audio elegido en el tiempo.
-%
-%   Cada simulación queda guardada: al volver a una combinación ya simulada (ruido, prénfasis,
-%   portadora...) se muestra al instante. La lámpara dice si las gráficas corresponden a los
-%   controles marcados. Todas las frecuencias se muestran en valores NOMINALES (simulado x K):
-%   el escalamiento es transparente para el usuario. Solo usa MATLAB básico (uifigure) + Simulink.
+%RADIO_FDM_FM  Interfaz tipo radio del sistema.
+%   El dial elige la portadora (9 a 11 MHz); el oscilador local y la imagen se recalculan solos.
+%   "Sintonizar y simular" corre el modelo de Simulink. Los botones Audio 1, 2 y 3 eligen qué
+%   salida se grafica y se escucha, sin volver a simular. Cada simulación queda guardada en
+%   radio_guardado.mat para no repetirla. Las frecuencias se muestran con su valor real
+%   (el modelo trabaja con todo dividido entre 100).
 
     mdl = 'sistema_fdm_fm';
     P0 = params_sistema(10e6, struct('imprimir', false));   % constantes del diseño (no dependen de f_c)

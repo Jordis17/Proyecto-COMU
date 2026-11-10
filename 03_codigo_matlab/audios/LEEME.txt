@@ -1,9 +1,4 @@
-Colocar aquí tres audios reales:  audio1.wav, audio2.wav, audio3.wav
-
-- De preferencia a 48 kHz (si tienen otra frecuencia de muestreo, se convierten con interpolación).
-- Mono o estéreo (se pasan a mono).
-- Que el sonido empiece al inicio del archivo: solo se usan los primeros segundos
-  (en la radio, la duración elegida; 0.3 s por defecto).
-- El sistema limita cada audio a 15 kHz.
-
-Para usarlos en la radio, elegir la fuente «audio».
+Aquí van las tres grabaciones: audio1.wav, audio2.wav y audio3.wav.
+De preferencia a 48 kHz; si tienen otra frecuencia de muestreo, se convierten. Si son estéreo, se pasan a mono.
+Se usa el inicio de cada archivo (la duración que se elija en la radio) y cada audio se limita a 15 kHz.
+En la radio se usan con la fuente «Grabaciones (WAV)».

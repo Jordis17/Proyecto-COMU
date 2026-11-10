@@ -121,7 +121,7 @@ verificar_etapa8     % barrido AWGN y prueba sin preselector
 
 ### Archivos de `03_codigo_matlab/`
 
-Se entregan 8 `.m` (los marcados con ✔), el `.slx` y los audios; el resto queda para el equipo. `preparar_entrega` crea además `entrega_FDM_FM_respaldo.zip`, la versión anterior con 10 `.m` (incluye `analisis_awgn.m` y `probar_audio_real.m`), que **no se manda** y queda como respaldo.
+El profesor revisa el video. Como respaldo se manda `entrega_FDM_FM.zip`, que arma `preparar_entrega`: el `.slx`, 7 archivos `.m` (`main`, `radio_fdm_fm`, `params_sistema`, `disenar_fir_kaiser`, `generar_fuentes`, `graficar_espectro`, `comparar_senales`), los WAV y un `LEEME.txt` corto.
 
 | Archivo | Función |
 |---|---|
@@ -132,7 +132,7 @@ Se entregan 8 `.m` (los marcados con ✔), el `.slx` y los audios; el resto qued
 | `modelo_al_dia.m` | **(No se entrega.)** Genera el `.slx` solo si no existe (el `.slx` del repositorio está ordenado a mano y nunca se sobrescribe solo). Los scripts de la entrega lo usan solo si existe; sin él, usan el `.slx` tal cual |
 | ✔ `generar_fuentes.m` | Fuentes: `demo`, `tonos`, `ruido`, `audio` (WAV en la carpeta `audios/`, que hay que crear) |
 | ✔ `radio_fdm_fm.m` | GUI: dial de portadora, LO automático, selector de audio, AWGN, prénfasis, desintonía |
-| ✔ `graficas_sistema.m` | Figuras de cada etapa: audios, multiplex, FM con Carson, receptor, audios recuperados |
+| `graficas_sistema.m` | Figuras de cada etapa: audios, multiplex, FM con Carson, receptor, audios recuperados |
 | `analisis_awgn.m` | **(No se entrega; resultados en el video.)** Barrido AWGN frente a la teoría, sin y con prénfasis. Guarda CSV, MAT y PNG |
 | `probar_audio_real.m` | **(No se entrega; los WAV recuperados se usan en el video.)** Pasa `audios/audio1..3.wav` por el sistema y guarda `recuperado1..3.wav` (ver `audios/LEEME.txt`) |
 | ✔ `graficar_espectro.m` | Espectro sin toolbox (Welch propio) |

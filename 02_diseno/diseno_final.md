@@ -184,7 +184,7 @@ Ningún bloque tiene números escritos a mano: todos leen la estructura `P` de `
 | `analisis_awgn` | Barrido de ruido, con y sin prénfasis | No (resultados en el video; va en el respaldo) |
 | `probar_audio_real` | Pasa tres WAV por el sistema y guarda los audios recuperados | No (los WAV recuperados se usan en el video; va en el respaldo) |
 
-**Entrega.** Al profesor se le manda el video y `entrega_FDM_FM.zip`, que contiene el modelo `sistema_fdm_fm.slx`, 8 archivos `.m` (`main`, `params_sistema`, `disenar_fir_kaiser`, `generar_fuentes`, `radio_fdm_fm`, `graficas_sistema`, `graficar_espectro`, `comparar_senales`), los tres WAV y un `LEEME.txt`. El script `preparar_entrega` la arma y comprueba que funcione sola. También crea `entrega_FDM_FM_respaldo.zip`, con los 10 `.m`, que no se manda.
+**Entrega.** El profesor revisa el video. Como respaldo, por si tiene dudas, se manda `entrega_FDM_FM.zip` con lo que se muestra en el video: el modelo `sistema_fdm_fm.slx`, 7 archivos `.m` (`main`, `radio_fdm_fm`, `params_sistema`, `disenar_fir_kaiser`, `generar_fuentes`, `graficar_espectro`, `comparar_senales`), los tres WAV y un `LEEME.txt` corto. Lo arma `preparar_entrega`, que además comprueba que la carpeta funcione sola.
 
 ## 5. Resultados (Simulink R2026a)
 
